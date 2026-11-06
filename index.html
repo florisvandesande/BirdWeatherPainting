@@ -6,9 +6,10 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>BirdWeather Painting</title>
     <link rel="stylesheet" href="assets/painting.css">
+    <link rel="stylesheet" href="assets/setup.css">
 </head>
 <body>
-    <main id="painting" class="painting" aria-labelledby="plate-title">
+    <main id="painting" class="painting" aria-labelledby="plate-title" hidden>
         <header class="plate-header">
             <p class="book-title" data-text="title"></p>
             <p id="station-name" class="station-name" dir="auto"></p>
@@ -25,9 +26,64 @@
             <p id="observation-note" hidden></p>
             <p id="connection-status" role="status"></p>
         </footer>
+        <button id="open-settings" class="painting-settings" type="button" aria-controls="setup" data-text="settingsTitle"></button>
+    </main>
+    <main id="setup" class="setup" aria-labelledby="setup-title" hidden>
+        <div class="setup-page">
+            <header class="setup-header">
+                <p class="book-title" data-text="title"></p>
+                <h1 id="setup-title" tabindex="-1"></h1>
+                <p id="welcome-intro" data-text="welcomeIntro"></p>
+            </header>
+            <div class="setup-body">
+                <div class="setup-controls">
+                    <form id="station-search" role="search" aria-labelledby="station-query-label">
+                        <label id="station-query-label" for="station-query" data-text="stationSearchLabel"></label>
+                        <div class="search-row">
+                            <input id="station-query" type="search" maxlength="120" dir="auto"
+                                autocomplete="off" aria-describedby="station-search-hint">
+                            <button type="submit" data-text="search"></button>
+                        </div>
+                        <p id="station-search-hint" class="setup-hint" data-text="stationSearchHint"></p>
+                    </form>
+                    <p id="station-search-status" class="setup-status" role="status"></p>
+                    <ul id="station-results" class="station-results" hidden></ul>
+                    <p id="selected-station" class="selected-station" role="status"></p>
+                    <div class="language-choice">
+                        <label for="display-language" data-text="languageLabel"></label>
+                        <select id="display-language">
+                            <option value="auto" data-text="automaticLanguage"></option>
+                            <option value="en" lang="en">English</option>
+                            <option value="nl" lang="nl">Nederlands</option>
+                            <option value="fr" lang="fr">Français</option>
+                            <option value="de" lang="de">Deutsch</option>
+                            <option value="es" lang="es">Español</option>
+                            <option value="it" lang="it">Italiano</option>
+                            <option value="pt-BR" lang="pt-BR">Português (Brasil)</option>
+                        </select>
+                        <p id="language-status" class="setup-status" role="status"></p>
+                    </div>
+                    <div class="setup-actions">
+                        <button id="save-settings" type="button" disabled></button>
+                        <button id="cancel-settings" type="button" data-text="returnToPainting" hidden></button>
+                    </div>
+                </div>
+                <aside class="setup-guide" aria-labelledby="guide-title">
+                    <img src="assets/field-sprig.svg" alt="">
+                    <h2 id="guide-title" data-text="guideTitle"></h2>
+                    <ol>
+                        <li data-text="guideHomeScreen"></li>
+                        <li data-text="guideAutoLock"></li>
+                        <li data-text="guidePower"></li>
+                    </ol>
+                </aside>
+            </div>
+        </div>
     </main>
     <script src="assets/text.js"></script>
     <script src="assets/birdweather.js"></script>
+    <script src="assets/preferences.js"></script>
+    <script src="assets/setup.js"></script>
     <script src="assets/painting.js"></script>
 </body>
 </html>

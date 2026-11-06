@@ -3,8 +3,9 @@
 
     var api = window.BirdWeatherApi;
     var text = window.BirdWeatherText;
-    var languages = window.navigator.languages;
-    var locale = text.localeFor(languages && languages.length ? languages : [window.navigator.language || 'en']);
+    var preferences = window.BirdWeatherPreferences;
+    var config = preferences.read();
+    var locale = preferences.locale();
     var title = document.getElementById('plate-title');
     var detail = document.getElementById('plate-detail');
     var stationName = document.getElementById('station-name');
@@ -12,8 +13,9 @@
     var time = detectionTime.getElementsByTagName('time')[0];
     var observationNote = document.getElementById('observation-note');
     var connectionStatus = document.getElementById('connection-status');
-    var stationId = readStationId();
-    var hasLoaded = false;
+    var stationId = config && config.station;
+    var lastResult = null;
+    var connectionState = null;
     var request = null;
     var refreshTimer = null;
     var hiddenProperty = 'hidden' in document ? 'hidden' : 'webkitHidden';
@@ -23,21 +25,9 @@
         return text.message(locale, key, fields);
     }
 
-    function readStationId() {
-        var parameter = /(?:^\?|&)station(?:=([^&]*))?(?:&|$)/.exec(window.location.search);
-        if (!parameter) {
-            return null;
-        }
-        try {
-            return decodeURIComponent(parameter[1] || '');
-        } catch (error) {
-            return '';
-        }
-    }
-
     function showStationHelp(state) {
         title.textContent = say(state);
-        detail.textContent = say(state + 'Detail', { example: '?station=123' });
+        detail.textContent = say(state + 'Detail');
     }
 
     function setText(element, value) {
@@ -47,6 +37,7 @@
     }
 
     function setConnectionStatus(state) {
+        connectionState = state;
         setText(connectionStatus, state ? say(state) : '');
     }
 
@@ -101,16 +92,16 @@
         }
         request = api.latestForStation(stationId, function (error, result) {
             request = null;
-            if (error === 'notFound' && !hasLoaded) {
+            if (error === 'notFound' && !lastResult) {
                 stationId = null;
                 setConnectionStatus(null);
                 showStationHelp('invalidStation');
                 return;
             }
             if (!error) {
-                hasLoaded = true;
+                lastResult = result;
                 showLatest(result);
-            } else if (!hasLoaded) {
+            } else if (!lastResult) {
                 setText(title, say('connectionTitle'));
             }
             setConnectionStatus(error ? 'unavailable' : null);
@@ -135,15 +126,24 @@
         }
     }
 
-    document.documentElement.lang = locale;
-    document.title = say('title');
-    document.querySelector('[data-text="title"]').textContent = document.title;
-    title.textContent = say('loading');
-    if (stationId === null) {
-        showStationHelp('missingStation');
-    } else if (!api.validStationId(stationId)) {
-        showStationHelp('invalidStation');
-    } else {
+    function renderLocale() {
+        locale = preferences.locale();
+        document.documentElement.lang = locale;
+        document.title = say('title');
+        setText(document.querySelector('#painting [data-text="title"]'), document.title);
+        setConnectionStatus(connectionState);
+        if (lastResult) {
+            showLatest(lastResult);
+        } else if (config && !stationId) {
+            showStationHelp('invalidStation');
+        } else {
+            setText(title, say(connectionState === 'unavailable' ? 'connectionTitle' : 'loading'));
+        }
+    }
+
+    document.addEventListener('birdweather-language', renderLocale);
+    renderLocale();
+    if (stationId) {
         document.addEventListener(visibilityEvent, visibilityChanged);
         if (document[hiddenProperty]) {
             setConnectionStatus('paused');

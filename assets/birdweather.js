@@ -109,9 +109,57 @@
         });
     }
 
+    function stationResult(node) {
+        var id = node && readId(node.id);
+        var name = node && safeName(node.name, 220);
+        return validStationId(id) && name && !/[\x00-\x1f\x7f]/.test(name) ? { id: id, name: name } : null;
+    }
+
+    function searchStations(term, complete) {
+        if (validStationId(term)) {
+            return query('query FindStation($stationId: ID!) { station(id: $stationId) { id name } }',
+                { stationId: term }, function (error, data) {
+                    if (error === 'notFound' || (!error && data.station === null)) {
+                        complete(null, []);
+                        return;
+                    }
+                    var station = !error && stationResult(data.station);
+                    if (!station || station.id !== term) {
+                        complete('unavailable');
+                        return;
+                    }
+                    complete(null, [station]);
+                });
+        }
+
+        return query('query SearchStations($term: String!) { stations(first: 12, query: $term) { nodes { id name } } }',
+            { term: term }, function (error, data) {
+                var nodes = !error && data.stations && data.stations.nodes;
+                if (!Array.isArray(nodes) || nodes.length > 12) {
+                    complete('unavailable');
+                    return;
+                }
+                var results = [];
+                var seen = {};
+                nodes.forEach(function (node) {
+                    var station = stationResult(node);
+                    if (station && !seen[station.id]) {
+                        results.push(station);
+                        seen[station.id] = true;
+                    }
+                });
+                if (nodes.length && !results.length) {
+                    complete('unavailable');
+                    return;
+                }
+                complete(null, results);
+            });
+    }
+
     window.BirdWeatherApi = {
         query: query,
         validStationId: validStationId,
+        searchStations: searchStations,
         latestForStation: latestForStation
     };
 }(window));
