@@ -10,6 +10,16 @@ body {
     font: 100%/1.45 Georgia, "Times New Roman", serif;
 }
 
+html.night-display,
+.night-display body {
+    overflow: hidden;
+    background: #000;
+}
+
+.night-display body > main {
+    display: none;
+}
+
 [hidden] {
     display: none !important;
 }

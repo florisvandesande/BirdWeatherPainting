@@ -4,6 +4,8 @@
     var api = window.BirdWeatherApi;
     var preferences = window.BirdWeatherPreferences;
     var text = window.BirdWeatherText;
+    var night = window.BirdWeatherNight;
+    var nightText = window.BirdWeatherNightText;
     var setup = document.getElementById('setup');
     var painting = document.getElementById('painting');
     var title = document.getElementById('setup-title');
@@ -17,6 +19,14 @@
     var resultList = document.getElementById('station-results');
     var languageSelect = document.getElementById('display-language');
     var languageStatus = document.getElementById('language-status');
+    var nightEnabled = document.getElementById('night-enabled');
+    var nightTimes = document.getElementById('night-times');
+    var nightStart = document.getElementById('night-start');
+    var nightEnd = document.getElementById('night-end');
+    var nightStatus = document.getElementById('night-status');
+    var nightLabels = setup.querySelectorAll('[data-night-text]');
+    var savedNight = preferences.readNight();
+    var nightStatusKey = '';
     var selectionSummary = document.getElementById('selected-station');
     var labels = setup.querySelectorAll('[data-text]');
     var config = preferences.read();
@@ -41,11 +51,45 @@
         }
     }
 
+    function renderNightStatus() {
+        nightStatus.textContent = nightStatusKey ? nightText.message(locale, nightStatusKey) : '';
+    }
+
+    function changeNight() {
+        nightTimes.hidden = !nightEnabled.checked;
+        nightStatusKey = '';
+        nightStart.removeAttribute('aria-invalid');
+        nightEnd.removeAttribute('aria-invalid');
+        renderNightStatus();
+    }
+
+    function saveSettings() {
+        var schedule = night.create(nightEnabled.checked, nightStart.value || null, nightEnd.value || null);
+        if (!schedule && !nightEnabled.checked) {
+            schedule = night.create(false, null, null);
+        }
+        if (!schedule) {
+            var invalidField = night.validTime(nightStart.value) ? nightEnd : nightStart;
+            invalidField.setAttribute('aria-invalid', 'true');
+            nightStatusKey = 'invalid';
+            renderNightStatus();
+            invalidField.focus();
+            return;
+        }
+        draft.night = schedule;
+        preferences.save(draft);
+    }
+
     function renderLabels() {
         for (var index = 0; index < labels.length; index += 1) {
             var label = labels[index];
             label.textContent = say(label.getAttribute('data-text'));
         }
+        for (var nightIndex = 0; nightIndex < nightLabels.length; nightIndex += 1) {
+            var nightLabel = nightLabels[nightIndex];
+            nightLabel.textContent = nightText.message(locale, nightLabel.getAttribute('data-night-text'));
+        }
+        renderNightStatus();
         title.textContent = say(config ? 'settingsTitle' : 'welcomeTitle');
         saveButton.textContent = say(config ? 'saveSettings' : 'openPainting');
         openButton.textContent = say('settingsTitle');
@@ -61,8 +105,9 @@
 
     function abortSearch() {
         if (searchRequest) {
-            searchRequest.abort();
+            var request = searchRequest.request;
             searchRequest = null;
+            request.abort();
         }
     }
 
@@ -97,6 +142,9 @@
 
     function search(event) {
         event.preventDefault();
+        if (document.documentElement.classList.contains('night-display')) {
+            return;
+        }
         abortSearch();
         results = [];
         showResults(results);
@@ -108,7 +156,12 @@
             return;
         }
         setStatus('searchingStations');
-        searchRequest = api.searchStations(term, function (error, stations) {
+        var attempt = {};
+        searchRequest = attempt;
+        attempt.request = api.searchStations(term, function (error, stations) {
+            if (searchRequest !== attempt) {
+                return;
+            }
             searchRequest = null;
             if (error) {
                 setStatus('stationSearchUnavailable');
@@ -128,7 +181,12 @@
         statusKey = !config && preferences.hasSourceParameter() ? 'stationAddressInvalid' : '';
         languageSelect.value = preferences.getLanguage();
         welcomeIntro.hidden = Boolean(config);
-        backButton.hidden = !config;
+        backButton.hidden = !config || !savedNight;
+        nightEnabled.checked = savedNight ? savedNight.enabled : preferences.parameter('night') === '1';
+        nightStart.value = savedNight ? savedNight.start || '22:00' : '';
+        nightEnd.value = savedNight ? savedNight.end || '07:00' : '';
+        changeNight();
+        nightStatusKey = savedNight ? '' : 'invalidSaved';
         renderLabels();
         painting.hidden = true;
         setup.hidden = false;
@@ -156,19 +214,25 @@
         document.dispatchEvent(event);
     }
 
+    document.addEventListener('birdweather-blackout', function () {
+        abortSearch();
+        if (statusKey === 'searchingStations') {
+            setStatus('');
+        }
+    });
     searchForm.addEventListener('submit', search);
     languageSelect.addEventListener('change', changeLanguage);
     openButton.addEventListener('click', function () {
         openSetup(true);
     });
     backButton.addEventListener('click', closeSetup);
-    saveButton.addEventListener('click', function () {
-        preferences.save(draft);
-    });
+    saveButton.addEventListener('click', saveSettings);
+    nightEnabled.addEventListener('change', changeNight);
+    nightStart.addEventListener('change', changeNight);
+    nightEnd.addEventListener('change', changeNight);
 
-    if (config) {
+    if (config && savedNight) {
         openButton.textContent = say('settingsTitle');
-        painting.hidden = false;
     } else {
         openSetup(false);
     }

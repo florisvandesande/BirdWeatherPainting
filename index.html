@@ -80,6 +80,28 @@
                         </select>
                         <p id="language-status" class="setup-status" role="status"></p>
                     </div>
+                    <div class="night-choice">
+                        <label class="night-toggle" for="night-enabled">
+                            <input id="night-enabled" type="checkbox" aria-controls="night-times">
+                            <span data-night-text="enabled"></span>
+                        </label>
+                        <div id="night-times" hidden>
+                            <div class="night-time-row">
+                                <div>
+                                    <label for="night-start" data-night-text="start"></label>
+                                    <input id="night-start" type="time" maxlength="5" placeholder="22:00"
+                                        aria-describedby="night-hint night-status">
+                                </div>
+                                <div>
+                                    <label for="night-end" data-night-text="end"></label>
+                                    <input id="night-end" type="time" maxlength="5" placeholder="07:00"
+                                        aria-describedby="night-hint night-status">
+                                </div>
+                            </div>
+                            <p id="night-hint" class="setup-hint" data-night-text="hint"></p>
+                        </div>
+                        <p id="night-status" class="setup-status" role="status"></p>
+                    </div>
                     <div class="setup-actions">
                         <button id="save-settings" type="button" disabled></button>
                         <button id="cancel-settings" type="button" data-text="returnToPainting" hidden></button>
@@ -99,11 +121,14 @@
     </main>
     <script src="assets/text.js"></script>
     <script src="assets/birdweather.js"></script>
+    <script src="assets/night-schedule.js"></script>
+    <script src="assets/night-text.js"></script>
     <script src="assets/preferences.js"></script>
     <script src="assets/setup.js"></script>
     <script src="assets/artwork.js"></script>
     <script src="assets/artwork-text.js"></script>
     <script src="assets/artwork-info.js"></script>
+    <script src="assets/display-refresh.js"></script>
     <script src="assets/painting.js"></script>
 </body>
 </html>

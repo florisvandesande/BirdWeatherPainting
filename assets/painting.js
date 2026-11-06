@@ -6,6 +6,7 @@
     var preferences = window.BirdWeatherPreferences;
     var config = preferences.read();
     var locale = preferences.locale();
+    var painting = document.getElementById('painting');
     var title = document.getElementById('plate-title');
     var detail = document.getElementById('plate-detail');
     var image = document.getElementById('latest-art');
@@ -17,12 +18,9 @@
     var observationNote = document.getElementById('observation-note');
     var connectionStatus = document.getElementById('connection-status');
     var stationId = config && config.station;
+    var schedule = preferences.readNight();
     var lastResult = null;
     var connectionState = null;
-    var request = null;
-    var refreshTimer = null;
-    var hiddenProperty = 'hidden' in document ? 'hidden' : 'webkitHidden';
-    var visibilityEvent = hiddenProperty === 'hidden' ? 'visibilitychange' : 'webkitvisibilitychange';
 
     function say(key, fields) {
         return text.message(locale, key, fields);
@@ -89,47 +87,31 @@
         setText(observationNote, older ? say('older') : '');
     }
 
-    function refresh() {
-        if (!stationId || document[hiddenProperty] || request) {
-            return;
+    function load(complete) {
+        if (!stationId) {
+            complete('notFound');
+            return null;
         }
-        request = api.latestForStation(stationId, function (error, result) {
-            request = null;
-            if (error === 'notFound' && !lastResult) {
-                stationId = null;
-                setConnectionStatus(null);
-                showStationHelp('invalidStation');
-                return;
-            }
-            if (!error) {
-                lastResult = result;
-                showLatest(result);
-                artwork.paint(image, result.observation && result.observation.species, function (credit) {
-                    artworkInfo.setDisplayed(credit ? [credit] : []);
-                });
-            } else if (!lastResult) {
-                setText(title, say('connectionTitle'));
-            }
-            setConnectionStatus(error ? 'unavailable' : null);
-            refreshTimer = window.setTimeout(refresh, 120000);
-        });
+        return api.latestForStation(stationId, complete);
     }
 
-    function visibilityChanged() {
-        if (!stationId) {
-            return;
+    function renderResult(error, result) {
+        if (error === 'notFound' && !lastResult) {
+            stationId = null;
+            setConnectionStatus(null);
+            showStationHelp('invalidStation');
+            return false;
         }
-        window.clearTimeout(refreshTimer);
-        if (document[hiddenProperty]) {
-            if (request) {
-                request.abort();
-                request = null;
-            }
-            setConnectionStatus('paused');
-        } else {
-            setConnectionStatus('refreshing');
-            refresh();
+        if (!error) {
+            lastResult = result;
+            showLatest(result);
+            artwork.paint(image, result.observation && result.observation.species, function (credit) {
+                artworkInfo.setDisplayed(credit ? [credit] : []);
+            });
+        } else if (!lastResult) {
+            setText(title, say('connectionTitle'));
         }
+        setConnectionStatus(error ? 'unavailable' : null);
     }
 
     function renderLocale() {
@@ -150,12 +132,8 @@
     artworkInfo.setLocale(locale);
     document.addEventListener('birdweather-language', renderLocale);
     renderLocale();
-    if (stationId) {
-        document.addEventListener(visibilityEvent, visibilityChanged);
-        if (document[hiddenProperty]) {
-            setConnectionStatus('paused');
-        } else {
-            refresh();
-        }
+    if (stationId && schedule) {
+        window.BirdWeatherDisplayRefresh.start(schedule, load, renderResult, setConnectionStatus);
+        painting.hidden = false;
     }
 }(window, document));

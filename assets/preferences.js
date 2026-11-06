@@ -3,15 +3,20 @@
 
     var api = window.BirdWeatherApi;
     var text = window.BirdWeatherText;
+    var night = window.BirdWeatherNight;
     var setupKey = 'birdweather.setup';
     var languageKey = 'birdweather.language';
     var savedLanguage = readLocal(languageKey);
     var languageChoice = text.supportsLocale(savedLanguage) ? savedLanguage : 'auto';
 
-    function parameter(name) {
-        var match = new RegExp('(?:^\\?|&)' + name + '(?:=([^&]*))?(?:&|$)').exec(window.location.search);
+    function parameter(name, unique) {
+        var expression = new RegExp('(?:^\\?|&)' + name + '(?:=([^&]*))?(?=&|$)', 'g');
+        var match = expression.exec(window.location.search);
         if (!match) {
             return null;
+        }
+        if (unique && expression.test(window.location.search)) {
+            return '';
         }
         try {
             return decodeURIComponent(match[1] || '');
@@ -54,11 +59,27 @@
         return saved ? stationConfig(saved.source, saved.station) : null;
     }
 
+    function readNight() {
+        var flag = parameter('night', true);
+        var start = parameter('nightStart', true);
+        var end = parameter('nightEnd', true);
+        if (flag !== null || start !== null || end !== null) {
+            return night.fromAddress(flag, start, end);
+        }
+
+        var saved = !hasSourceParameter() && readLocal(setupKey);
+        return saved && saved.night ? night.create(saved.night.enabled, saved.night.start, saved.night.end) :
+            night.create(false, null, null);
+    }
+
     function save(config) {
         var selected = stationConfig(config.source, config.station);
-        if (selected) {
+        var schedule = config.night && night.create(config.night.enabled, config.night.start, config.night.end);
+        if (selected && schedule) {
+            selected.night = schedule;
             writeLocal(setupKey, selected);
-            window.location.assign('?source=station&station=' + encodeURIComponent(selected.station));
+            window.location.assign('?source=station&station=' + encodeURIComponent(selected.station) +
+                night.toQuery(selected.night));
         }
     }
 
@@ -85,6 +106,7 @@
     window.BirdWeatherPreferences = {
         read: read,
         save: save,
+        readNight: readNight,
         parameter: parameter,
         hasSourceParameter: hasSourceParameter,
         getLanguage: getLanguage,
