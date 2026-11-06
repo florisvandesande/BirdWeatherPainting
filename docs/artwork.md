@@ -1,6 +1,43 @@
 # Artwork sources and reuse
 
-Open the **i** button at the lower right of the painting for the current artwork's credit, the other historical plates, and the list of missing illustrations. Choose **Select list** and use your device's Copy command to collect the species names and BirdWeather IDs. The list stays in browser storage on that device and contains only species identifiers and names. Clearing the site's browser data clears the list. If the browser blocks storage, the list is available while the page stays open.
+Open the **i** button at the lower right of the painting for the current artwork's credit, other available artwork, and the list of missing illustrations. Choose **Select list** and use your device's Copy command to collect the species names and BirdWeather IDs. The list stays in browser storage on that device and contains only species identifiers and names. Clearing the site's browser data clears the list. If the browser blocks storage, the list is available while the page stays open.
+
+## Fugleramme Classic collection
+
+The painting checks the local Fugleramme image collection first. The committed
+collection contains 1,355 bird illustrations grouped under 787 scientific
+names and nine perches. When several illustrations match a species, one is
+chosen for the current page session. BirdWeather's scientific names are matched
+through the included BirdNET alias map; the displayed common name continues to
+come from BirdWeather's translations.
+
+When the selected station or nearby area has no detections, the painting uses a
+random perch from the local collection and keeps that perch while the page is
+open. The heading reads “Perch” and the caption explains that it is an empty
+branch. These images work without requesting an artwork image from a third-party
+host.
+
+The source files supplied for this app were WebP. The app prepares JPEG copies
+with a maximum edge of 600 pixels for older Safari, removes embedded source
+metadata, and places transparent pixels on the exact `#f0ece6` paper color used
+by the painting. The adapted artwork is available under CC BY-SA 4.0. The app's
+information page links to the Fugleramme attribution ledger, the individual
+source record, and the licence for the image on display. The separate
+[Fugleramme attribution note](../assets/fugleramme/ATTRIBUTION.md) describes the
+changes and the image catalogue.
+
+The downloaded WebP inputs and BirdNET name files live in the ignored
+`.temporary/assets/` directory and are not needed at runtime. If those source
+files are available, regenerate the committed images and catalogue on macOS
+with Swift and Apple's ImageIO framework:
+
+```bash
+swift scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork assets/fugleramme
+```
+
+The script expects `birdnet_aliases.json` and `birdnet_labels_v2.4.txt` beside
+the `artwork` directory. It keeps a per-image original source URL in
+`assets/fugleramme/catalog.json`.
 
 ## Historical plates
 
@@ -19,7 +56,7 @@ Each local image keeps the full plate and its sRGB color profile. The JPEGs were
 
 ## BirdWeather fallback
 
-When a local plate is unavailable, the painting can use a raster image served from BirdWeather's species media path. It requires a matching species ID, a creator credit, and an exact match between an accepted Creative Commons licence label and its official URL. Accepted labels are CC BY and CC BY-SA versions 2.0, 2.5, 3.0, and 4.0, CC0 1.0, and Public Domain Mark 1.0. The painting displays these images as supplied and includes a link to the delivered image, the applicable licence, and any creator link supplied in the credit. When the credit is incomplete or the image fails to load, the species name and a botanical ornament are displayed.
+When neither the Fugleramme collection nor a historical plate matches, the painting can use a raster image served from BirdWeather's species media path. It requires a matching species ID, a creator credit, and an exact match between an accepted Creative Commons licence label and its official URL. Accepted labels are CC BY and CC BY-SA versions 2.0, 2.5, 3.0, and 4.0, CC0 1.0, and Public Domain Mark 1.0. The painting displays these images as supplied and includes a link to the delivered image, the applicable licence, and any creator link supplied in the credit. When the credit is incomplete or the image fails to load, the species name and a botanical ornament are displayed.
 
 ## Adding a historical plate
 

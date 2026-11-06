@@ -48,6 +48,13 @@
         setText(connectionStatus, state ? say(state) : '');
     }
 
+    function emptyState(result) {
+        if (nearby) {
+            return result.hasStations ? 'nearbyEmpty' : 'nearbyNoStations';
+        }
+        return 'emptyDay';
+    }
+
     function showLatest(result) {
         var observation = result.observation;
         var heading = nearby ?
@@ -56,13 +63,12 @@
         setText(stationName, heading);
         detail.className = observation ? 'scientific-name' : '';
         if (!observation) {
-            var emptyState = nearby ? (result.hasStations ? 'nearbyEmpty' : 'nearbyNoStations') : 'emptyDay';
-            var emptyDetail = nearby ? emptyState + 'Detail' : 'emptyDetail';
-            setText(title, say(emptyState));
+            setText(title, say('perch'));
             title.removeAttribute('lang');
-            setText(detail, say(emptyDetail));
+            setText(detail, say('emptyBranch'));
             detectionTime.hidden = true;
-            observationNote.hidden = true;
+            observationNote.hidden = false;
+            setText(observationNote, say(emptyState(result)));
             return;
         }
         var common = text.speciesName(locale, observation.species);
@@ -94,7 +100,16 @@
         setText(stationName, nearby ? say('nearbyHeading', { radius: config.radius }) : result.stationName);
         collageView.show(result, locale);
         if (!result.species.length) {
-            showStationHelp(nearby && !result.hasStations ? 'nearbyNoStations' : 'collageEmpty');
+            var state = nearby && !result.hasStations ? 'nearbyNoStations' : 'collageEmpty';
+            detail.className = '';
+            setText(title, say('perch'));
+            title.removeAttribute('lang');
+            setText(detail, say('emptyBranch'));
+            detectionTime.hidden = true;
+            observationNote.hidden = false;
+            setText(observationNote, say(state));
+        } else {
+            observationNote.hidden = true;
         }
     }
 
@@ -168,7 +183,16 @@
         } else if (!lastResult) {
             showConnectionProblem(error);
         }
-        setConnectionStatus(error ? (error === 'collageZoneUnavailable' ? error : 'unavailable') : null);
+        var status = error ? (error === 'collageZoneUnavailable' ? error : 'unavailable') : null;
+        if (!error) {
+            if (collageView && !result.species.length) {
+                status = nearby && !result.hasStations ? 'nearbyNoStationsDetail' : 'collageEmptyDetail';
+            } else if (!collageView && !result.observation) {
+                var state = emptyState(result);
+                status = nearby ? state + 'Detail' : 'emptyDetail';
+            }
+        }
+        setConnectionStatus(status);
     }
 
     function renderLocale() {

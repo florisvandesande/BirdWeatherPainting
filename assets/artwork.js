@@ -5,8 +5,20 @@
     var sprig = 'assets/field-sprig.svg';
     var missingInSession = Object.create(null);
     var storageUnavailable = false;
+    var catalogPath = 'assets/fugleramme/catalog.json';
+    var catalogState = 'idle';
+    var catalog = null;
+    var catalogWaiters = [];
+    var selectedBirdImages = Object.create(null);
+    var failedImages = Object.create(null);
+    var perchOrder = null;
+    var selectedPerchPath = null;
     var commons = 'https://commons.wikimedia.org/wiki/File:Nederlandsche_vogelen_(KB)_-_';
     var publicDomain = 'https://creativecommons.org/publicdomain/mark/1.0/';
+    var fuglerammeLicense = 'CC BY-SA 4.0';
+    var fuglerammeLicenseUrl = 'https://creativecommons.org/licenses/by-sa/4.0/';
+    var fuglerammeAttribution = 'https://github.com/arnegiacomo/fugleramme/blob/main/assets/artwork/classic/ATTRIBUTION.md';
+    var fuglerammeCreator = 'https://github.com/arnegiacomo/fugleramme';
 
     function historicalPlate(species, file, title, work, source) {
         return {
@@ -122,6 +134,198 @@
         return commonName && scientificName ? { id: species.id, commonName: commonName, scientificName: scientificName } : null;
     }
 
+    function normalizeName(value) {
+        return typeof value === 'string' ? value.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase() : '';
+    }
+
+    function safeSourceUrl(value) {
+        return typeof value === 'string' && value.length <= 800 &&
+            /^https:\/\/[a-z0-9.-]+(?::[0-9]{1,5})?(?:[\/?#][^\s<>"\\]*)?$/i.test(value);
+    }
+
+    function validCatalog(value) {
+        return value && value.license === fuglerammeLicense && value.licenseUrl === fuglerammeLicenseUrl &&
+            value.attributionUrl === fuglerammeAttribution && value.creator === 'Fugleramme contributors' &&
+            value.creatorUrl === fuglerammeCreator && value.paperColor === '#f0ece6' &&
+            Object.prototype.toString.call(value.birds) === '[object Object]' &&
+            Object.prototype.toString.call(value.aliases) === '[object Object]' &&
+            Object.prototype.toString.call(value.perches) === '[object Array]';
+    }
+
+    function prepareCatalog(value) {
+        if (!validCatalog(value)) {
+            return null;
+        }
+        var aliases = Object.create(null);
+        Object.keys(value.aliases).forEach(function (alias) {
+            if (typeof value.aliases[alias] === 'string' && alias.length <= 160) {
+                aliases[normalizeName(alias)] = normalizeName(value.aliases[alias]);
+            }
+        });
+        value.aliases = aliases;
+        return value;
+    }
+
+    function loadCatalog(complete) {
+        if (catalogState === 'ready' || catalogState === 'failed') {
+            complete(catalog);
+            return;
+        }
+        catalogWaiters.push(complete);
+        if (catalogState === 'loading') {
+            return;
+        }
+
+        catalogState = 'loading';
+        var request;
+        var completed = false;
+
+        function finish(value) {
+            if (completed) {
+                return;
+            }
+            completed = true;
+            catalog = prepareCatalog(value);
+            catalogState = catalog ? 'ready' : 'failed';
+            var waiters = catalogWaiters;
+            catalogWaiters = [];
+            waiters.forEach(function (waiter) {
+                waiter(catalog);
+            });
+        }
+
+        try {
+            request = new XMLHttpRequest();
+            request.timeout = 12000;
+            request.open('GET', catalogPath, true);
+            request.onreadystatechange = function () {
+                if (request.readyState !== 4) {
+                    return;
+                }
+                var response = null;
+                try {
+                    response = request.status >= 200 && request.status < 300 && request.responseText.length <= 2000000 ?
+                        JSON.parse(request.responseText) : null;
+                } catch (error) {
+                    response = null;
+                }
+                finish(response);
+            };
+            request.onerror = request.ontimeout = function () { finish(null); };
+            request.send(null);
+        } catch (error) {
+            finish(null);
+        }
+    }
+
+    function safeImageRecord(record, source, kind) {
+        var allowedPath = kind === 'perch' ? /^perches\/[a-z0-9_-]+\.jpg$/ : /^birds\/[a-z0-9_-]+\.jpg$/;
+        if (!record || typeof record.path !== 'string' || !allowedPath.test(record.path) ||
+                typeof record.source !== 'string' || record.source.length > 80 || !safeSourceUrl(record.sourceUrl)) {
+            return null;
+        }
+        return {
+            kind: kind,
+            image: 'assets/fugleramme/' + record.path,
+            creator: source.creator,
+            creatorUrl: source.creatorUrl,
+            source: record.sourceUrl,
+            collection: 'Fugleramme Classic · ' + record.source,
+            collectionUrl: source.attributionUrl,
+            license: source.license,
+            licenseUrl: source.licenseUrl,
+            edits: 'fuglerammeEdits'
+        };
+    }
+
+    function birdImages(species, source) {
+        var name = normalizeName(species.scientificName);
+        var names = [name];
+        var words = name.split(' ');
+        if (words.length > 2) {
+            names.push(words.slice(0, 2).join(' '));
+        }
+        var keys = [];
+        names.forEach(function (candidate) {
+            var canonical = source.aliases[candidate];
+            var key = canonical ? normalizeName(canonical) : candidate;
+            if (source.birds[key] && keys.indexOf(key) === -1) {
+                keys.push(key);
+            }
+            if (!source.birds[key] && source.birds[candidate] && keys.indexOf(candidate) === -1) {
+                keys.push(candidate);
+            }
+        });
+
+        if (!keys.length) {
+            Object.keys(source.aliases).some(function (alias) {
+                var canonical = normalizeName(source.aliases[alias]);
+                if (names.indexOf(canonical) !== -1 && source.birds[normalizeName(alias)]) {
+                    keys.push(normalizeName(alias));
+                    return true;
+                }
+                return false;
+            });
+        }
+
+        var records = [];
+        keys.forEach(function (key) {
+            var entry = source.birds[key];
+            if (entry && Object.prototype.toString.call(entry.images) === '[object Array]') {
+                entry.images.forEach(function (record) {
+                    var credit = safeImageRecord(record, source, 'bird');
+                    if (credit && !failedImages[credit.image] && !records.some(function (item) {
+                        return item.image === credit.image;
+                    })) {
+                        credit.species = species.scientificName;
+                        records.push(credit);
+                    }
+                });
+            }
+        });
+
+        var selected = selectedBirdImages[name];
+        if (selected) {
+            records.sort(function (first, second) {
+                return first.image === selected ? -1 : second.image === selected ? 1 : 0;
+            });
+        } else if (records.length > 1) {
+            var selectedIndex = Math.floor(Math.random() * records.length);
+            var selectedRecord = records.splice(selectedIndex, 1)[0];
+            records.unshift(selectedRecord);
+            selectedBirdImages[name] = selectedRecord.image;
+        } else if (records.length) {
+            selectedBirdImages[name] = records[0].image;
+        }
+        return records;
+    }
+
+    function perchCredits(source) {
+        if (!perchOrder) {
+            perchOrder = source.perches.slice(0);
+            for (var index = perchOrder.length - 1; index > 0; index -= 1) {
+                var swap = Math.floor(Math.random() * (index + 1));
+                var item = perchOrder[index];
+                perchOrder[index] = perchOrder[swap];
+                perchOrder[swap] = item;
+            }
+        }
+        var records = [];
+        perchOrder.forEach(function (record) {
+            var credit = safeImageRecord(record, source, 'perch');
+            if (credit && !failedImages[credit.image]) {
+                credit.speciesTextKey = 'perch';
+                records.push(credit);
+            }
+        });
+        if (selectedPerchPath) {
+            records.sort(function (first, second) {
+                return first.image === selectedPerchPath ? -1 : second.image === selectedPerchPath ? 1 : 0;
+            });
+        }
+        return records;
+    }
+
     function readMissing() {
         if (storageUnavailable) {
             return missingInSession;
@@ -192,46 +396,82 @@
     }
 
     function paint(image, species, onCreditChange) {
+        image._birdweatherPaintRequest = (image._birdweatherPaintRequest || 0) + 1;
+        var requestId = image._birdweatherPaintRequest;
         image.onload = image.onerror = null;
         image.setAttribute('referrerpolicy', 'no-referrer');
-        if (!species) {
-            image.classList.remove('artwork-loading');
-            image.setAttribute('src', sprig);
-            onCreditChange(null);
-            return;
-        }
+        image.classList.add('artwork-loading');
+        onCreditChange(null);
 
-        function show(credit) {
-            if (!credit) {
-                image.classList.remove('artwork-loading');
-                image.setAttribute('src', sprig);
-                setMissing(species, true);
-                onCreditChange(null);
+        loadCatalog(function (source) {
+            if (image._birdweatherPaintRequest !== requestId) {
                 return;
             }
-            if (image.getAttribute('src') === credit.image && image.complete && image.naturalWidth) {
-                setMissing(species, false);
-                onCreditChange(credit);
-                return;
+            var candidates = species ? birdImages(species, source || { birds: {}, aliases: {} }) :
+                source ? perchCredits(source) : [];
+            if (species) {
+                var historical = Object.prototype.hasOwnProperty.call(plates, species.scientificName) && plates[species.scientificName];
+                if (historical) {
+                    candidates.push(historical);
+                }
+                var remote = remotePlate(species);
+                if (remote) {
+                    candidates.push(remote);
+                }
             }
-            // A new caption should never be paired with the previous bird while an image loads.
-            image.classList.add('artwork-loading');
-            onCreditChange(null);
-            image.onload = function () {
-                image.onload = image.onerror = null;
-                image.classList.remove('artwork-loading');
-                setMissing(species, false);
-                onCreditChange(credit);
-            };
-            image.onerror = function () {
-                image.onload = image.onerror = null;
-                show(credit.edits === 'historicalEdits' ? remotePlate(species) : null);
-            };
-            image.setAttribute('src', credit.image);
-        }
+            var candidateIndex = 0;
 
-        var historical = Object.prototype.hasOwnProperty.call(plates, species.scientificName) && plates[species.scientificName];
-        show(historical || remotePlate(species));
+            function showNext() {
+                if (image._birdweatherPaintRequest !== requestId) {
+                    return;
+                }
+                var credit = candidates[candidateIndex];
+                candidateIndex += 1;
+                if (!credit) {
+                    image.onload = image.onerror = null;
+                    image.classList.remove('artwork-loading');
+                    image.setAttribute('src', sprig);
+                    if (species) {
+                        setMissing(species, true);
+                    }
+                    onCreditChange(null);
+                    return;
+                }
+                if (image.getAttribute('src') === credit.image && image.complete && image.naturalWidth) {
+                    image.classList.remove('artwork-loading');
+                    if (species) {
+                        setMissing(species, false);
+                    }
+                    if (credit.kind === 'perch') {
+                        selectedPerchPath = credit.image;
+                    }
+                    onCreditChange(credit);
+                    return;
+                }
+                image.onload = function () {
+                    image.onload = image.onerror = null;
+                    if (image._birdweatherPaintRequest !== requestId) {
+                        return;
+                    }
+                    image.classList.remove('artwork-loading');
+                    if (species) {
+                        setMissing(species, false);
+                    }
+                    if (credit.kind === 'perch') {
+                        selectedPerchPath = credit.image;
+                    }
+                    onCreditChange(credit);
+                };
+                image.onerror = function () {
+                    image.onload = image.onerror = null;
+                    failedImages[credit.image] = true;
+                    showNext();
+                };
+                image.setAttribute('src', credit.image);
+            }
+
+            showNext();
+        });
     }
 
     readMissing();

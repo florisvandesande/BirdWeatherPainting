@@ -37,14 +37,18 @@
     }
 
     function addCredit(parent, credit) {
-        var heading = append(parent, 'h4', credit.species);
+        var speciesLabel = credit.speciesTextKey ? text.message(locale, credit.speciesTextKey) : credit.species;
+        var heading = append(parent, 'h4', speciesLabel);
         heading.dir = 'auto';
         var fields = append(parent, 'dl', '');
         if (credit.title) {
             label(fields, 'work', credit.title + ' · ' + credit.work);
         }
         label(fields, 'artist', credit.creator, credit.creatorUrl);
-        label(fields, 'source', credit.collection || 'BirdWeather', credit.source);
+        if (credit.collection) {
+            label(fields, 'collection', credit.collection, credit.collectionUrl);
+        }
+        label(fields, 'source', text.message(locale, 'sourceLink'), credit.source);
         label(fields, 'license', credit.license, credit.licenseUrl);
         label(fields, 'edits', text.message(locale, credit.edits));
     }

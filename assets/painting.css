@@ -1,11 +1,12 @@
 html {
     height: 100%;
-    background: #3a2b21;
+    background: #f0ece6;
 }
 
 body {
     height: 100%;
     margin: 0;
+    background: #f0ece6;
     color: #38281c;
     font: 100%/1.45 Georgia, "Times New Roman", serif;
 }
@@ -30,7 +31,7 @@ html.night-display,
     height: 100%;
     overflow: hidden;
     padding: 5vh 9vw 3vh;
-    background: #f0e3c8 radial-gradient(ellipse at 50% 45%, #fbf4df 12%, #f0e3c8 75%, #ead8b6);
+    background: #f0ece6;
     text-align: center;
     display: -webkit-flex;
     display: flex;
