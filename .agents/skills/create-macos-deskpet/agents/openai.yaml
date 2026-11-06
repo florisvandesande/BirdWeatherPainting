@@ -1,0 +1,6 @@
+interface:
+  display_name: "Create macOS DeskPet"
+  short_description: "Build animated native macOS desktop companions"
+  default_prompt: "Use $create-macos-deskpet to create an animated native macOS deskpet from my character reference."
+policy:
+  allow_implicit_invocation: true

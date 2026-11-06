@@ -1,0 +1,24 @@
+{
+  "id": "character-name",
+  "displayName": "Character Name",
+  "description": "A calm and caring animated desktop companion.",
+  "animations": [
+    {"name": "idle", "file": "idle.png", "frames": 6, "fps": 1.5, "loop": true, "movementSpeed": 0},
+    {"name": "blink", "file": "blink.png", "frames": 6, "fps": 4, "loop": false, "movementSpeed": 0},
+    {"name": "walk", "file": "walk.png", "frames": 6, "fps": 5, "loop": true, "movementSpeed": 22},
+    {"name": "turn", "file": "turn.png", "frames": 6, "fps": 4, "loop": false, "movementSpeed": 0},
+    {"name": "wave", "file": "wave.png", "frames": 6, "fps": 4, "loop": false, "movementSpeed": 0},
+    {"name": "hug", "file": "hug.png", "frames": 6, "fps": 4, "loop": false, "movementSpeed": 0},
+    {"name": "happy", "file": "happy.png", "frames": 6, "fps": 4.5, "loop": false, "movementSpeed": 0},
+    {"name": "sit", "file": "sit.png", "frames": 6, "fps": 3.5, "loop": false, "movementSpeed": 0},
+    {"name": "sleep", "file": "sleep.png", "frames": 6, "fps": 2, "loop": true, "movementSpeed": 0},
+    {"name": "stumble", "file": "stumble.png", "frames": 6, "fps": 4, "loop": false, "movementSpeed": 0},
+    {"name": "attention", "file": "attention.png", "frames": 6, "fps": 3.5, "loop": false, "movementSpeed": 0},
+    {"name": "pickedUp", "file": "picked-up.png", "frames": 6, "fps": 3.5, "loop": true, "movementSpeed": 0}
+  ],
+  "transitions": {"idle": ["blink", "walk", "wave", "hug", "happy", "sit", "sleep", "stumble", "attention"], "walk": ["idle", "turn", "stumble"], "turn": ["walk", "idle"], "pickedUp": ["idle", "happy"]},
+  "spontaneousWeights": {"blink": 24, "walk": 20, "wave": 10, "hug": 12, "happy": 7, "sit": 9, "sleep": 5, "stumble": 3, "attention": 10},
+  "autonomousWalking": {"minDistanceFraction": 0.10, "maxDistanceFraction": 0.70, "leftTurnZoneEnd": 0.25, "rightTurnZoneStart": 0.75},
+  "interactionDefaults": {"singleClick": "wave", "doubleClick": "hug", "drag": "pickedUp", "cursorNear": "attention", "petting": "happy"},
+  "reminderDefaults": {"enabled": false, "intervalMinutes": 45, "water": true, "break": true, "encouragement": true}
+}
