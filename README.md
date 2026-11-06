@@ -87,3 +87,5 @@ bash tests/test_web_application_server_sync.sh
 ## License
 
 The source code to {{NAME}} is available under the [MIT License](LICENSE).
+
+The historical plates and BirdWeather fallback images have their own reuse terms. See [artwork sources and reuse](docs/artwork.md).

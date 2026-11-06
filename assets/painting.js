@@ -7,6 +7,9 @@
     var locale = text.localeFor(languages && languages.length ? languages : [window.navigator.language || 'en']);
     var title = document.getElementById('plate-title');
     var detail = document.getElementById('plate-detail');
+    var image = document.getElementById('latest-art');
+    var artwork = window.BirdWeatherArtwork;
+    var artworkInfo = window.BirdWeatherArtworkInfo;
     var stationName = document.getElementById('station-name');
     var detectionTime = document.getElementById('detection-time');
     var time = detectionTime.getElementsByTagName('time')[0];
@@ -72,6 +75,9 @@
 
     function showLatest(result) {
         var observation = result.observation;
+        artwork.paint(image, observation && observation.species, function (credit) {
+            artworkInfo.setDisplayed(credit ? [credit] : []);
+        });
         setText(stationName, result.stationName);
         detail.className = observation ? 'scientific-name' : '';
         if (!observation) {
@@ -136,6 +142,7 @@
     }
 
     document.documentElement.lang = locale;
+    artworkInfo.setLocale(locale);
     document.title = say('title');
     document.querySelector('[data-text="title"]').textContent = document.title;
     title.textContent = say('loading');

@@ -2,6 +2,8 @@
     'use strict';
 
     var endpoint = 'https://app.birdweather.com/graphql';
+    var speciesFields = 'id commonName scientificName translations { locale commonName } ' +
+        'imageUrl imageCredit imageLicense imageLicenseUrl';
 
     function query(operation, variables, complete) {
         var request = new window.XMLHttpRequest();
@@ -73,7 +75,11 @@
                 id: speciesId,
                 scientificName: scientificName,
                 commonName: safeName(node.species.commonName, 160) || scientificName,
-                translations: Array.isArray(node.species.translations) ? node.species.translations : []
+                translations: Array.isArray(node.species.translations) ? node.species.translations : [],
+                imageUrl: safeName(node.species.imageUrl, 512),
+                imageCredit: safeName(node.species.imageCredit, 1024),
+                imageLicense: safeName(node.species.imageLicense, 80),
+                imageLicenseUrl: safeName(node.species.imageLicenseUrl, 512)
             }
         };
     }
@@ -82,7 +88,7 @@
         // The nested connection includes historical detections and returns the newest first.
         var operation = 'query LatestForStation($stationId: ID!) {' +
             ' station(id: $stationId) { id name detections(first: 1) { nodes {' +
-            ' timestamp species { id commonName scientificName translations { locale commonName } }' +
+            ' timestamp species { ' + speciesFields + ' }' +
             ' } } } }';
         return query(operation, { stationId: stationId }, function (error, data) {
             if (error) {
