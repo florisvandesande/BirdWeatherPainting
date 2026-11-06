@@ -1,0 +1,179 @@
+html {
+    height: 100%;
+    background: #3a2b21;
+}
+
+body {
+    height: 100%;
+    margin: 0;
+    color: #38281c;
+    font: 100%/1.45 Georgia, "Times New Roman", serif;
+}
+
+[hidden] {
+    display: none !important;
+}
+
+.painting {
+    position: relative;
+    box-sizing: border-box;
+    height: 100%;
+    overflow: hidden;
+    padding: 5vh 9vw 3vh;
+    background: #f0e3c8 radial-gradient(ellipse at 50% 45%, #fbf4df 12%, #f0e3c8 75%, #ead8b6);
+    text-align: center;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+}
+
+.painting::before,
+.painting::after {
+    position: absolute;
+    pointer-events: none;
+    content: "";
+    border: 1px solid #a4855a;
+}
+
+.painting::before {
+    top: 15px;
+    right: 15px;
+    bottom: 15px;
+    left: 15px;
+}
+
+.painting::after {
+    top: 20px;
+    right: 20px;
+    bottom: 20px;
+    left: 20px;
+    border-color: #d1b88b;
+}
+
+.plate-header,
+.plate-caption,
+.plate-footer {
+    -webkit-flex: 0 0 auto;
+    flex: 0 0 auto;
+}
+
+.plate-header {
+    padding-bottom: 2vh;
+}
+
+.book-title {
+    margin: 0;
+    font: 700 0.9rem/1.5 "Helvetica Neue", Helvetica, Arial, sans-serif;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+}
+
+.book-title::after {
+    content: "";
+    display: block;
+    width: 52px;
+    margin: 0.65rem auto;
+    border-top: 1px solid #a4855a;
+}
+
+.station-name {
+    margin: 0;
+    color: #62482e;
+    font-size: 1rem;
+}
+
+.station-name:empty {
+    display: none;
+}
+
+.plate-content {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-align-items: center;
+    align-items: center;
+    min-height: 0;
+}
+
+.plate-art {
+    display: block;
+    width: 74%;
+    max-width: 490px;
+    min-height: 0;
+    -webkit-flex: 1 1 0;
+    flex: 1 1 0;
+    object-fit: contain;
+}
+
+.plate-caption {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 1vh 0 2vh;
+}
+
+.plate-caption h1 {
+    margin: 0;
+    font-size: 3.25rem;
+    font-weight: 400;
+    line-height: 1.08;
+}
+
+.plate-caption p {
+    margin: 0.45em auto 0;
+    max-width: 35em;
+    font-size: 1.15rem;
+}
+
+.plate-caption .scientific-name {
+    color: #62482e;
+    font-size: 1.35rem;
+    font-style: italic;
+}
+
+.plate-footer {
+    min-height: 3.2em;
+    color: #62482e;
+    font: 0.95rem/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
+}
+
+.plate-footer::before {
+    content: "";
+    display: block;
+    width: 26px;
+    margin: 0 auto 0.55rem;
+    border-top: 1px solid #a4855a;
+}
+
+.plate-footer p {
+    margin: 0.12em 0;
+}
+
+.plate-footer p:empty {
+    margin: 0;
+}
+
+@media (max-width: 700px), (max-height: 550px) {
+    .painting {
+        padding-top: 28px;
+        padding-bottom: 28px;
+    }
+
+    .plate-caption h1 {
+        font-size: 2rem;
+    }
+
+    .plate-caption p,
+    .plate-caption .scientific-name {
+        font-size: 1rem;
+    }
+
+    .plate-footer {
+        font-size: 0.85rem;
+    }
+}

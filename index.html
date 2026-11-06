@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <title>BirdWeather Painting</title>
+    <link rel="stylesheet" href="assets/painting.css">
+</head>
+<body>
+    <main id="painting" class="painting" aria-labelledby="plate-title">
+        <header class="plate-header">
+            <p class="book-title" data-text="title"></p>
+            <p id="station-name" class="station-name" dir="auto"></p>
+        </header>
+        <section class="plate-content">
+            <img class="plate-art" src="assets/field-sprig.svg" alt="">
+            <div class="plate-caption" aria-live="polite">
+                <h1 id="plate-title" dir="auto"></h1>
+                <p id="plate-detail" dir="auto"></p>
+                <p id="detection-time" hidden><time></time></p>
+            </div>
+        </section>
+        <footer class="plate-footer">
+            <p id="observation-note" hidden></p>
+            <p id="connection-status" role="status"></p>
+        </footer>
+    </main>
+    <script src="assets/text.js"></script>
+    <script src="assets/birdweather.js"></script>
+    <script src="assets/painting.js"></script>
+</body>
+</html>
