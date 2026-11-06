@@ -8,6 +8,9 @@
     var locale = preferences.locale();
     var title = document.getElementById('plate-title');
     var detail = document.getElementById('plate-detail');
+    var image = document.getElementById('latest-art');
+    var artwork = window.BirdWeatherArtwork;
+    var artworkInfo = window.BirdWeatherArtworkInfo;
     var stationName = document.getElementById('station-name');
     var detectionTime = document.getElementById('detection-time');
     var time = detectionTime.getElementsByTagName('time')[0];
@@ -101,6 +104,9 @@
             if (!error) {
                 lastResult = result;
                 showLatest(result);
+                artwork.paint(image, result.observation && result.observation.species, function (credit) {
+                    artworkInfo.setDisplayed(credit ? [credit] : []);
+                });
             } else if (!lastResult) {
                 setText(title, say('connectionTitle'));
             }
@@ -141,6 +147,7 @@
         }
     }
 
+    artworkInfo.setLocale(locale);
     document.addEventListener('birdweather-language', renderLocale);
     renderLocale();
     if (stationId) {

@@ -1,0 +1,138 @@
+(function (window) {
+    'use strict';
+
+    var messages = {
+        en: {
+            title: 'Artwork information',
+            back: 'Back to the painting',
+            displayed: 'On display',
+            noDisplayed: 'There is no credited image on display.',
+            missing: 'Missing artwork',
+            missingEmpty: 'No missing artwork has been recorded on this device.',
+            copyHelp: 'This list stays on this device. Select the list and use your device’s Copy command.',
+            select: 'Select list',
+            local: 'Other historical plates',
+            work: 'Work',
+            artist: 'Artist',
+            source: 'Source',
+            license: 'Licence',
+            edits: 'Changes',
+            historicalEdits: 'Full plate resized and compressed. Camera metadata removed.',
+            remoteEdits: 'Displayed as supplied by BirdWeather.'
+        },
+        nl: {
+            title: 'Informatie over de afbeeldingen',
+            back: 'Terug naar het schilderij',
+            displayed: 'Op het scherm',
+            noDisplayed: 'Op het scherm staat geen afbeelding met een bronvermelding.',
+            missing: 'Ontbrekende afbeeldingen',
+            missingEmpty: 'Op dit apparaat zijn geen ontbrekende afbeeldingen geregistreerd.',
+            copyHelp: 'Deze lijst blijft op dit apparaat. Selecteer de lijst en gebruik de kopieerfunctie van je apparaat.',
+            select: 'Lijst selecteren',
+            local: 'Overige historische platen',
+            work: 'Werk',
+            artist: 'Maker',
+            source: 'Bron',
+            license: 'Licentie',
+            edits: 'Bewerkingen',
+            historicalEdits: 'De volledige plaat is verkleind en gecomprimeerd. Cameragegevens zijn verwijderd.',
+            remoteEdits: 'Weergegeven zoals aangeleverd door BirdWeather.'
+        },
+        fr: {
+            title: 'Informations sur les illustrations',
+            back: 'Retour au tableau',
+            displayed: 'À l’écran',
+            noDisplayed: 'Aucune image avec un crédit n’est affichée.',
+            missing: 'Illustrations manquantes',
+            missingEmpty: 'Aucune illustration manquante n’a été enregistrée sur cet appareil.',
+            copyHelp: 'Cette liste reste sur cet appareil. Sélectionnez-la et utilisez la commande Copier de votre appareil.',
+            select: 'Sélectionner la liste',
+            local: 'Autres planches historiques',
+            work: 'Œuvre',
+            artist: 'Artiste',
+            source: 'Source',
+            license: 'Licence',
+            edits: 'Modifications',
+            historicalEdits: 'Planche entière redimensionnée et compressée. Métadonnées de l’appareil photo supprimées.',
+            remoteEdits: 'Affichée telle que fournie par BirdWeather.'
+        },
+        de: {
+            title: 'Informationen zu den Abbildungen',
+            back: 'Zurück zum Gemälde',
+            displayed: 'Aktuell angezeigt',
+            noDisplayed: 'Es wird kein Bild mit Quellenangabe angezeigt.',
+            missing: 'Fehlende Abbildungen',
+            missingEmpty: 'Auf diesem Gerät sind keine fehlenden Abbildungen erfasst.',
+            copyHelp: 'Diese Liste bleibt auf diesem Gerät. Wähle die Liste aus und kopiere sie mit der Kopierfunktion deines Geräts.',
+            select: 'Liste auswählen',
+            local: 'Weitere historische Tafeln',
+            work: 'Werk',
+            artist: 'Künstler',
+            source: 'Quelle',
+            license: 'Lizenz',
+            edits: 'Änderungen',
+            historicalEdits: 'Die vollständige Tafel wurde verkleinert und komprimiert. Kamerametadaten wurden entfernt.',
+            remoteEdits: 'Unverändert von BirdWeather übernommen.'
+        },
+        es: {
+            title: 'Información sobre las ilustraciones',
+            back: 'Volver al cuadro',
+            displayed: 'En pantalla',
+            noDisplayed: 'No se muestra ninguna imagen con atribución.',
+            missing: 'Ilustraciones que faltan',
+            missingEmpty: 'No se han registrado ilustraciones faltantes en este dispositivo.',
+            copyHelp: 'Esta lista se queda en este dispositivo. Selecciona la lista y usa la función de copiar de tu dispositivo.',
+            select: 'Seleccionar lista',
+            local: 'Otras láminas históricas',
+            work: 'Obra',
+            artist: 'Artista',
+            source: 'Fuente',
+            license: 'Licencia',
+            edits: 'Cambios',
+            historicalEdits: 'Se redujo y comprimió la lámina completa. Se eliminaron los metadatos de la cámara.',
+            remoteEdits: 'Se muestra tal como la proporciona BirdWeather.'
+        },
+        it: {
+            title: 'Informazioni sulle illustrazioni',
+            back: 'Torna al quadro',
+            displayed: 'In mostra',
+            noDisplayed: 'Non è visualizzata alcuna immagine con attribuzione.',
+            missing: 'Illustrazioni mancanti',
+            missingEmpty: 'Non ci sono illustrazioni mancanti registrate su questo dispositivo.',
+            copyHelp: 'L’elenco rimane su questo dispositivo. Selezionalo e usa il comando Copia del dispositivo.',
+            select: 'Seleziona elenco',
+            local: 'Altre tavole storiche',
+            work: 'Opera',
+            artist: 'Artista',
+            source: 'Fonte',
+            license: 'Licenza',
+            edits: 'Modifiche',
+            historicalEdits: 'Tavola intera ridimensionata e compressa. Metadati della fotocamera rimossi.',
+            remoteEdits: 'Mostrata così come fornita da BirdWeather.'
+        },
+        'pt-BR': {
+            title: 'Informações sobre as ilustrações',
+            back: 'Voltar ao quadro',
+            displayed: 'Em exibição',
+            noDisplayed: 'Nenhuma imagem com créditos está em exibição.',
+            missing: 'Ilustrações faltantes',
+            missingEmpty: 'Nenhuma ilustração faltante foi registrada neste dispositivo.',
+            copyHelp: 'Esta lista fica neste dispositivo. Selecione a lista e use a função de copiar do dispositivo.',
+            select: 'Selecionar lista',
+            local: 'Outras pranchas históricas',
+            work: 'Obra',
+            artist: 'Artista',
+            source: 'Fonte',
+            license: 'Licença',
+            edits: 'Alterações',
+            historicalEdits: 'Prancha inteira reduzida e compactada. Metadados da câmera removidos.',
+            remoteEdits: 'Exibida como fornecida pelo BirdWeather.'
+        }
+    };
+
+    window.BirdWeatherArtworkText = {
+        message: function (locale, key) {
+            return (messages[locale] || messages.en)[key] || messages.en[key];
+        }
+    };
+}(window));

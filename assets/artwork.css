@@ -1,0 +1,108 @@
+.artwork-loading {
+    visibility: hidden;
+}
+
+.artwork-button,
+.artwork-info button {
+    box-sizing: border-box;
+    min-width: 44px;
+    min-height: 44px;
+    padding: 0.35em 0.8em;
+    border: 1px solid #82633d;
+    border-radius: 3px;
+    background: #fbf4df;
+    color: #38281c;
+    font: inherit;
+    cursor: pointer;
+}
+
+.artwork-button {
+    position: absolute;
+    z-index: 1;
+    right: 25px;
+    bottom: 25px;
+    padding: 0;
+    font-size: 1.2rem;
+    font-style: italic;
+}
+
+.artwork-info {
+    position: absolute;
+    z-index: 2;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    overflow: auto;
+    -webkit-overflow-scrolling: touch;
+    background: #f5ead2;
+    text-align: left;
+}
+
+.artwork-open > :not(.artwork-info) {
+    visibility: hidden;
+}
+
+.artwork-sheet {
+    max-width: 44em;
+    margin: 0 auto;
+    padding: 1.5rem 1.25rem 3rem;
+}
+
+.artwork-sheet h2 {
+    margin: 0.8em 0 0.6em;
+    font-size: 1.8rem;
+    line-height: 1.2;
+}
+
+.artwork-sheet h3 {
+    margin: 1.1em 0 0.55em;
+    font-size: 1.35rem;
+    line-height: 1.25;
+}
+
+.artwork-sheet h4 {
+    margin: 1.2em 0 0.35em;
+    color: #62482e;
+    font-size: 1.1rem;
+    font-style: italic;
+    font-weight: normal;
+}
+
+.artwork-sheet dl {
+    margin: 0 0 1.1em;
+    padding-bottom: 1em;
+    border-bottom: 1px solid #a4855a;
+}
+
+.artwork-sheet dt {
+    font-weight: bold;
+}
+
+.artwork-sheet dd {
+    margin: 0 0 0.5em;
+}
+
+.artwork-sheet a {
+    color: #684521;
+}
+
+.artwork-sheet textarea {
+    display: block;
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 7em;
+    margin: 0 0 0.7em;
+    padding: 0.6em;
+    border: 1px solid #82633d;
+    border-radius: 3px;
+    background: #fbf4df;
+    color: #38281c;
+    font: inherit;
+}
+
+.artwork-button:focus,
+.artwork-sheet :focus {
+    outline: 2px solid #683611;
+    outline-offset: 3px;
+}

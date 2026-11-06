@@ -51,7 +51,7 @@
             return stationConfig(parameter('source'), parameter('station'));
         }
         var saved = readLocal(setupKey);
-        return saved && stationConfig(saved.source, saved.station);
+        return saved ? stationConfig(saved.source, saved.station) : null;
     }
 
     function save(config) {
