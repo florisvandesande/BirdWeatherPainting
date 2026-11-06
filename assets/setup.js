@@ -283,8 +283,12 @@
             return;
         }
         var saved = preferences.save(draft);
-        if (!saved && draft.source === 'nearby') {
-            setLocationStatus('locationStorageUnavailable');
+        if (!saved) {
+            if (draft.source === 'nearby') {
+                setLocationStatus('locationStorageUnavailable');
+            } else {
+                setStatus('stationStorageUnavailable');
+            }
         }
     }
 

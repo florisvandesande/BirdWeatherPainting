@@ -41,12 +41,17 @@
         var heading = append(parent, 'h4', speciesLabel);
         heading.dir = 'auto';
         var fields = append(parent, 'dl', '');
-        if (credit.title) {
+        if (credit.workSubject) {
+            label(fields, 'workSubject', credit.workSubject);
+        } else if (credit.title) {
             label(fields, 'work', credit.title + ' · ' + credit.work);
         }
-        label(fields, 'artist', credit.creator, credit.creatorUrl);
+        label(fields, credit.creatorLabelKey || 'artist', credit.creator, credit.creatorUrl);
         if (credit.collection) {
             label(fields, 'collection', credit.collection, credit.collectionUrl);
+        }
+        if (credit.sourceCollection) {
+            label(fields, 'sourceCollection', credit.sourceCollection);
         }
         label(fields, 'source', text.message(locale, 'sourceLink'), credit.source);
         label(fields, 'license', credit.license, credit.licenseUrl);

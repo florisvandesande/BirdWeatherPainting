@@ -4,6 +4,7 @@
     padding: 3rem 1.5rem;
     background: #e8d8b9;
     color: #38281c;
+    color-scheme: light;
 }
 
 .setup-page {
@@ -312,6 +313,7 @@
     .setup {
         background: #271e17;
         color: #f5e6cb;
+        color-scheme: dark;
     }
 
     .setup-page {
@@ -358,5 +360,15 @@
     #save-settings:not(:disabled) {
         background: #efdcba;
         color: #38281c;
+    }
+
+    .painting-settings {
+        border-color: #b6996e;
+        background: #2e2219;
+        color: #f5e6cb;
+    }
+
+    .painting-settings:focus {
+        outline-color: #e6bd7d;
     }
 }

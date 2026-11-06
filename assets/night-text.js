@@ -62,7 +62,7 @@
 
     window.BirdWeatherNightText = {
         message: function (locale, key) {
-            return (messages[locale] || messages.en)[key] || messages.en[key];
+            return window.BirdWeatherText.resolveMessage(messages, locale, key);
         }
     };
 }(window));

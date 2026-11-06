@@ -34,6 +34,7 @@
             locationUnavailable: 'Couldn’t find your location. Try again or enter coordinates below.',
             coordinateInvalid: 'Enter a latitude from −90 to 90 and a longitude from −180 to 180.',
             locationStorageUnavailable: 'Your browser couldn’t save this location. Allow website storage or choose a single station.',
+            stationStorageUnavailable: 'Your browser couldn’t save these station settings. Allow website storage and try again.',
             nearbyHeading: 'Nearby stations · {radius} km',
             nearbyDetectionHeading: 'Nearby · {radius} km · {name}',
             nearbyNoStations: 'No nearby stations',
@@ -109,6 +110,7 @@
             locationUnavailable: 'Je locatie is niet gevonden. Probeer het opnieuw of voer hieronder coördinaten in.',
             coordinateInvalid: 'Voer een breedtegraad tussen −90 en 90 en een lengtegraad tussen −180 en 180 in.',
             locationStorageUnavailable: 'Je browser kon deze locatie niet bewaren. Sta websiteopslag toe of kies één station.',
+            stationStorageUnavailable: 'Je browser kon deze stationsinstellingen niet bewaren. Sta websiteopslag toe en probeer het opnieuw.',
             nearbyHeading: 'Stations in de buurt · {radius} km',
             nearbyDetectionHeading: 'In de buurt · {radius} km · {name}',
             nearbyNoStations: 'Geen stations in de buurt',
@@ -184,6 +186,7 @@
             locationUnavailable: 'Impossible de trouver votre position. Réessayez ou saisissez les coordonnées ci-dessous.',
             coordinateInvalid: 'Saisissez une latitude comprise entre −90 et 90 et une longitude comprise entre −180 et 180.',
             locationStorageUnavailable: 'Le navigateur n’a pas pu enregistrer cette position. Autorisez le stockage des données du site ou choisissez une seule station.',
+            stationStorageUnavailable: 'Le navigateur n’a pas pu enregistrer les réglages de cette station. Autorisez le stockage du site et réessayez.',
             nearbyHeading: 'Stations à proximité · {radius} km',
             nearbyDetectionHeading: 'À proximité · {radius} km · {name}',
             nearbyNoStations: 'Aucune station à proximité',
@@ -259,6 +262,7 @@
             locationUnavailable: 'Dein Standort konnte nicht ermittelt werden. Versuche es erneut oder gib unten Koordinaten ein.',
             coordinateInvalid: 'Gib einen Breitengrad von −90 bis 90 und einen Längengrad von −180 bis 180 ein.',
             locationStorageUnavailable: 'Der Browser konnte den Standort nicht speichern. Erlaube das Speichern von Websitedaten oder wähle eine einzelne Station.',
+            stationStorageUnavailable: 'Der Browser konnte diese Stations-Einstellungen nicht speichern. Erlaube das Speichern von Websitedaten und versuche es erneut.',
             nearbyHeading: 'Stationen in der Nähe · {radius} km',
             nearbyDetectionHeading: 'In der Nähe · {radius} km · {name}',
             nearbyNoStations: 'Keine Stationen in der Nähe',
@@ -334,6 +338,7 @@
             locationUnavailable: 'No se ha podido encontrar tu ubicación. Inténtalo de nuevo o introduce las coordenadas abajo.',
             coordinateInvalid: 'Introduce una latitud de −90 a 90 y una longitud de −180 a 180.',
             locationStorageUnavailable: 'El navegador no ha podido guardar esta ubicación. Permite el almacenamiento de datos del sitio o elige una sola estación.',
+            stationStorageUnavailable: 'El navegador no ha podido guardar los ajustes de esta estación. Permite el almacenamiento de datos del sitio e inténtalo de nuevo.',
             nearbyHeading: 'Estaciones cercanas · {radius} km',
             nearbyDetectionHeading: 'Cerca · {radius} km · {name}',
             nearbyNoStations: 'No hay estaciones cercanas',
@@ -409,6 +414,7 @@
             locationUnavailable: 'Impossibile trovare la posizione. Riprova o inserisci le coordinate qui sotto.',
             coordinateInvalid: 'Inserisci una latitudine da −90 a 90 e una longitudine da −180 a 180.',
             locationStorageUnavailable: 'Il browser non ha potuto salvare questa posizione. Consenti il salvataggio dei dati del sito o scegli una sola stazione.',
+            stationStorageUnavailable: 'Il browser non ha potuto salvare le impostazioni di questa stazione. Consenti il salvataggio dei dati del sito e riprova.',
             nearbyHeading: 'Stazioni vicine · {radius} km',
             nearbyDetectionHeading: 'Nelle vicinanze · {radius} km · {name}',
             nearbyNoStations: 'Nessuna stazione vicina',
@@ -484,6 +490,7 @@
             locationUnavailable: 'Não foi possível encontrar sua localização. Tente de novo ou digite as coordenadas abaixo.',
             coordinateInvalid: 'Digite uma latitude de −90 a 90 e uma longitude de −180 a 180.',
             locationStorageUnavailable: 'O navegador não conseguiu salvar este local. Permita o armazenamento de dados do site ou escolha uma única estação.',
+            stationStorageUnavailable: 'O navegador não conseguiu salvar as configurações desta estação. Permita o armazenamento de dados do site e tente de novo.',
             nearbyHeading: 'Estações próximas · {radius} km',
             nearbyDetectionHeading: 'Nas proximidades · {radius} km · {name}',
             nearbyNoStations: 'Nenhuma estação por perto',
@@ -562,28 +569,36 @@
         });
     }
 
+    function resolveMessage(dictionary, locale, key) {
+        return (dictionary[locale] || dictionary.en)[key] || dictionary.en[key];
+    }
+
     function message(locale, key, fields) {
-        return ((messages[locale] || messages.en)[key] || messages.en[key]).replace(/\{(\w+)\}/g, function (placeholder, name) {
+        return resolveMessage(messages, locale, key).replace(/\{(\w+)\}/g, function (placeholder, name) {
             return fields && Object.prototype.hasOwnProperty.call(fields, name) ? fields[name] : placeholder;
         });
     }
 
     function speciesName(locale, species) {
-        var localizedName;
+        var exactName = '';
+        var languageName = '';
+        var requestedLocale = typeof locale === 'string' ? locale.toLowerCase() : '';
+        var requestedLanguage = requestedLocale.split('-')[0];
         for (var index = 0; index < species.translations.length; index += 1) {
             var translation = species.translations[index];
             if (translation && typeof translation.commonName === 'string' &&
                     translation.commonName.length <= 160 && translation.commonName.trim()) {
-                if (translation.locale === 'nl') {
-                    return { name: translation.commonName.trim(), language: 'nl' };
-                }
-                if (translation.locale === locale) {
-                    localizedName = translation.commonName.trim();
+                var translationLocale = typeof translation.locale === 'string' ? translation.locale.toLowerCase() : '';
+                var translationLanguage = translationLocale.split('-')[0];
+                if (translationLocale === requestedLocale && !exactName) {
+                    exactName = translation.commonName.trim();
+                } else if (translationLanguage && translationLanguage === requestedLanguage && !languageName) {
+                    languageName = translation.commonName.trim();
                 }
             }
         }
-        if (localizedName) {
-            return { name: localizedName, language: locale };
+        if (exactName || languageName) {
+            return { name: exactName || languageName, language: locale };
         }
         return { name: species.commonName, language: 'en' };
     }
@@ -595,6 +610,7 @@
         },
         formatDate: formatDate,
         speciesName: speciesName,
-        message: message
+        message: message,
+        resolveMessage: resolveMessage
     };
 }(window));

@@ -36,6 +36,7 @@
     overflow: auto;
     -webkit-overflow-scrolling: touch;
     background: #f5ead2;
+    color-scheme: light;
     text-align: left;
 }
 
@@ -105,4 +106,42 @@
 .artwork-sheet :focus {
     outline: 2px solid #683611;
     outline-offset: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+    .artwork-button,
+    .artwork-info button {
+        border-color: #b59a70;
+        background: #31271e;
+        color: #f8eddb;
+    }
+
+    .artwork-info {
+        background: #1d1a17;
+        color: #f4ecdf;
+        color-scheme: dark;
+    }
+
+    .artwork-sheet h4 {
+        color: #e3c38e;
+    }
+
+    .artwork-sheet dl {
+        border-color: #8c775d;
+    }
+
+    .artwork-sheet a {
+        color: #f0c97f;
+    }
+
+    .artwork-sheet textarea {
+        border-color: #b59a70;
+        background: #2c241d;
+        color: #f8eddb;
+    }
+
+    .artwork-button:focus,
+    .artwork-sheet :focus {
+        outline-color: #f0c27a;
+    }
 }

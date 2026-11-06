@@ -145,7 +145,9 @@
         selected.view = display.view;
         selected.limit = display.limit;
         selected.night = schedule;
-        writeLocal(setupKey, selected);
+        if (!writeLocal(setupKey, selected)) {
+            return false;
+        }
         window.location.assign('?source=station&station=' + encodeURIComponent(selected.station) + displayQuery + nightQuery);
         return true;
     }

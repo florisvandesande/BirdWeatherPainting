@@ -20,9 +20,21 @@ host.
 The source files supplied for this app were WebP. The app prepares JPEG copies
 with a maximum edge of 600 pixels for older Safari, removes embedded source
 metadata, and places transparent pixels on the exact `#f0ece6` paper color used
-by the painting. The adapted artwork is available under CC BY-SA 4.0. The app's
-information page links to the Fugleramme attribution ledger, the individual
-source record, and the licence for the image on display. The separate
+by the painting. The painting keeps that paper surface in both appearance modes;
+the welcome, settings, and artwork-information surfaces follow the browser's
+light or dark preference. The adapted artwork is available under CC BY-SA 4.0.
+The app's information page labels the subject using the catalogue's common and
+scientific names (or the perch name), credits the collection preparer, and
+shows the per-image source tag and direct original-source link. It also links
+to the Fugleramme attribution ledger and CC BY-SA 4.0 licence, and describes
+the image resizing, JPEG conversion, and flattening over the paper color. The
+provided per-image manifest has only a source tag and direct source URL; tags
+can group several historical works. It does not give an exact original work
+title or individual artist for every image. The subject label is not an
+original work title, and the app does not infer a specific artist from a group
+tag. Check the linked source record and ledger for details when they are
+available.
+The separate
 [Fugleramme attribution note](../assets/fugleramme/ATTRIBUTION.md) describes the
 changes and the image catalogue.
 

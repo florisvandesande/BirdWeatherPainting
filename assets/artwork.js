@@ -218,20 +218,29 @@
         }
     }
 
-    function safeImageRecord(record, source, kind) {
+    function safeWorkSubject(value) {
+        return typeof value === 'string' && value.length <= 400 ?
+            value.replace(/[\x00-\x1f\x7f]/g, ' ').replace(/\s+/g, ' ').trim() : '';
+    }
+
+    function safeImageRecord(record, source, kind, workSubject) {
         var allowedPath = kind === 'perch' ? /^perches\/[a-z0-9_-]+\.jpg$/ : /^birds\/[a-z0-9_-]+\.jpg$/;
         if (!record || typeof record.path !== 'string' || !allowedPath.test(record.path) ||
                 typeof record.source !== 'string' || record.source.length > 80 || !safeSourceUrl(record.sourceUrl)) {
             return null;
         }
+        var subject = safeWorkSubject(workSubject);
         return {
             kind: kind,
             image: 'assets/fugleramme/' + record.path,
+            workSubject: subject,
+            creatorLabelKey: 'collectionPreparer',
             creator: source.creator,
             creatorUrl: source.creatorUrl,
             source: record.sourceUrl,
-            collection: 'Fugleramme Classic · ' + record.source,
+            collection: 'Fugleramme Classic',
             collectionUrl: source.attributionUrl,
+            sourceCollection: record.source,
             license: source.license,
             licenseUrl: source.licenseUrl,
             edits: 'fuglerammeEdits'
@@ -273,7 +282,10 @@
             var entry = source.birds[key];
             if (entry && Object.prototype.toString.call(entry.images) === '[object Array]') {
                 entry.images.forEach(function (record) {
-                    var credit = safeImageRecord(record, source, 'bird');
+                    var subject = typeof entry.commonName === 'string' &&
+                        typeof entry.scientificName === 'string' ?
+                        entry.commonName + ' (' + entry.scientificName + ')' : species.scientificName;
+                    var credit = safeImageRecord(record, source, 'bird', subject);
                     if (credit && !failedImages[credit.image] && !records.some(function (item) {
                         return item.image === credit.image;
                     })) {
@@ -312,7 +324,9 @@
         }
         var records = [];
         perchOrder.forEach(function (record) {
-            var credit = safeImageRecord(record, source, 'perch');
+            var subject = typeof record.name === 'string' ?
+                record.name.replace(/[-_]+/g, ' ').replace(/^./, function (letter) { return letter.toUpperCase(); }) : '';
+            var credit = safeImageRecord(record, source, 'perch', subject);
             if (credit && !failedImages[credit.image]) {
                 credit.speciesTextKey = 'perch';
                 records.push(credit);
