@@ -16,7 +16,8 @@
     var time = detectionTime.getElementsByTagName('time')[0];
     var observationNote = document.getElementById('observation-note');
     var connectionStatus = document.getElementById('connection-status');
-    var stationId = config && config.station;
+    var sourceActive = Boolean(config);
+    var nearby = config && config.source === 'nearby';
     var lastResult = null;
     var connectionState = null;
     var request = null;
@@ -66,12 +67,17 @@
 
     function showLatest(result) {
         var observation = result.observation;
-        setText(stationName, result.stationName);
+        var heading = nearby ?
+            say(result.stationName ? 'nearbyDetectionHeading' : 'nearbyHeading',
+                { radius: config.radius, name: result.stationName }) : result.stationName;
+        setText(stationName, heading);
         detail.className = observation ? 'scientific-name' : '';
         if (!observation) {
-            setText(title, say('emptyDay'));
+            var emptyState = nearby ? (result.hasStations ? 'nearbyEmpty' : 'nearbyNoStations') : 'emptyDay';
+            var emptyDetail = nearby ? emptyState + 'Detail' : 'emptyDetail';
+            setText(title, say(emptyState));
             title.removeAttribute('lang');
-            setText(detail, say('emptyDetail'));
+            setText(detail, say(emptyDetail));
             detectionTime.hidden = true;
             observationNote.hidden = true;
             return;
@@ -83,20 +89,24 @@
         detectionTime.hidden = false;
         time.setAttribute('datetime', observation.timestamp);
         setText(time, say('observed', { time: text.formatDate(locale, observation), zone: observation.zone }));
-        var currentStationDate = new Date(Date.now() + observation.offsetMinutes * 60000).toISOString().slice(0, 10);
-        var older = observation.timestamp.slice(0, 10) < currentStationDate;
+        var now = new Date();
+        var heard = new Date(observation.time);
+        // Nearby observations can span time zones. Compare days in the device's calendar.
+        var older = nearby ? heard < now && heard.toDateString() !== now.toDateString() :
+            observation.timestamp.slice(0, 10) <
+                new Date(now.getTime() + observation.offsetMinutes * 60000).toISOString().slice(0, 10);
         observationNote.hidden = !older;
         setText(observationNote, older ? say('older') : '');
     }
 
     function refresh() {
-        if (!stationId || document[hiddenProperty] || request) {
+        if (!sourceActive || document[hiddenProperty] || request) {
             return;
         }
-        request = api.latestForStation(stationId, function (error, result) {
+        request = api.latestForSource(config, function (error, result) {
             request = null;
             if (error === 'notFound' && !lastResult) {
-                stationId = null;
+                sourceActive = false;
                 setConnectionStatus(null);
                 showStationHelp('invalidStation');
                 return;
@@ -116,7 +126,7 @@
     }
 
     function visibilityChanged() {
-        if (!stationId) {
+        if (!sourceActive) {
             return;
         }
         window.clearTimeout(refreshTimer);
@@ -140,9 +150,10 @@
         setConnectionStatus(connectionState);
         if (lastResult) {
             showLatest(lastResult);
-        } else if (config && !stationId) {
+        } else if (config && !sourceActive) {
             showStationHelp('invalidStation');
         } else {
+            setText(stationName, nearby ? say('nearbyHeading', { radius: config.radius }) : '');
             setText(title, say(connectionState === 'unavailable' ? 'connectionTitle' : 'loading'));
         }
     }
@@ -150,7 +161,7 @@
     artworkInfo.setLocale(locale);
     document.addEventListener('birdweather-language', renderLocale);
     renderLocale();
-    if (stationId) {
+    if (sourceActive) {
         document.addEventListener(visibilityEvent, visibilityChanged);
         if (document[hiddenProperty]) {
             setConnectionStatus('paused');

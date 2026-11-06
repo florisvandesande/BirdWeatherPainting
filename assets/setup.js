@@ -15,6 +15,16 @@
     var searchInput = document.getElementById('station-query');
     var searchStatus = document.getElementById('station-search-status');
     var resultList = document.getElementById('station-results');
+    var sourceSelect = document.getElementById('detection-source');
+    var stationSettings = document.getElementById('station-source-settings');
+    var nearbySettings = document.getElementById('nearby-source-settings');
+    var locationButton = document.getElementById('use-location');
+    var latitude = document.getElementById('nearby-latitude');
+    var longitude = document.getElementById('nearby-longitude');
+    var radiusSelect = document.getElementById('nearby-radius');
+    var locationStatus = document.getElementById('location-status');
+    var locationStatusKey = '';
+    var locationAttempt = 0;
     var languageSelect = document.getElementById('display-language');
     var languageStatus = document.getElementById('language-status');
     var selectionSummary = document.getElementById('selected-station');
@@ -33,7 +43,10 @@
 
     function renderSelection() {
         var station = draft.station;
-        saveButton.disabled = !api.validStationId(station);
+        var nearby = draft.source === 'nearby';
+        stationSettings.hidden = nearby;
+        nearbySettings.hidden = !nearby;
+        saveButton.disabled = !nearby && !api.validStationId(station);
         if (selectedName) {
             selectionSummary.textContent = say('selectedStationName', { name: selectedName });
         } else {
@@ -50,6 +63,7 @@
         saveButton.textContent = say(config ? 'saveSettings' : 'openPainting');
         openButton.textContent = say('settingsTitle');
         searchStatus.textContent = statusKey ? say(statusKey) : '';
+        locationStatus.textContent = locationStatusKey ? say(locationStatusKey) : '';
         renderSelection();
         showResults(results);
     }
@@ -120,12 +134,116 @@
         });
     }
 
+    function setLocationStatus(key) {
+        locationStatusKey = key;
+        locationStatus.textContent = key ? say(key) : '';
+    }
+
+    function clearCoordinateErrors() {
+        latitude.removeAttribute('aria-invalid');
+        longitude.removeAttribute('aria-invalid');
+    }
+
+    function changeSource() {
+        draft.source = sourceSelect.value;
+        abortSearch();
+        if (statusKey === 'searchingStations') {
+            setStatus('');
+        }
+        if (locationStatusKey === 'locationPending') {
+            setLocationStatus('');
+        }
+        locationAttempt += 1;
+        locationButton.disabled = false;
+        renderSelection();
+    }
+
+    function enterCoordinates() {
+        locationAttempt += 1;
+        locationButton.disabled = false;
+        clearCoordinateErrors();
+        setLocationStatus('');
+    }
+
+    function requestLocation() {
+        var attempt = ++locationAttempt;
+        clearCoordinateErrors();
+        setLocationStatus('locationPending');
+        locationButton.disabled = true;
+
+        function failed(error) {
+            if (attempt === locationAttempt) {
+                locationButton.disabled = false;
+                setLocationStatus(error && error.code === 1 ? 'locationDenied' : 'locationUnavailable');
+            }
+        }
+
+        try {
+            window.navigator.geolocation.getCurrentPosition(function (position) {
+                if (attempt !== locationAttempt) {
+                    return;
+                }
+                var coordinates = position && position.coords;
+                var location = coordinates && { lat: coordinates.latitude, lon: coordinates.longitude };
+                if (!api.validCoordinates(location)) {
+                    failed();
+                    return;
+                }
+                latitude.value = String(location.lat);
+                longitude.value = String(location.lon);
+                locationButton.disabled = false;
+                setLocationStatus('locationFound');
+            }, failed, { timeout: 12000 });
+        } catch (error) {
+            failed();
+        }
+    }
+
+    function readCoordinate(input, limit) {
+        var value = input.value.trim().replace(/\u2212/g, '-');
+        var number = /^[-+]?(?:[0-9]+(?:[.,][0-9]*)?|[.,][0-9]+)(?:[eE][-+]?[0-9]+)?$/.test(value) ?
+            Number(value.replace(',', '.')) : NaN;
+        if (!isFinite(number) || number < -limit || number > limit) {
+            input.setAttribute('aria-invalid', 'true');
+            return null;
+        }
+        return number;
+    }
+
+    function saveSetup() {
+        if (draft.source === 'station') {
+            preferences.save(draft);
+            return;
+        }
+        enterCoordinates();
+        var lat = readCoordinate(latitude, 90);
+        var lon = readCoordinate(longitude, 180);
+        if (lat === null || lon === null) {
+            setLocationStatus('coordinateInvalid');
+            (lat === null ? latitude : longitude).focus();
+            return;
+        }
+        draft.coordinates = { lat: lat, lon: lon };
+        draft.radius = radiusSelect.value;
+        if (!preferences.save(draft)) {
+            setLocationStatus('locationStorageUnavailable');
+        }
+    }
+
     function openSetup(moveFocus) {
-        draft = { source: 'station', station: config && config.station };
+        var nearby = preferences.nearbyDraft();
+        draft = { source: nearby.selected ? 'nearby' : 'station', station: config && config.station };
+        sourceSelect.value = draft.source;
+        radiusSelect.value = nearby.radius;
+        latitude.value = nearby.coordinates ? String(nearby.coordinates.lat) : '';
+        longitude.value = nearby.coordinates ? String(nearby.coordinates.lon) : '';
+        clearCoordinateErrors();
+        locationButton.disabled = false;
+        locationStatusKey = nearby.selected && !nearby.coordinates ? 'locationRequired' : '';
         selectedName = '';
         searchInput.value = '';
         results = [];
-        statusKey = !config && preferences.hasSourceParameter() ? 'stationAddressInvalid' : '';
+        statusKey = !nearby.selected && !config && preferences.hasSourceParameter() ? 'stationAddressInvalid' : '';
         languageSelect.value = preferences.getLanguage();
         welcomeIntro.hidden = Boolean(config);
         backButton.hidden = !config;
@@ -140,6 +258,7 @@
 
     function closeSetup() {
         abortSearch();
+        locationAttempt += 1;
         setup.hidden = true;
         painting.hidden = false;
         window.scrollTo(0, 0);
@@ -157,14 +276,16 @@
     }
 
     searchForm.addEventListener('submit', search);
+    sourceSelect.addEventListener('change', changeSource);
+    locationButton.addEventListener('click', requestLocation);
+    latitude.addEventListener('input', enterCoordinates);
+    longitude.addEventListener('input', enterCoordinates);
     languageSelect.addEventListener('change', changeLanguage);
     openButton.addEventListener('click', function () {
         openSetup(true);
     });
     backButton.addEventListener('click', closeSetup);
-    saveButton.addEventListener('click', function () {
-        preferences.save(draft);
-    });
+    saveButton.addEventListener('click', saveSetup);
 
     if (config) {
         openButton.textContent = say('settingsTitle');
