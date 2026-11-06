@@ -81,6 +81,23 @@
         return saved ? stationConfig(saved.source, saved.station) : null;
     }
 
+    function displayOptions(view, limit) {
+        return {
+            view: view === 'today' ? 'today' : 'latest',
+            limit: typeof limit === 'string' && /^(?:[2-9]|[12][0-9]|3[0-2])$/.test(limit) ? limit : '12'
+        };
+    }
+
+    function readDisplay() {
+        var view = parameter('view', true);
+        var limit = parameter('limit', true);
+        if (view !== null || limit !== null || hasSourceParameter()) {
+            return displayOptions(view, limit);
+        }
+        var saved = readLocal(setupKey);
+        return displayOptions(saved && saved.view, saved && saved.limit);
+    }
+
     function readNight() {
         var flag = parameter('night', true);
         var start = parameter('nightStart', true);
@@ -95,6 +112,8 @@
     }
 
     function save(config) {
+        var display = displayOptions(config.view, config.limit);
+        var displayQuery = '&view=' + display.view + '&limit=' + display.limit;
         var schedule = config.night && night.create(config.night.enabled, config.night.start, config.night.end);
         if (!schedule) {
             return false;
@@ -106,11 +125,13 @@
                 source: 'nearby',
                 radius: selectedRadius,
                 coordinates: config.coordinates,
+                view: display.view,
+                limit: display.limit,
                 night: schedule
             })) {
                 return false;
             }
-            window.location.assign('?source=nearby&radius=' + selectedRadius + nightQuery);
+            window.location.assign('?source=nearby&radius=' + selectedRadius + displayQuery + nightQuery);
             return true;
         }
         var selected = stationConfig(config.source, config.station);
@@ -121,9 +142,11 @@
         if (coordinates) {
             selected.coordinates = coordinates;
         }
+        selected.view = display.view;
+        selected.limit = display.limit;
         selected.night = schedule;
         writeLocal(setupKey, selected);
-        window.location.assign('?source=station&station=' + encodeURIComponent(selected.station) + nightQuery);
+        window.location.assign('?source=station&station=' + encodeURIComponent(selected.station) + displayQuery + nightQuery);
         return true;
     }
 
@@ -149,6 +172,7 @@
 
     window.BirdWeatherPreferences = {
         read: read,
+        readDisplay: readDisplay,
         nearbyDraft: nearbyDraft,
         save: save,
         readNight: readNight,

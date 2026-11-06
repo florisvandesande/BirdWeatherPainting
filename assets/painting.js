@@ -20,6 +20,11 @@
     var sourceActive = Boolean(config);
     var nearby = config && config.source === 'nearby';
     var schedule = preferences.readNight();
+    var display = preferences.readDisplay();
+    var collageSource = config && display.view === 'today' && window.BirdWeatherCollageData.create(config, display.limit);
+    var collageView = collageSource && window.BirdWeatherCollageView.create();
+    var emptyArtworkDate = null;
+    var emptyArtworkCredit = null;
     var lastResult = null;
     var connectionState = null;
 
@@ -43,26 +48,6 @@
         setText(connectionStatus, state ? say(state) : '');
     }
 
-    function translatedName(species) {
-        var localizedName;
-        for (var index = 0; index < species.translations.length; index += 1) {
-            var translation = species.translations[index];
-            if (translation && typeof translation.commonName === 'string' &&
-                    translation.commonName.length <= 160 && translation.commonName.trim()) {
-                if (translation.locale === 'nl') {
-                    return { name: translation.commonName.trim(), language: 'nl' };
-                }
-                if (translation.locale === locale) {
-                    localizedName = translation.commonName.trim();
-                }
-            }
-        }
-        if (localizedName) {
-            return { name: localizedName, language: locale };
-        }
-        return { name: species.commonName, language: 'en' };
-    }
-
     function showLatest(result) {
         var observation = result.observation;
         var heading = nearby ?
@@ -80,7 +65,7 @@
             observationNote.hidden = true;
             return;
         }
-        var common = translatedName(observation.species);
+        var common = text.speciesName(locale, observation.species);
         setText(title, common.name);
         title.setAttribute('lang', common.language);
         setText(detail, observation.species.scientificName);
@@ -102,7 +87,64 @@
             complete('notFound');
             return null;
         }
-        return api.latestForSource(config, complete);
+        return collageSource ? collageSource.load(complete) : api.latestForSource(config, complete);
+    }
+
+    function showCollage(result) {
+        setText(stationName, nearby ? say('nearbyHeading', { radius: config.radius }) : result.stationName);
+        collageView.show(result, locale);
+        if (!result.species.length) {
+            showStationHelp(nearby && !result.hasStations ? 'nearbyNoStations' : 'collageEmpty');
+        }
+    }
+
+    function showLoading() {
+        detail.className = '';
+        setText(detail, '');
+        setText(stationName, nearby ? say('nearbyHeading', { radius: config.radius }) : '');
+        setText(title, say('loading'));
+    }
+
+    function checkDay(now) {
+        if (!sourceActive || !collageSource.checkDay(now.getTime())) {
+            return false;
+        }
+        lastResult = null;
+        emptyArtworkDate = null;
+        emptyArtworkCredit = null;
+        collageView.clear();
+        showLoading();
+        setConnectionStatus('refreshing');
+        return true;
+    }
+
+    function showConnectionProblem(state) {
+        if (state === 'collageZoneUnavailable') {
+            showStationHelp('collageZone');
+        } else {
+            setText(title, say('connectionTitle'));
+        }
+    }
+
+    function setPlateCredit(credit) {
+        artworkInfo.setDisplayed(credit ? [credit] : []);
+    }
+
+    function paintEmptyCollage(date) {
+        if (emptyArtworkDate === date) {
+            setPlateCredit(emptyArtworkCredit);
+            return;
+        }
+        emptyArtworkDate = date;
+        emptyArtworkCredit = null;
+        artwork.paint(image, null, function (credit) {
+            if (emptyArtworkDate === date) {
+                emptyArtworkCredit = credit;
+                if (lastResult && !lastResult.species.length) {
+                    setPlateCredit(credit);
+                }
+            }
+        });
     }
 
     function renderResult(error, result) {
@@ -114,14 +156,19 @@
         }
         if (!error) {
             lastResult = result;
-            showLatest(result);
-            artwork.paint(image, result.observation && result.observation.species, function (credit) {
-                artworkInfo.setDisplayed(credit ? [credit] : []);
-            });
+            if (collageView) {
+                showCollage(result);
+                if (!result.species.length) {
+                    paintEmptyCollage(result.date);
+                }
+            } else {
+                showLatest(result);
+                artwork.paint(image, result.observation && result.observation.species, setPlateCredit);
+            }
         } else if (!lastResult) {
-            setText(title, say('connectionTitle'));
+            showConnectionProblem(error);
         }
-        setConnectionStatus(error ? 'unavailable' : null);
+        setConnectionStatus(error ? (error === 'collageZoneUnavailable' ? error : 'unavailable') : null);
     }
 
     function renderLocale() {
@@ -131,12 +178,17 @@
         setText(document.querySelector('#painting [data-text="title"]'), document.title);
         setConnectionStatus(connectionState);
         if (lastResult) {
-            showLatest(lastResult);
+            if (collageView) {
+                showCollage(lastResult);
+            } else {
+                showLatest(lastResult);
+            }
         } else if (config && !sourceActive) {
             showStationHelp('invalidStation');
+        } else if (connectionState === 'unavailable' || connectionState === 'collageZoneUnavailable') {
+            showConnectionProblem(connectionState);
         } else {
-            setText(stationName, nearby ? say('nearbyHeading', { radius: config.radius }) : '');
-            setText(title, say(connectionState === 'unavailable' ? 'connectionTitle' : 'loading'));
+            showLoading();
         }
     }
 
@@ -144,7 +196,7 @@
     document.addEventListener('birdweather-language', renderLocale);
     renderLocale();
     if (sourceActive && schedule) {
-        window.BirdWeatherDisplayRefresh.start(schedule, load, renderResult, setConnectionStatus);
+        window.BirdWeatherDisplayRefresh.start(schedule, load, renderResult, setConnectionStatus, collageSource ? checkDay : null);
         painting.hidden = false;
     }
 }(window, document));

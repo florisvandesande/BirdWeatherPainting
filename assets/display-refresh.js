@@ -5,7 +5,7 @@
         return Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
     }
 
-    function start(schedule, load, render, setStatus) {
+    function start(schedule, load, render, setStatus, checkDay) {
         var hiddenProperty = 'hidden' in document ? 'hidden' : 'webkitHidden';
         var visibilityEvent = hiddenProperty === 'hidden' ? 'visibilitychange' : 'webkitvisibilitychange';
         var startMinute = schedule.enabled ? minutes(schedule.start) : 0;
@@ -49,6 +49,9 @@
             if (checkNight(new Date()) || document[hiddenProperty] || pending) {
                 return;
             }
+            if (checkDay) {
+                checkDay(new Date());
+            }
             var attempt = {};
             pending = attempt;
             attempt.request = load(function (error, result) {
@@ -57,10 +60,15 @@
                     return;
                 }
                 pending = null;
-                if (checkNight(new Date()) || document[hiddenProperty]) {
+                var now = new Date();
+                if (checkNight(now) || document[hiddenProperty]) {
                     return;
                 }
 
+                if (checkDay && checkDay(now)) {
+                    refresh();
+                    return;
+                }
                 var repeat = render(error, result);
                 if (blackedOut) {
                     // Keep the screen black until the wake refresh succeeds or shows its failure state.
@@ -76,7 +84,7 @@
         function updateClock() {
             var now = new Date();
             window.clearTimeout(clockTimer);
-            if (schedule.enabled && !document[hiddenProperty]) {
+            if ((schedule.enabled || checkDay) && !document[hiddenProperty]) {
                 // Read the local clock at each minute boundary to account for clock changes.
                 clockTimer = window.setTimeout(clockTick, 60000 - now.getSeconds() * 1000 - now.getMilliseconds());
             }
@@ -84,7 +92,14 @@
         }
 
         function clockTick() {
-            if (!updateClock() && blackedOut) {
+            if (updateClock() || document[hiddenProperty]) {
+                return;
+            }
+            var changedDay = checkDay && checkDay(new Date());
+            if (changedDay) {
+                pauseRefresh();
+            }
+            if (changedDay || blackedOut) {
                 refresh();
             }
         }

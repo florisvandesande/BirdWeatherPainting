@@ -27,6 +27,9 @@
     var locationStatus = document.getElementById('location-status');
     var locationStatusKey = '';
     var locationAttempt = 0;
+    var viewSelect = document.getElementById('display-view');
+    var limitSelect = document.getElementById('collage-limit');
+    var limitSettings = document.getElementById('collage-limit-settings');
     var languageSelect = document.getElementById('display-language');
     var languageStatus = document.getElementById('language-status');
     var nightEnabled = document.getElementById('night-enabled');
@@ -255,7 +258,13 @@
         return number;
     }
 
+    function showCollageLimit() {
+        limitSettings.hidden = viewSelect.value !== 'today';
+    }
+
     function saveSetup() {
+        draft.view = viewSelect.value;
+        draft.limit = limitSelect.value;
         if (draft.source === 'nearby') {
             enterCoordinates();
             var lat = readCoordinate(latitude, 90);
@@ -281,6 +290,7 @@
 
     function openSetup(moveFocus) {
         var nearby = preferences.nearbyDraft();
+        var display = preferences.readDisplay();
         draft = { source: nearby.selected ? 'nearby' : 'station', station: config && config.station };
         sourceSelect.value = draft.source;
         radiusSelect.value = nearby.radius;
@@ -293,6 +303,9 @@
         searchInput.value = '';
         results = [];
         statusKey = !nearby.selected && !config && preferences.hasSourceParameter() ? 'stationAddressInvalid' : '';
+        viewSelect.value = display.view;
+        limitSelect.value = display.limit;
+        showCollageLimit();
         languageSelect.value = preferences.getLanguage();
         welcomeIntro.hidden = Boolean(config);
         backButton.hidden = !config || !savedNight;
@@ -340,6 +353,7 @@
     locationButton.addEventListener('click', requestLocation);
     latitude.addEventListener('input', enterCoordinates);
     longitude.addEventListener('input', enterCoordinates);
+    viewSelect.addEventListener('change', showCollageLimit);
     languageSelect.addEventListener('change', changeLanguage);
     openButton.addEventListener('click', function () {
         openSetup(true);
@@ -349,6 +363,12 @@
     nightEnabled.addEventListener('change', changeNight);
     nightStart.addEventListener('change', changeNight);
     nightEnd.addEventListener('change', changeNight);
+
+    for (var cap = 2; cap <= 32; cap += 1) {
+        var option = document.createElement('option');
+        option.value = option.textContent = String(cap);
+        limitSelect.appendChild(option);
+    }
 
     if (config && savedNight) {
         openButton.textContent = say('settingsTitle');

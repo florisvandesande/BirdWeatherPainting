@@ -6,6 +6,7 @@
     <meta name="apple-mobile-web-app-capable" content="yes">
     <title>BirdWeather Painting</title>
     <link rel="stylesheet" href="assets/painting.css">
+    <link rel="stylesheet" href="assets/collage.css">
     <link rel="stylesheet" href="assets/setup.css">
     <link rel="stylesheet" href="assets/artwork.css">
 </head>
@@ -15,7 +16,7 @@
             <p class="book-title" data-text="title"></p>
             <p id="station-name" class="station-name" dir="auto"></p>
         </header>
-        <section class="plate-content">
+        <section id="latest-plate" class="plate-content">
             <img id="latest-art" class="plate-art" src="assets/field-sprig.svg" alt="">
             <div class="plate-caption" aria-live="polite">
                 <h1 id="plate-title" dir="auto"></h1>
@@ -23,7 +24,12 @@
                 <p id="detection-time" hidden><time></time></p>
             </div>
         </section>
+        <section id="collage" class="collage" aria-labelledby="collage-title" hidden>
+            <h1 id="collage-title"></h1>
+            <div id="collage-board" class="collage-board"></div>
+        </section>
         <footer class="plate-footer">
+            <p id="collage-omitted" hidden></p>
             <p id="observation-note" hidden></p>
             <p id="connection-status" role="status"></p>
         </footer>
@@ -99,6 +105,17 @@
                         </select>
                         <p id="location-status" class="setup-status" role="status"></p>
                     </div>
+                    <div class="source-choice">
+                        <label for="display-view" data-text="displayViewLabel"></label>
+                        <select id="display-view">
+                            <option value="latest" data-text="displayViewLatest"></option>
+                            <option value="today" data-text="displayViewToday"></option>
+                        </select>
+                    </div>
+                    <div id="collage-limit-settings" class="source-choice" hidden>
+                        <label for="collage-limit" data-text="collageLimitLabel"></label>
+                        <select id="collage-limit"></select>
+                    </div>
                     <div class="language-choice">
                         <label for="display-language" data-text="languageLabel"></label>
                         <select id="display-language">
@@ -162,6 +179,10 @@
     <script src="assets/artwork-text.js"></script>
     <script src="assets/artwork-info.js"></script>
     <script src="assets/display-refresh.js"></script>
+    <script src="assets/collage-zone-data.js"></script>
+    <script src="assets/collage-day.js"></script>
+    <script src="assets/collage-data.js"></script>
+    <script src="assets/collage-view.js"></script>
     <script src="assets/painting.js"></script>
 </body>
 </html>

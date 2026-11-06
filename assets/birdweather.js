@@ -14,51 +14,35 @@
         request.open('POST', endpoint, true);
         request.timeout = 15000;
         request.setRequestHeader('Content-Type', 'application/json');
-        var active = true;
-
-        function finish(error, data) {
-            if (active) {
-                active = false;
-                complete(error, data);
-            }
-        }
 
         request.onload = function () {
             if (request.status === 404) {
-                finish('notFound');
+                complete('notFound');
                 return;
             }
             if (request.status !== 200 || request.responseText.length > 512000) {
-                finish('unavailable');
+                complete('unavailable');
                 return;
             }
             var response;
             try {
                 response = JSON.parse(request.responseText);
             } catch (error) {
-                finish('unavailable');
+                complete('unavailable');
                 return;
             }
             if (!response || response.errors || !response.data) {
-                finish('unavailable');
+                complete('unavailable', null, response && response.errors);
                 return;
             }
-            finish(null, response.data);
+            complete(null, response.data);
         };
         request.onerror = request.ontimeout = function () {
-            finish('unavailable');
+            complete('unavailable');
         };
 
         request.send(JSON.stringify({ query: operation, variables: variables }));
-        return {
-            abort: function () {
-                // A cancelled response must never start the next request in a paginated query.
-                if (active) {
-                    active = false;
-                    request.abort();
-                }
-            }
-        };
+        return request;
     }
 
     function validStationId(value) {
@@ -78,15 +62,32 @@
         return typeof value === 'string' && value.length <= maxLength ? value.trim() : '';
     }
 
+    function readSpecies(node) {
+        var id = node && readId(node.id);
+        var scientificName = node && safeName(node.scientificName, 160);
+        if (!validStationId(id) || !scientificName) {
+            return null;
+        }
+        return {
+            id: id,
+            scientificName: scientificName,
+            commonName: safeName(node.commonName, 160) || scientificName,
+            translations: Array.isArray(node.translations) ? node.translations : [],
+            imageUrl: safeName(node.imageUrl, 512),
+            imageCredit: safeName(node.imageCredit, 1024),
+            imageLicense: safeName(node.imageLicense, 80),
+            imageLicenseUrl: safeName(node.imageLicenseUrl, 512)
+        };
+    }
+
     function readObservation(node) {
-        if (!node || !node.species || typeof node.timestamp !== 'string' || node.timestamp.length > 40) {
+        if (!node || typeof node.timestamp !== 'string' || node.timestamp.length > 40) {
             return null;
         }
         var offset = /^\d{4}-\d\d-\d\dT\d\d:\d\d:\d\d(?:\.\d+)?(Z|([+-])(\d\d):(\d\d))$/.exec(node.timestamp);
         var time = Date.parse(node.timestamp);
-        var scientificName = safeName(node.species.scientificName, 160);
-        var speciesId = readId(node.species.id);
-        if (!offset || !isFinite(time) || !scientificName || !validStationId(speciesId)) {
+        var species = readSpecies(node.species);
+        if (!offset || !isFinite(time) || !species) {
             return null;
         }
         var offsetMinutes = offset[1] === 'Z' ? 0 :
@@ -96,17 +97,52 @@
             time: time,
             offsetMinutes: offsetMinutes,
             zone: offset[1] === 'Z' ? 'UTC' : 'UTC' + offset[1],
-            species: {
-                id: speciesId,
-                scientificName: scientificName,
-                commonName: safeName(node.species.commonName, 160) || scientificName,
-                translations: Array.isArray(node.species.translations) ? node.species.translations : [],
-                imageUrl: safeName(node.species.imageUrl, 512),
-                imageCredit: safeName(node.species.imageCredit, 1024),
-                imageLicense: safeName(node.species.imageLicense, 80),
-                imageLicenseUrl: safeName(node.species.imageLicenseUrl, 512)
-            }
+            species: species
         };
+    }
+
+    function collageStation(stationId, complete) {
+        var operation = 'query CollageStation($stationId: ID!) { station(id: $stationId) { id name timezone } }';
+        return query(operation, { stationId: stationId }, function (error, data, errors) {
+            if (error || data.station === null) {
+                // A null non-nullable timezone is reported as a field error by BirdWeather.
+                var missingZone = Array.isArray(errors) && errors.some(function (entry) {
+                    var path = entry && entry.path;
+                    return Array.isArray(path) && path.length === 2 && path[0] === 'station' && path[1] === 'timezone';
+                });
+                complete(missingZone ? 'collageZoneUnavailable' : error || 'notFound');
+                return;
+            }
+            var station = stationResult(data.station);
+            if (!station || station.id !== stationId) {
+                complete('unavailable');
+                return;
+            }
+            station.timezone = safeName(data.station.timezone, 100);
+            complete(null, station);
+        });
+    }
+
+    function speciesForIds(ids, complete) {
+        var operation = 'query CollageSpecies($ids: [ID!]!) { allSpecies(first: 32, ids: $ids) { nodes { ' +
+            speciesFields + ' } } }';
+        return query(operation, { ids: ids }, function (error, data) {
+            var nodes = !error && data.allSpecies && data.allSpecies.nodes;
+            if (!Array.isArray(nodes) || nodes.length !== ids.length) {
+                complete('unavailable');
+                return;
+            }
+            var speciesById = Object.create(null);
+            for (var index = 0; index < nodes.length; index += 1) {
+                var species = readSpecies(nodes[index]);
+                if (!species || ids.indexOf(species.id) === -1 || speciesById[species.id]) {
+                    complete('unavailable');
+                    return;
+                }
+                speciesById[species.id] = species;
+            }
+            complete(null, ids.map(function (id) { return speciesById[id]; }));
+        });
     }
 
     function readStationLatest(station, stationId) {
@@ -341,6 +377,8 @@
         searchStations: searchStations,
         latestForStation: latestForStation,
         nearbyStationIds: nearbyStationIds,
-        latestForSource: latestForSource
+        latestForSource: latestForSource,
+        collageStation: collageStation,
+        speciesForIds: speciesForIds
     };
 }(window));

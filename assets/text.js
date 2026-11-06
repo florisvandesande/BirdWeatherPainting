@@ -3,6 +3,17 @@
 
     var messages = {
         en: {
+            displayViewLabel: 'Display mode',
+            displayViewLatest: 'Latest bird',
+            displayViewToday: 'Today’s collage',
+            collageLimitLabel: 'Maximum species on the collage',
+            collageEmpty: 'No birds heard today',
+            collageEmptyDetail: 'The page will check again automatically. Open Settings to try another source or see the latest known bird.',
+            collageZone: 'Station time zone unavailable',
+            collageZoneDetail: 'Open Settings to use the latest-bird view or choose another station.',
+            collageZoneUnavailable: 'BirdWeather did not provide a usable time zone for this station.',
+            collageOneOmitted: '1 other species was heard today.',
+            collageOmitted: '{count} other species were heard today.',
             languageLabel: 'Display language',
             automaticLanguage: 'Automatic (browser language)',
             languageStorageUnavailable: 'Your browser can’t remember this language. You can choose it again next time.',
@@ -65,6 +76,17 @@
             datePattern: '{month}/{day}/{year}, {hour}:{minute}'
         },
         nl: {
+            displayViewLabel: 'Weergave',
+            displayViewLatest: 'Laatste vogel',
+            displayViewToday: 'Collage van vandaag',
+            collageLimitLabel: 'Maximumaantal soorten in de collage',
+            collageEmpty: 'Vandaag zijn er geen vogels gehoord',
+            collageEmptyDetail: 'De pagina controleert het automatisch opnieuw. Open Instellingen om een andere bron te kiezen of de laatst gehoorde vogel te zien.',
+            collageZone: 'Tijdzone van station niet beschikbaar',
+            collageZoneDetail: 'Open Instellingen om de laatst gehoorde vogel te bekijken of een ander station te kiezen.',
+            collageZoneUnavailable: 'BirdWeather heeft geen bruikbare tijdzone voor dit station doorgegeven.',
+            collageOneOmitted: 'Vandaag is nog 1 andere soort gehoord.',
+            collageOmitted: 'Vandaag zijn nog {count} andere soorten gehoord.',
             languageLabel: 'Weergavetaal',
             automaticLanguage: 'Automatisch (browsertaal)',
             languageStorageUnavailable: 'Je browser kan deze taal niet onthouden. Je kunt hem de volgende keer opnieuw kiezen.',
@@ -127,6 +149,17 @@
             datePattern: '{day}-{month}-{year}, {hour}:{minute}'
         },
         fr: {
+            displayViewLabel: 'Mode d’affichage',
+            displayViewLatest: 'Dernier oiseau',
+            displayViewToday: 'Collage du jour',
+            collageLimitLabel: 'Nombre maximal d’espèces dans le collage',
+            collageEmpty: 'Aucun oiseau entendu aujourd’hui',
+            collageEmptyDetail: 'La page vérifiera à nouveau automatiquement. Ouvrez les paramètres pour essayer une autre source ou voir le dernier oiseau entendu.',
+            collageZone: 'Fuseau horaire de la station indisponible',
+            collageZoneDetail: 'Ouvrez les paramètres pour afficher le dernier oiseau entendu ou choisir une autre station.',
+            collageZoneUnavailable: 'BirdWeather n’a pas fourni de fuseau horaire utilisable pour cette station.',
+            collageOneOmitted: '1 autre espèce a été entendue aujourd’hui.',
+            collageOmitted: '{count} autres espèces ont été entendues aujourd’hui.',
             languageLabel: 'Langue d’affichage',
             automaticLanguage: 'Automatique (langue du navigateur)',
             languageStorageUnavailable: 'Votre navigateur ne peut pas mémoriser cette langue. Vous pourrez la choisir à nouveau la prochaine fois.',
@@ -189,6 +222,17 @@
             datePattern: '{day}/{month}/{year} à {hour}:{minute}'
         },
         de: {
+            displayViewLabel: 'Anzeigemodus',
+            displayViewLatest: 'Zuletzt gehörter Vogel',
+            displayViewToday: 'Heutige Collage',
+            collageLimitLabel: 'Höchstzahl der Arten in der Collage',
+            collageEmpty: 'Heute wurden keine Vögel gehört',
+            collageEmptyDetail: 'Die Seite prüft automatisch erneut. Wähle in den Einstellungen eine andere Quelle oder zeige den zuletzt gehörten Vogel an.',
+            collageZone: 'Zeitzone der Station nicht verfügbar',
+            collageZoneDetail: 'Öffne die Einstellungen, um den zuletzt gehörten Vogel anzuzeigen oder eine andere Station auszuwählen.',
+            collageZoneUnavailable: 'BirdWeather hat für diese Station keine verwendbare Zeitzone geliefert.',
+            collageOneOmitted: 'Heute wurde 1 weitere Art gehört.',
+            collageOmitted: 'Heute wurden {count} weitere Arten gehört.',
             languageLabel: 'Anzeigesprache',
             automaticLanguage: 'Automatisch (Browsersprache)',
             languageStorageUnavailable: 'Dein Browser kann diese Sprache nicht speichern. Du kannst sie beim nächsten Mal erneut auswählen.',
@@ -251,6 +295,17 @@
             datePattern: '{day}.{month}.{year}, {hour}:{minute}'
         },
         es: {
+            displayViewLabel: 'Modo de visualización',
+            displayViewLatest: 'Última ave',
+            displayViewToday: 'Collage de hoy',
+            collageLimitLabel: 'Máximo de especies en el collage',
+            collageEmpty: 'Hoy no se ha oído ningún ave',
+            collageEmptyDetail: 'La página volverá a comprobarlo automáticamente. Abre Ajustes para probar otra fuente o ver la última ave oída.',
+            collageZone: 'La zona horaria de la estación no está disponible',
+            collageZoneDetail: 'Abre Ajustes para ver la última ave oída o elegir otra estación.',
+            collageZoneUnavailable: 'BirdWeather no ha proporcionado una zona horaria válida para esta estación.',
+            collageOneOmitted: 'Hoy se ha oído 1 especie más.',
+            collageOmitted: 'Hoy se han oído {count} especies más.',
             languageLabel: 'Idioma de la interfaz',
             automaticLanguage: 'Automático (idioma del navegador)',
             languageStorageUnavailable: 'Tu navegador no puede recordar este idioma. Puedes volver a elegirlo la próxima vez.',
@@ -313,6 +368,17 @@
             datePattern: '{day}/{month}/{year}, {hour}:{minute}'
         },
         it: {
+            displayViewLabel: 'Modalità di visualizzazione',
+            displayViewLatest: 'Ultimo uccello',
+            displayViewToday: 'Collage di oggi',
+            collageLimitLabel: 'Numero massimo di specie nel collage',
+            collageEmpty: 'Oggi non si sono sentiti uccelli',
+            collageEmptyDetail: 'La pagina controllerà di nuovo automaticamente. Apri le impostazioni per provare un’altra fonte o vedere l’ultimo uccello sentito.',
+            collageZone: 'Fuso orario della stazione non disponibile',
+            collageZoneDetail: 'Apri le impostazioni per vedere l’ultimo uccello sentito o scegliere un’altra stazione.',
+            collageZoneUnavailable: 'BirdWeather non ha fornito un fuso orario valido per questa stazione.',
+            collageOneOmitted: 'Oggi si è sentita 1 altra specie.',
+            collageOmitted: 'Oggi si sono sentite altre {count} specie.',
             languageLabel: 'Lingua dell’interfaccia',
             automaticLanguage: 'Automatica (lingua del browser)',
             languageStorageUnavailable: 'Il browser non può ricordare questa lingua. Potrai sceglierla di nuovo la prossima volta.',
@@ -375,6 +441,17 @@
             datePattern: '{day}/{month}/{year}, {hour}:{minute}'
         },
         'pt-BR': {
+            displayViewLabel: 'Modo de exibição',
+            displayViewLatest: 'Última ave ouvida',
+            displayViewToday: 'Colagem de hoje',
+            collageLimitLabel: 'Máximo de espécies na colagem',
+            collageEmpty: 'Nenhuma ave ouvida hoje',
+            collageEmptyDetail: 'A página vai verificar de novo automaticamente. Abra Configurações para testar outra fonte ou ver a última ave ouvida.',
+            collageZone: 'Fuso horário da estação indisponível',
+            collageZoneDetail: 'Abra Configurações para ver a última ave ouvida ou escolher outra estação.',
+            collageZoneUnavailable: 'O BirdWeather não forneceu um fuso horário válido para esta estação.',
+            collageOneOmitted: 'Mais 1 espécie foi ouvida hoje.',
+            collageOmitted: 'Mais {count} espécies foram ouvidas hoje.',
             languageLabel: 'Idioma da interface',
             automaticLanguage: 'Automático (idioma do navegador)',
             languageStorageUnavailable: 'Seu navegador não pode lembrar este idioma. Você pode escolhê-lo de novo da próxima vez.',
@@ -477,12 +554,33 @@
         });
     }
 
+    function speciesName(locale, species) {
+        var localizedName;
+        for (var index = 0; index < species.translations.length; index += 1) {
+            var translation = species.translations[index];
+            if (translation && typeof translation.commonName === 'string' &&
+                    translation.commonName.length <= 160 && translation.commonName.trim()) {
+                if (translation.locale === 'nl') {
+                    return { name: translation.commonName.trim(), language: 'nl' };
+                }
+                if (translation.locale === locale) {
+                    localizedName = translation.commonName.trim();
+                }
+            }
+        }
+        if (localizedName) {
+            return { name: localizedName, language: locale };
+        }
+        return { name: species.commonName, language: 'en' };
+    }
+
     window.BirdWeatherText = {
         localeFor: localeFor,
         supportsLocale: function (locale) {
             return typeof locale === 'string' && Object.prototype.hasOwnProperty.call(messages, locale);
         },
         formatDate: formatDate,
+        speciesName: speciesName,
         message: message
     };
 }(window));
