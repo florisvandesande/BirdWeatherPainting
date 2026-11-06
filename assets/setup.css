@@ -182,11 +182,37 @@
     font-weight: bold;
 }
 
+.source-choice {
+    margin-bottom: 1.15rem;
+}
+
+.coordinate-fields {
+    display: -webkit-flex;
+    display: flex;
+    margin: 0.75rem -0.25rem 0;
+}
+
+.coordinate-fields > div {
+    -webkit-flex: 1 1 50%;
+    flex: 1 1 50%;
+    min-width: 0;
+    margin: 0 0.25rem;
+}
+
+.coordinate-fields input {
+    width: 100%;
+    padding: 0.5rem 0.65rem;
+}
+
+.setup input[aria-invalid="true"] {
+    border-width: 2px;
+}
+
 .language-choice {
     margin-top: 1.15rem;
 }
 
-.language-choice select {
+.setup-controls select {
     max-width: 100%;
     padding: 0.5rem 0.6rem;
 }
