@@ -11,6 +11,7 @@
     var title = document.getElementById('setup-title');
     var welcomeIntro = document.getElementById('welcome-intro');
     var openButton = document.getElementById('open-settings');
+    var blackoutButton = document.getElementById('blackout-settings');
     var saveButton = document.getElementById('save-settings');
     var backButton = document.getElementById('cancel-settings');
     var searchForm = document.getElementById('station-search');
@@ -52,6 +53,14 @@
 
     function say(key, fields) {
         return text.message(locale, key, fields);
+    }
+
+    function useKeyboardInput() {
+        document.documentElement.classList.add('keyboard-input');
+    }
+
+    function usePointerInput() {
+        document.documentElement.classList.remove('keyboard-input');
     }
 
     function renderSelection() {
@@ -107,6 +116,7 @@
         title.textContent = say(config ? 'settingsTitle' : 'welcomeTitle');
         saveButton.textContent = say(config ? 'saveSettings' : 'openPainting');
         openButton.setAttribute('aria-label', say('settingsTitle'));
+        blackoutButton.setAttribute('aria-label', say('settingsTitle'));
         searchStatus.textContent = statusKey ? say(statusKey) : '';
         locationStatus.textContent = locationStatusKey ? say(locationStatusKey) : '';
         renderSelection();
@@ -320,6 +330,7 @@
         nightStatusKey = savedNight ? '' : 'invalidSaved';
         renderLabels();
         painting.hidden = true;
+        blackoutButton.hidden = true;
         setup.hidden = false;
         setup.scrollTop = 0;
         if (moveFocus) {
@@ -329,12 +340,19 @@
     }
 
     function closeSetup() {
+        var returningToBlackout = document.documentElement.classList.contains('night-display');
         abortSearch();
         locationAttempt += 1;
         setup.hidden = true;
         painting.hidden = false;
+        blackoutButton.hidden = !returningToBlackout;
         window.scrollTo(0, 0);
-        openButton.focus();
+        if (returningToBlackout) {
+            blackoutButton.focus();
+            window.BirdWeatherDisplayRefresh.recheck();
+        } else {
+            openButton.focus();
+        }
     }
 
     function changeLanguage() {
@@ -352,7 +370,22 @@
         if (statusKey === 'searchingStations') {
             setStatus('');
         }
+        if (setup.hidden) {
+            blackoutButton.hidden = false;
+            if (painting.contains(document.activeElement)) {
+                blackoutButton.focus();
+            }
+        }
     });
+    document.addEventListener('birdweather-daylight', function () {
+        blackoutButton.hidden = true;
+        if (setup.hidden && document.activeElement === blackoutButton) {
+            openButton.focus();
+        }
+    });
+    document.addEventListener('keydown', useKeyboardInput, true);
+    document.addEventListener('mousedown', usePointerInput, true);
+    document.addEventListener('touchstart', usePointerInput, true);
     searchForm.addEventListener('submit', search);
     sourceSelect.addEventListener('change', changeSource);
     locationButton.addEventListener('click', requestLocation);
@@ -362,6 +395,11 @@
     languageSelect.addEventListener('change', changeLanguage);
     openButton.addEventListener('click', function () {
         openSetup(true);
+    });
+    blackoutButton.addEventListener('click', function () {
+        if (document.documentElement.classList.contains('night-display')) {
+            openSetup(true);
+        }
     });
     backButton.addEventListener('click', closeSetup);
     saveButton.addEventListener('click', saveSetup);

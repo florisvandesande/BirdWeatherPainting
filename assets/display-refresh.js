@@ -1,6 +1,20 @@
 (function (window, document) {
     'use strict';
 
+    var activeRecheck = null;
+
+    function dispatch(name) {
+        var event = document.createEvent('Event');
+        event.initEvent(name, false, false);
+        document.dispatchEvent(event);
+    }
+
+    function recheck() {
+        if (activeRecheck) {
+            activeRecheck();
+        }
+    }
+
     function minutes(time) {
         return Number(time.slice(0, 2)) * 60 + Number(time.slice(3));
     }
@@ -35,9 +49,7 @@
                 if (!blackedOut) {
                     blackedOut = true;
                     root.classList.add('night-display');
-                    var event = document.createEvent('Event');
-                    event.initEvent('birdweather-blackout', false, false);
-                    document.dispatchEvent(event);
+                    dispatch('birdweather-blackout');
                 }
                 pauseRefresh();
             }
@@ -74,6 +86,7 @@
                     // Keep the screen black until the wake refresh succeeds or shows its failure state.
                     blackedOut = false;
                     root.classList.remove('night-display');
+                    dispatch('birdweather-daylight');
                 }
                 if (repeat !== false) {
                     refreshTimer = window.setTimeout(refresh, 120000);
@@ -115,6 +128,7 @@
             }
         }
 
+        activeRecheck = visibilityChanged;
         document.addEventListener(visibilityEvent, visibilityChanged);
         window.addEventListener('pagehide', function () {
             window.clearTimeout(clockTimer);
@@ -134,5 +148,5 @@
         }
     }
 
-    window.BirdWeatherDisplayRefresh = { start: start };
+    window.BirdWeatherDisplayRefresh = { start: start, recheck: recheck };
 }(window, document));
