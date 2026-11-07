@@ -34,7 +34,10 @@ completed, so iOS 9 compatibility is not yet confirmed.
   Portuguese. The browser language is used unless the visitor selects a
   language in Settings.
 - Optionally turn the screen black on a local night schedule. Polling pauses
-  while the display is black.
+  while it is black. Tap or click anywhere on the black screen to open Settings;
+  returning keeps the screen black during scheduled hours and refreshes the
+  painting after they end. Keyboard users can focus the Settings control and
+  activate it with Enter or Space.
 - Use the website without a project account, API key, PHP server, database,
   proxy, or build service.
 
@@ -96,7 +99,11 @@ settings; doing so also clears the saved settings and missing-artwork list.
 
 Night settings use the iPad's local clock. For example, a configured URL may
 include `night=1`, `nightStart=22:00`, and `nightEnd=07:00`. Setup writes these
-values for you.
+values for you. During scheduled hours, tap or click anywhere on the black
+screen to open Settings. Choose **Return to painting** to check the local clock
+again; the display stays black if the schedule is still active, and refreshes
+the painting if night hours have ended. Keyboard users can Tab to the black
+screen's Settings control and activate it with Enter or Space.
 
 ## Artwork and reuse
 
@@ -207,6 +214,13 @@ and dark browser appearances. Collage data and URL settings received controlled
 JavaScriptCore checks. The simplified painting, full collage, and Fugleramme
 rendering have not yet received a complete browser pass. Safari automation and
 the physical iPad 2 were unavailable in the current environment.
+
+To run the scheduled-blackout interaction check, start the local server from
+the repository root using the command in [Getting started](#getting-started),
+then open <http://127.0.0.1:8000/tests/blackout-settings.html>. The page checks
+opening Settings from the black surface, returning while the schedule remains
+active, and refreshing a controlled painting after the schedule ends. It uses a
+local controlled GraphQL response for this check.
 
 The unrelated repository server-synchronization shell check is not required to
 run or host this static application.
