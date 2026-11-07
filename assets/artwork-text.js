@@ -9,6 +9,10 @@
             dailyUnavailable: 'Couldn’t load today’s species. Reopen this page to try again.',
             noSpeciesToday: 'No birds have been heard today.',
             noArtworkInfo: 'No artwork information is available for this species.',
+            description: 'Description',
+            detectedToday: 'Detected today',
+            wikipedia: 'Wikipedia',
+            ebird: 'eBird',
             back: 'Back to the painting',
             missing: 'Missing artwork',
             missingEmpty: 'No missing artwork has been recorded on this device.',
@@ -36,6 +40,10 @@
             dailyUnavailable: 'De soorten van vandaag konden niet worden geladen. Open deze pagina opnieuw om het te proberen.',
             noSpeciesToday: 'Er zijn vandaag geen vogels gehoord.',
             noArtworkInfo: 'Voor deze soort is geen informatie over de afbeelding beschikbaar.',
+            description: 'Soortbeschrijving',
+            detectedToday: 'Vandaag gedetecteerd',
+            wikipedia: 'Wikipedia',
+            ebird: 'eBird',
             back: 'Terug naar het schilderij',
             missing: 'Ontbrekende afbeeldingen',
             missingEmpty: 'Op dit apparaat zijn geen ontbrekende afbeeldingen geregistreerd.',
@@ -63,6 +71,10 @@
             dailyUnavailable: 'Impossible de charger les espèces du jour. Rouvrez cette page pour réessayer.',
             noSpeciesToday: 'Aucun oiseau n’a été entendu aujourd’hui.',
             noArtworkInfo: 'Aucune information sur l’illustration n’est disponible pour cette espèce.',
+            description: 'Description',
+            detectedToday: 'Détections aujourd’hui',
+            wikipedia: 'Wikipédia',
+            ebird: 'eBird',
             back: 'Retour au tableau',
             missing: 'Illustrations manquantes',
             missingEmpty: 'Aucune illustration manquante n’a été enregistrée sur cet appareil.',
@@ -90,6 +102,10 @@
             dailyUnavailable: 'Heutige Arten konnten nicht geladen werden. Öffne diese Seite erneut, um es noch einmal zu versuchen.',
             noSpeciesToday: 'Heute wurden keine Vögel gehört.',
             noArtworkInfo: 'Für diese Art sind keine Informationen zur Abbildung verfügbar.',
+            description: 'Beschreibung',
+            detectedToday: 'Heute erkannt',
+            wikipedia: 'Wikipedia',
+            ebird: 'eBird',
             back: 'Zurück zum Gemälde',
             missing: 'Fehlende Abbildungen',
             missingEmpty: 'Auf diesem Gerät sind keine fehlenden Abbildungen erfasst.',
@@ -117,6 +133,10 @@
             dailyUnavailable: 'No se pudieron cargar las especies de hoy. Vuelve a abrir esta página para intentarlo de nuevo.',
             noSpeciesToday: 'Hoy no se ha oído ningún ave.',
             noArtworkInfo: 'No hay información sobre la ilustración de esta especie.',
+            description: 'Descripción',
+            detectedToday: 'Detectado hoy',
+            wikipedia: 'Wikipedia',
+            ebird: 'eBird',
             back: 'Volver al cuadro',
             missing: 'Ilustraciones que faltan',
             missingEmpty: 'No se han registrado ilustraciones faltantes en este dispositivo.',
@@ -144,6 +164,10 @@
             dailyUnavailable: 'Impossibile caricare le specie di oggi. Riapri questa pagina per riprovare.',
             noSpeciesToday: 'Oggi non è stato udito alcun uccello.',
             noArtworkInfo: 'Non sono disponibili informazioni sull’illustrazione di questa specie.',
+            description: 'Descrizione',
+            detectedToday: 'Rilevato oggi',
+            wikipedia: 'Wikipedia',
+            ebird: 'eBird',
             back: 'Torna al quadro',
             missing: 'Illustrazioni mancanti',
             missingEmpty: 'Non ci sono illustrazioni mancanti registrate su questo dispositivo.',
@@ -171,6 +195,10 @@
             dailyUnavailable: 'Não foi possível carregar as espécies de hoje. Abra esta página novamente para tentar de novo.',
             noSpeciesToday: 'Nenhum pássaro foi ouvido hoje.',
             noArtworkInfo: 'Não há informações sobre a ilustração desta espécie.',
+            description: 'Descrição',
+            detectedToday: 'Detectado hoje',
+            wikipedia: 'Wikipédia',
+            ebird: 'eBird',
             back: 'Voltar ao quadro',
             missing: 'Ilustrações faltantes',
             missingEmpty: 'Nenhuma ilustração faltante foi registrada neste dispositivo.',
@@ -194,8 +222,10 @@
     };
 
     window.BirdWeatherArtworkText = {
-        message: function (locale, key) {
-            return window.BirdWeatherText.resolveMessage(messages, locale, key);
+        message: function (locale, key, fields) {
+            return window.BirdWeatherText.resolveMessage(messages, locale, key).replace(/\{(\w+)\}/g, function (placeholder, name) {
+                return fields && Object.prototype.hasOwnProperty.call(fields, name) ? fields[name] : placeholder;
+            });
         }
     };
 }(window));

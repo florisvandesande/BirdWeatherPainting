@@ -5,7 +5,7 @@
     var sprig = 'assets/field-sprig.svg';
     var missingInSession = Object.create(null);
     var storageUnavailable = false;
-    var catalogPath = 'assets/plates/catalog.json?v=2';
+    var catalogPath = 'assets/artwork/catalog.json?v=3';
     var catalogState = 'idle';
     var catalog = null;
     var catalogWaiters = [];
@@ -13,6 +13,17 @@
     var failedImages = Object.create(null);
     var perchOrder = null;
     var selectedPerchPath = null;
+    var fallbackPerches = [
+        'assets/artwork/perches/birch-twig.jpg',
+        'assets/artwork/perches/blackthorn-branch.jpg',
+        'assets/artwork/perches/cherry-branch.jpg',
+        'assets/artwork/perches/hawthorn-branch.jpg',
+        'assets/artwork/perches/jack-pine-bough.jpg',
+        'assets/artwork/perches/juniper-sprig.jpg',
+        'assets/artwork/perches/oak-shoot.jpg',
+        'assets/artwork/perches/pine-bough.jpg',
+        'assets/artwork/perches/spruce-bough.jpg'
+    ];
     var appearanceQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
     var commons = 'https://commons.wikimedia.org/wiki/File:Nederlandsche_vogelen_(KB)_-_';
     var publicDomain = 'https://creativecommons.org/publicdomain/mark/1.0/';
@@ -24,7 +35,7 @@
     function historicalPlate(species, file, title, work, source) {
         return {
             species: species,
-            image: 'assets/plates/' + file + '.jpg',
+            image: 'assets/artwork/' + file + '.jpg',
             creator: 'Christiaan Andreas Sepp & Jan Christiaan Sepp',
             title: title,
             work: work,
@@ -236,8 +247,8 @@
         var subject = safeWorkSubject(workSubject);
         return {
             kind: kind,
-            image: 'assets/plates/' + record.path,
-            darkImage: 'assets/plates/' + record.darkPath,
+            image: 'assets/artwork/' + record.path,
+            darkImage: 'assets/artwork/' + record.darkPath,
             workSubject: subject,
             creatorLabelKey: 'collectionPreparer',
             creator: source.creator,
@@ -317,15 +328,19 @@
         return records;
     }
 
+    function shufflePerches(records) {
+        for (var index = records.length - 1; index > 0; index -= 1) {
+            var swap = Math.floor(Math.random() * (index + 1));
+            var item = records[index];
+            records[index] = records[swap];
+            records[swap] = item;
+        }
+    }
+
     function perchCredits(source) {
         if (!perchOrder) {
             perchOrder = source.perches.slice(0);
-            for (var index = perchOrder.length - 1; index > 0; index -= 1) {
-                var swap = Math.floor(Math.random() * (index + 1));
-                var item = perchOrder[index];
-                perchOrder[index] = perchOrder[swap];
-                perchOrder[swap] = item;
-            }
+            shufflePerches(perchOrder);
         }
         var records = [];
         perchOrder.forEach(function (record) {
@@ -343,6 +358,13 @@
             });
         }
         return records;
+    }
+
+    function fallbackPerchPath() {
+        if (!selectedPerchPath || fallbackPerches.indexOf(selectedPerchPath) === -1) {
+            selectedPerchPath = fallbackPerches[Math.floor(Math.random() * fallbackPerches.length)];
+        }
+        return selectedPerchPath;
     }
 
     function readMissing() {
@@ -451,7 +473,11 @@
                 if (!credit) {
                     image.onload = image.onerror = null;
                     image.classList.remove('artwork-loading');
-                    image.setAttribute('src', sprig);
+                    var fallbackPath = species ? sprig : fallbackPerchPath();
+                    if (!species && appearanceQuery && appearanceQuery.matches) {
+                        fallbackPath = fallbackPath.replace(/\.jpg$/, '-dark.jpg');
+                    }
+                    image.setAttribute('src', fallbackPath);
                     if (species) {
                         setMissing(species, true);
                     }
@@ -517,6 +543,12 @@
 
     window.BirdWeatherArtwork = {
         paint: paint,
+        resetPerch: function () {
+            selectedPerchPath = null;
+            if (perchOrder) {
+                shufflePerches(perchOrder);
+            }
+        },
         localCredits: function () {
             return entries(plates);
         },

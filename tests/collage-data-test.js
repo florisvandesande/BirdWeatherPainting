@@ -7,9 +7,9 @@
     var speciesRequests = [];
     var pages = [];
     var species = {
-        '1': { id: '1', commonName: 'First bird', scientificName: 'Avis prima' },
-        '2': { id: '2', commonName: 'Second bird', scientificName: 'Avis secunda' },
-        '3': { id: '3', commonName: 'Newest bird', scientificName: 'Avis tertia' }
+        '1': { id: '1', commonName: 'First bird', scientificName: 'Avis prima', wikipediaSummary: 'First description', wikipediaUrl: 'https://en.wikipedia.org/wiki/Avis_prima', ebirdUrl: 'https://ebird.org/species/avipri' },
+        '2': { id: '2', commonName: 'Second bird', scientificName: 'Avis secunda', wikipediaSummary: 'Second description', wikipediaUrl: 'https://en.wikipedia.org/wiki/Avis_secunda', ebirdUrl: 'https://ebird.org/species/avisec' },
+        '3': { id: '3', commonName: 'Newest bird', scientificName: 'Avis tertia', wikipediaSummary: 'Third description', wikipediaUrl: 'https://en.wikipedia.org/wiki/Avis_tertia', ebirdUrl: 'https://ebird.org/species/aviter' }
     };
     for (var speciesId = 4; speciesId <= 34; speciesId += 1) {
         species[String(speciesId)] = {
@@ -92,6 +92,14 @@
                     'the collage keeps the newest unique species in oldest-to-newest display order');
                 assertEqual(data.dailySpecies.slice(0, 3).map(function (bird) { return bird.id; }), ['3', '2', '1'],
                     'daily rows retain the established ranking across detection pages');
+                assertEqual(data.species.map(function (bird) { return bird.detectionCount; }), [2, 1],
+                    'selected species include their unique detection counts for today');
+                assertEqual(data.dailySpecies.map(function (bird) { return bird.detectionCount; }).slice(0, 3), [1, 2, 1],
+                    'daily species include their unique detection counts for today');
+                assertEqual(data.species[0].wikipediaUrl, 'https://en.wikipedia.org/wiki/Avis_secunda',
+                    'Wikipedia links remain attached to species metadata');
+                assertEqual(data.species[0].ebirdUrl, 'https://ebird.org/species/avisec',
+                    'eBird links remain attached to species metadata');
                 assertEqual(data.dailySpecies.length, 34,
                     'the daily species list includes every unique species beyond the collage limit');
                 assertEqual(speciesRequests.map(function (batch) { return batch.length; }), [32, 2],

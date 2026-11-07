@@ -63,11 +63,37 @@
         label(fields, 'license', credit.license, credit.licenseUrl);
     }
 
+    function addSpeciesFields(parent, species) {
+        var fields = append(parent, 'dl', '');
+        var hasFields = false;
+        if (typeof species.detectionCount === 'number' && isFinite(species.detectionCount)) {
+            label(fields, 'detectedToday', speciesText.formatNumber(locale, species.detectionCount));
+            hasFields = true;
+        }
+        if (species.wikipediaSummary) {
+            label(fields, 'description', species.wikipediaSummary);
+            hasFields = true;
+        }
+        if (species.wikipediaUrl) {
+            label(fields, 'wikipedia', text.message(locale, 'wikipedia'), species.wikipediaUrl);
+            hasFields = true;
+        }
+        if (species.ebirdUrl) {
+            label(fields, 'ebird', text.message(locale, 'ebird'), species.ebirdUrl);
+            hasFields = true;
+        }
+        if (!hasFields) {
+            parent.removeChild(fields);
+        }
+    }
+
     function renderCreditDetails(entry) {
         entry.details.textContent = '';
+        addSpeciesFields(entry.details, entry.species);
         if (entry.credit) {
             addCreditFields(entry.details, entry.credit);
-        } else {
+        } else if (typeof entry.species.detectionCount !== 'number' &&
+                !entry.species.wikipediaSummary && !entry.species.wikipediaUrl && !entry.species.ebirdUrl) {
             append(entry.details, 'p', text.message(locale, 'noArtworkInfo'));
         }
     }

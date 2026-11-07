@@ -35,10 +35,12 @@ has not been completed, so iOS 9 compatibility is not yet confirmed.
 - Open the information icon to see every unique species heard today,
   independent of the collage limit. In Dutch, the page is titled “Alle
   waargenomen vogels vandaag.” Each row shows the localized common name and
-  Latin name. Tap a row to expand its artwork source, collection, creator, and
-  licence details. In the latest-bird view, the daily scan runs when the
-  information page opens; the collage view reuses its existing scan. A copyable
-  list of species that need artwork stays on the same device.
+  Latin name. Tap a row to expand its detection count for today, optional
+  species description, Wikipedia and eBird links, and artwork source,
+  collection, creator, and licence details. In the latest-bird view, the daily
+  scan runs when the information page opens; the collage view reuses its
+  existing scan. A copyable list of species that need artwork stays on the same
+  device.
 - Choose English, Dutch, French, German, Spanish, Italian, or Brazilian
   Portuguese. The browser language is used unless the visitor selects a
   language in Settings.
@@ -133,7 +135,7 @@ for each displayed plate, so it does not fetch both sets during normal use.
 Per-image original source URLs are retained in the catalogue and shown through
 each species row's expanded artwork details. See
 [artwork sources and reuse](docs/artwork.md) and the
-[Fugleramme attribution note](assets/plates/ATTRIBUTION.md).
+[Fugleramme attribution note](assets/artwork/ATTRIBUTION.md).
 
 The source code is under the MIT License. This does not change the separate
 licences for the included artwork.
@@ -167,7 +169,7 @@ source files are present, regenerate the JPEGs and catalogue with Swift on
 macOS:
 
 ```bash
-swift -O scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork assets/plates
+swift -O scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork assets/artwork
 ```
 
 The source directory must contain `manifest.json`, `birds/`, and `perches/`.
@@ -230,14 +232,15 @@ checks. The test uses fixed API responses and does not contact BirdWeather.
 Stop the server with Control-C.
 
 The station search, setup and restore, latest-bird painting, daily-species list,
-and artwork-detail flow were checked in Chrome 157 at mobile, tablet, 1024 × 768,
-and large desktop sizes in light and dark appearances. The controlled
-collage-data test passed with 34 species and two metadata batches of 32 and 2.
-The collage browser fixture passed 6,793 checks at 768 × 1024, 6,769 checks at
-1024 × 768, and 6,769 checks at 1440 × 900. It checks the 32-species cap,
-replacement order, wrapper overlap, non-overlapping artwork and names,
-localization, and page overflow using fixed data and local images. The blackout
-fixture passed its Settings, return-to-black, and scheduled-refresh checks.
+and artwork-detail flow were checked in Chrome at the local 8001 test server.
+The controlled collage-data test passed with 34 species, detection counts, URL
+metadata, and two metadata batches of 32 and 2. The collage browser fixture
+passed 6,155 checks at 872 × 1,153; it checks the 32-species cap, replacement
+order, intentional transparent-wrapper overlap, non-overlapping artwork and
+names, localization, and page overflow using fixed data and local images. The
+blackout fixture passed its Settings, return-to-black, and scheduled-refresh
+checks. The live 8001 app was visually checked in single view, collage view,
+Settings, loading/empty-perch state, and expanded species details.
 
 The live BirdWeather flow and the redesigned app have not had a complete
 cross-browser pass. The physical iPad 2 at 1024 × 768 and iOS 9 Safari acceptance
@@ -256,10 +259,10 @@ The controlled collage browser check is available at
 <http://127.0.0.1:8000/tests/collage-browser.html>. It supplies fixed detection
 responses and local artwork, and checks ordering, replacement, localization,
 wrapper overlap, artwork and name clearance, scrolling, and the 32-species
-limit without contacting BirdWeather. It passed at 768 × 1024, 1024 × 768, and
-1440 × 900. The station, setup, and artwork information flow was also checked
-in Chrome 157 at mobile, tablet, and large desktop viewports in light and dark
-browser appearances.
+limit without contacting BirdWeather. It passed with 6,155 checks at 872 ×
+1,153. The station, setup, and artwork information flow was also checked in
+Chrome at the local 8001 server in Light appearance; a complete dark and Safari
+acceptance pass remains outstanding.
 
 The full app has not been verified in Safari on the physical iPad 2. The iPad 2
 at 1024 × 768 and iOS 9 Safari acceptance pass is still outstanding, so iOS 9

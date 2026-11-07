@@ -3,7 +3,7 @@
 
     var endpoint = 'https://app.birdweather.com/graphql';
     var speciesFields = 'id commonName scientificName translations { locale commonName } ' +
-        'imageUrl imageCredit imageLicense imageLicenseUrl';
+        'imageUrl imageCredit imageLicense imageLicenseUrl wikipediaSummary wikipediaUrl ebirdUrl';
     var latestStationFields = 'id name detections(first: 1) { nodes { timestamp species { ' +
         speciesFields + ' } } }';
     var earthRadiusKm = 6371.0088;
@@ -62,6 +62,12 @@
         return typeof value === 'string' && value.length <= maxLength ? value.trim() : '';
     }
 
+    function safeUrl(value) {
+        return typeof value === 'string' && value.length <= 800 &&
+            /^https:\/\/[a-z0-9.-]+(?::[0-9]{1,5})?(?:[/?#][^\s<>"'\\]*)?$/i.test(value) ?
+            value : '';
+    }
+
     function readSpecies(node) {
         var id = node && readId(node.id);
         var scientificName = node && safeName(node.scientificName, 160);
@@ -76,7 +82,10 @@
             imageUrl: safeName(node.imageUrl, 512),
             imageCredit: safeName(node.imageCredit, 1024),
             imageLicense: safeName(node.imageLicense, 80),
-            imageLicenseUrl: safeName(node.imageLicenseUrl, 512)
+            imageLicenseUrl: safeName(node.imageLicenseUrl, 512),
+            wikipediaSummary: safeName(node.wikipediaSummary, 4000),
+            wikipediaUrl: safeUrl(node.wikipediaUrl),
+            ebirdUrl: safeUrl(node.ebirdUrl)
         };
     }
 

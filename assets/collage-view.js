@@ -33,8 +33,8 @@
             var columns = Math.max(1, Math.round(Math.sqrt(count * aspect)));
             var rows = Math.ceil(count / columns);
             return {
-                width: Math.min(0.9 / columns, 0.2),
-                height: Math.min(0.86 / rows, aspect < 1 ? 0.18 : 0.26),
+                width: Math.min(0.96 / columns, 0.28),
+                height: Math.min(0.9 / rows, aspect < 1 ? 0.24 : 0.32),
                 aspect: aspect
             };
         }
@@ -69,16 +69,9 @@
         function overlaps(first, second, width, height) {
             var firstRegions = visibleRegions(first, width, height);
             var secondRegions = visibleRegions(second, width, height);
-            var firstIndex;
-            var secondIndex;
-            for (firstIndex = 0; firstIndex < firstRegions.length; firstIndex += 1) {
-                for (secondIndex = 0; secondIndex < secondRegions.length; secondIndex += 1) {
-                    if (rectanglesOverlap(firstRegions[firstIndex], secondRegions[secondIndex])) {
-                        return true;
-                    }
-                }
-            }
-            return false;
+            return rectanglesOverlap(firstRegions[0], secondRegions[1]) ||
+                rectanglesOverlap(firstRegions[1], secondRegions[0]) ||
+                rectanglesOverlap(firstRegions[1], secondRegions[1]);
         }
 
         function fits(positionList, candidateLayout) {
@@ -139,7 +132,7 @@
                             var side = random() < 0.5 ? -1 : 1;
                             var anchor = positionList[anchorIndex].position;
                             var clustered = {
-                                x: anchor.x + side * layout.width * (0.86 + random() * 0.12),
+                                x: anchor.x + side * layout.width * (0.72 + random() * 0.08),
                                 y: anchor.y + (random() - 0.5) * layout.height * 0.9
                             };
                             if (clustered.x < horizontalMargin || clustered.x > 1 - horizontalMargin ||
@@ -201,7 +194,7 @@
                         Math.max(minimumBoardDimension * 0.25, bestDistance * 0.3) :
                         (positionList.length === 1 ?
                             Math.max(minimumBoardDimension * 0.42, bestDistance * 0.38) :
-                            Math.max(minimumBoardDimension * 0.08, bestDistance * 0.3));
+                            Math.max(minimumBoardDimension * 0.03, bestDistance * 0.2));
                     var eligible = candidates.filter(function (entry) {
                         return entry.distance >= minimumDistance;
                     });

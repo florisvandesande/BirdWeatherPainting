@@ -7,9 +7,10 @@
     min-width: 44px;
     min-height: 44px;
     padding: 0.35em 0.8em;
-    border: 1px solid #82633d;
-    border-radius: 3px;
-    background: #fbf4df;
+    border: 0;
+    border-bottom: 1px solid #82633d;
+    border-radius: 0;
+    background: transparent;
     color: #38281c;
     font: inherit;
     cursor: pointer;
@@ -181,8 +182,8 @@
     margin: 0 0 0.7em;
     padding: 0.6em;
     border: 1px solid #82633d;
-    border-radius: 3px;
-    background: #fbf4df;
+    border-radius: 0;
+    background: transparent;
     color: #38281c;
     font: inherit;
 }
@@ -196,7 +197,7 @@
 @media (prefers-color-scheme: dark) {
     .artwork-info button {
         border-color: #b59a70;
-        background: #31271e;
+        background: transparent;
         color: #f8eddb;
     }
 
@@ -224,7 +225,7 @@
 
     .artwork-sheet textarea {
         border-color: #b59a70;
-        background: #2c241d;
+        background: transparent;
         color: #f8eddb;
     }
 
