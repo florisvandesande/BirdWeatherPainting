@@ -164,3 +164,27 @@
         font-size: 0.72rem;
     }
 }
+
+@media (prefers-color-scheme: dark) {
+    .collage-specimen {
+        border-color: #8c775d;
+        background: rgba(37, 34, 29, 0.55);
+    }
+
+    .collage-hero {
+        border-color: #b59a70;
+        background: rgba(37, 34, 29, 0.82);
+    }
+
+    .collage-specimen figcaption {
+        color: #f4ecdf;
+    }
+
+    .collage-scientific-name {
+        color: #e3c38e;
+    }
+
+    .collage-name-plate figcaption::before {
+        border-color: #b59a70;
+    }
+}

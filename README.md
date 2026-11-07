@@ -8,20 +8,25 @@ for a wall-mounted iPad.
 
 The latest-bird and today-collage views, station and nearby setup, artwork
 credits, and optional night schedule are implemented on the local integration
-branch. The project is not deployed. Desktop checks have covered the earlier
-station, setup, and artwork flows; the finished collage and artwork changes
-still need a complete browser pass. The physical iPad 2/iOS 9 acceptance pass
-has not been completed, so iOS 9 compatibility is not yet confirmed.
+branch. The project is not deployed. The latest-bird painting presents the
+artwork and localized bird names with Settings and artwork-information
+controls. The simplified painting, collage, and artwork changes still need a
+complete browser pass. The physical iPad 2/iOS 9 acceptance pass has not been
+completed, so iOS 9 compatibility is not yet confirmed.
 
 ## Features
 
 - Show the latest detected species or today's collage of unique species.
+- Keep the latest-bird painting focused on its artwork, translated common
+  name, and scientific name, with labeled Settings and artwork-information
+  controls.
 - Select one public station or nearby stations within 2, 5, or 10 kilometres.
 - Rank collage species by detection count while keeping the newest species as
   the centrepiece. Set the collage limit from 2 to 32; the default is 12.
 - Use the local Fugleramme Classic bird illustrations and perches. Empty days
-  show a randomly selected empty perch. The artwork background uses the same
-  `#f0ece6` paper color as the images.
+  show a random local perch that stays selected for the page session. The light
+  canvas matches the `#f0ece6` paper color in the images; the dark appearance
+  uses a dark canvas.
 - Open one information page for the displayed artist, collection, source,
   licence, and image changes. Keep a list of species that need artwork on the
   same device.
@@ -196,9 +201,9 @@ it for the domain.
 The previous station, setup, and artwork information flow was checked in
 Chrome 157 at mobile, tablet, 1024 × 768, and large desktop viewports in light
 and dark browser appearances. Collage data and URL settings received controlled
-JavaScriptCore checks. The full collage and Fugleramme rendering have not yet
-received a complete browser pass. Safari automation and the physical iPad 2
-were unavailable in the current environment.
+JavaScriptCore checks. The simplified painting, full collage, and Fugleramme
+rendering have not yet received a complete browser pass. Safari automation and
+the physical iPad 2 were unavailable in the current environment.
 
 The unrelated repository server-synchronization shell check is not required to
 run or host this static application.

@@ -12,29 +12,27 @@
 </head>
 <body>
     <main id="painting" class="painting" aria-labelledby="plate-title" hidden>
-        <header class="plate-header">
-            <p class="book-title" data-text="title"></p>
-            <p id="station-name" class="station-name" dir="auto"></p>
-        </header>
         <section id="latest-plate" class="plate-content">
-            <img id="latest-art" class="plate-art" src="assets/field-sprig.svg" alt="">
+            <img id="latest-art" class="plate-art" src="assets/field-sprig.svg" alt="" draggable="false">
             <div class="plate-caption" aria-live="polite">
                 <h1 id="plate-title" dir="auto"></h1>
                 <p id="plate-detail" dir="auto"></p>
-                <p id="detection-time" hidden><time></time></p>
             </div>
         </section>
         <section id="collage" class="collage" aria-labelledby="collage-title" hidden>
-            <h1 id="collage-title"></h1>
+            <h1 id="collage-title" class="visually-hidden"></h1>
             <div id="collage-board" class="collage-board"></div>
         </section>
-        <footer class="plate-footer">
-            <p id="collage-omitted" hidden></p>
-            <p id="observation-note" hidden></p>
-            <p id="connection-status" role="status"></p>
-        </footer>
-        <button id="open-settings" class="painting-settings" type="button" aria-controls="setup" data-text="settingsTitle"></button>
-        <button type="button" id="artwork-button" class="artwork-button" aria-controls="artwork-info" aria-expanded="false">i</button>
+        <button id="open-settings" class="painting-settings" type="button" aria-controls="setup" aria-label="Settings">
+            <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" focusable="false">
+                <path d="M4 6h7M15 6h5M4 12h3M11 12h9M4 18h9M17 18h3"
+                    fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"></path>
+                <circle cx="13" cy="6" r="2" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+                <circle cx="9" cy="12" r="2" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+                <circle cx="15" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
+            </svg>
+        </button>
+        <button type="button" id="artwork-button" class="artwork-button" aria-label="Artwork information" aria-controls="artwork-info" aria-expanded="false">i</button>
         <section id="artwork-info" class="artwork-info" role="dialog" aria-modal="true" aria-labelledby="artwork-title" hidden>
             <div class="artwork-sheet">
                 <button type="button" id="artwork-close" data-artwork-text="back"></button>

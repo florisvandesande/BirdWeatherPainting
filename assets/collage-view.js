@@ -11,7 +11,6 @@
         var collage = document.getElementById('collage');
         var title = document.getElementById('collage-title');
         var board = document.getElementById('collage-board');
-        var omitted = document.getElementById('collage-omitted');
         var plates = [];
         var contentKey = '';
         var generation = 0;
@@ -89,7 +88,6 @@
             board.textContent = '';
             collage.hidden = true;
             latest.hidden = false;
-            omitted.hidden = true;
             painting.setAttribute('aria-labelledby', 'plate-title');
             publishCredits();
         }
@@ -119,10 +117,6 @@
                 }
             });
             title.textContent = text.message(locale, 'displayViewToday');
-            omitted.textContent = result.omitted ? text.message(locale,
-                result.omitted === 1 ? 'collageOneOmitted' : 'collageOmitted',
-                { count: result.omitted }) : '';
-            omitted.hidden = !result.omitted;
             collage.hidden = false;
             latest.hidden = true;
             painting.setAttribute('aria-labelledby', 'collage-title');

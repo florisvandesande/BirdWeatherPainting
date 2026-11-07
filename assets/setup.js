@@ -106,7 +106,7 @@
         renderNightStatus();
         title.textContent = say(config ? 'settingsTitle' : 'welcomeTitle');
         saveButton.textContent = say(config ? 'saveSettings' : 'openPainting');
-        openButton.textContent = say('settingsTitle');
+        openButton.setAttribute('aria-label', say('settingsTitle'));
         searchStatus.textContent = statusKey ? say(statusKey) : '';
         locationStatus.textContent = locationStatusKey ? say(locationStatusKey) : '';
         renderSelection();
@@ -375,7 +375,7 @@
     }
 
     if (config && savedNight) {
-        openButton.textContent = say('settingsTitle');
+        openButton.setAttribute('aria-label', say('settingsTitle'));
     } else {
         openSetup(false);
     }

@@ -4,6 +4,10 @@ Date: 2026-11-06.
 
 ## Completed checks
 
+- On 2026-11-07, the painting markup passed structural checks for unique IDs,
+  accessible control names and targets, and removed routine painting notes.
+  Node's JavaScript parser accepted the changed painting, setup, and collage
+  scripts. These checks do not verify rendered layout or interactions.
 - The station search, setup/save/restore, latest-bird display, artwork
   information page, and earlier licensed-art fallback were exercised in
   Chrome 157 at 390 × 844, 820 × 1180, 1024 × 768, 1440 × 900, and 2560 ×
@@ -21,6 +25,12 @@ Date: 2026-11-06.
 
 ## Still unverified
 
+- The simplified latest-bird painting changes from 2026-11-07 were not
+  exercised in a browser. The Computer Use service failed to start and exposed
+  no browser or app inventory, so no browser version, viewport, appearance, or
+  interaction result is available. Chrome and Safari checks at 390 × 844,
+  820 × 1180, 1440 × 900, and 2560 × 1440 in light and dark appearances remain
+  required.
 - The complete collage and new Fugleramme flows have not received a full
   browser pass at the supported viewport sizes.
 - The app has not been checked in Safari on a physical iPad 2 at 1024 × 768.

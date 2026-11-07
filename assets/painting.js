@@ -7,18 +7,13 @@
     var config = preferences.read();
     var locale = preferences.locale();
     var painting = document.getElementById('painting');
+    var caption = document.querySelector('.plate-caption');
     var title = document.getElementById('plate-title');
     var detail = document.getElementById('plate-detail');
     var image = document.getElementById('latest-art');
     var artwork = window.BirdWeatherArtwork;
     var artworkInfo = window.BirdWeatherArtworkInfo;
-    var stationName = document.getElementById('station-name');
-    var detectionTime = document.getElementById('detection-time');
-    var time = detectionTime.getElementsByTagName('time')[0];
-    var observationNote = document.getElementById('observation-note');
-    var connectionStatus = document.getElementById('connection-status');
     var sourceActive = Boolean(config);
-    var nearby = config && config.source === 'nearby';
     var schedule = preferences.readNight();
     var display = preferences.readDisplay();
     var collageSource = config && display.view === 'today' && window.BirdWeatherCollageData.create(config, display.limit);
@@ -32,60 +27,50 @@
         return text.message(locale, key, fields);
     }
 
-    function showStationHelp(state) {
-        title.textContent = say(state);
-        detail.textContent = say(state + 'Detail');
-    }
-
     function setText(element, value) {
         if (element.textContent !== value) {
             element.textContent = value;
         }
     }
 
-    function setConnectionStatus(state) {
-        connectionState = state;
-        setText(connectionStatus, state ? say(state) : '');
+    function nameEmptyPainting() {
+        detail.className = '';
+        title.removeAttribute('lang');
+        painting.removeAttribute('aria-labelledby');
+        painting.setAttribute('aria-label', say('perch'));
+        caption.hidden = true;
+        setText(title, '');
+        setText(detail, '');
     }
 
-    function emptyState(result) {
-        if (nearby) {
-            return result.hasStations ? 'nearbyEmpty' : 'nearbyNoStations';
-        }
-        return 'emptyDay';
+    function showStationHelp(state) {
+        detail.className = '';
+        title.removeAttribute('lang');
+        painting.removeAttribute('aria-label');
+        painting.setAttribute('aria-labelledby', 'plate-title');
+        caption.hidden = false;
+        title.textContent = say(state);
+        detail.textContent = say(state + 'Detail');
+    }
+
+    function setConnectionStatus(state) {
+        connectionState = state;
     }
 
     function showLatest(result) {
         var observation = result.observation;
-        var heading = nearby ?
-            say(result.stationName ? 'nearbyDetectionHeading' : 'nearbyHeading',
-                { radius: config.radius, name: result.stationName }) : result.stationName;
-        setText(stationName, heading);
         detail.className = observation ? 'scientific-name' : '';
         if (!observation) {
-            setText(title, say('perch'));
-            title.removeAttribute('lang');
-            setText(detail, say('emptyBranch'));
-            detectionTime.hidden = true;
-            observationNote.hidden = false;
-            setText(observationNote, say(emptyState(result)));
+            nameEmptyPainting();
             return;
         }
+        painting.removeAttribute('aria-label');
+        painting.setAttribute('aria-labelledby', 'plate-title');
+        caption.hidden = false;
         var common = text.speciesName(locale, observation.species);
         setText(title, common.name);
         title.setAttribute('lang', common.language);
         setText(detail, observation.species.scientificName);
-        detectionTime.hidden = false;
-        time.setAttribute('datetime', observation.timestamp);
-        setText(time, say('observed', { time: text.formatDate(locale, observation), zone: observation.zone }));
-        var now = new Date();
-        var heard = new Date(observation.time);
-        // Nearby observations can span time zones. Compare days in the device's calendar.
-        var older = nearby ? heard < now && heard.toDateString() !== now.toDateString() :
-            observation.timestamp.slice(0, 10) <
-                new Date(now.getTime() + observation.offsetMinutes * 60000).toISOString().slice(0, 10);
-        observationNote.hidden = !older;
-        setText(observationNote, older ? say('older') : '');
     }
 
     function load(complete) {
@@ -97,27 +82,21 @@
     }
 
     function showCollage(result) {
-        setText(stationName, nearby ? say('nearbyHeading', { radius: config.radius }) : result.stationName);
         collageView.show(result, locale);
         if (!result.species.length) {
-            var state = nearby && !result.hasStations ? 'nearbyNoStations' : 'collageEmpty';
-            detail.className = '';
-            setText(title, say('perch'));
-            title.removeAttribute('lang');
-            setText(detail, say('emptyBranch'));
-            detectionTime.hidden = true;
-            observationNote.hidden = false;
-            setText(observationNote, say(state));
-        } else {
-            observationNote.hidden = true;
+            nameEmptyPainting();
+            return;
         }
+        caption.hidden = true;
     }
 
     function showLoading() {
+        painting.removeAttribute('aria-labelledby');
+        painting.setAttribute('aria-label', say('title'));
         detail.className = '';
+        caption.hidden = true;
+        setText(title, '');
         setText(detail, '');
-        setText(stationName, nearby ? say('nearbyHeading', { radius: config.radius }) : '');
-        setText(title, say('loading'));
     }
 
     function checkDay(now) {
@@ -137,7 +116,13 @@
         if (state === 'collageZoneUnavailable') {
             showStationHelp('collageZone');
         } else {
+            detail.className = '';
+            title.removeAttribute('lang');
+            painting.removeAttribute('aria-label');
+            painting.setAttribute('aria-labelledby', 'plate-title');
+            caption.hidden = false;
             setText(title, say('connectionTitle'));
+            setText(detail, say('unavailable'));
         }
     }
 
@@ -183,24 +168,13 @@
         } else if (!lastResult) {
             showConnectionProblem(error);
         }
-        var status = error ? (error === 'collageZoneUnavailable' ? error : 'unavailable') : null;
-        if (!error) {
-            if (collageView && !result.species.length) {
-                status = nearby && !result.hasStations ? 'nearbyNoStationsDetail' : 'collageEmptyDetail';
-            } else if (!collageView && !result.observation) {
-                var state = emptyState(result);
-                status = nearby ? state + 'Detail' : 'emptyDetail';
-            }
-        }
-        setConnectionStatus(status);
+        setConnectionStatus(error ? (error === 'collageZoneUnavailable' ? error : 'unavailable') : null);
     }
 
     function renderLocale() {
         locale = preferences.locale();
         document.documentElement.lang = locale;
         document.title = say('title');
-        setText(document.querySelector('#painting [data-text="title"]'), document.title);
-        setConnectionStatus(connectionState);
         if (lastResult) {
             if (collageView) {
                 showCollage(lastResult);

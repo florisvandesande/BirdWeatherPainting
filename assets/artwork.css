@@ -2,7 +2,6 @@
     visibility: hidden;
 }
 
-.artwork-button,
 .artwork-info button {
     box-sizing: border-box;
     min-width: 44px;
@@ -21,9 +20,20 @@
     z-index: 1;
     right: 25px;
     bottom: 25px;
+    box-sizing: border-box;
+    min-width: 44px;
+    min-height: 44px;
     padding: 0;
-    font-size: 1.2rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    color: #38281c;
+    font: inherit;
+    font-size: 1.35rem;
     font-style: italic;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: pointer;
 }
 
 .artwork-info {
@@ -109,10 +119,13 @@
 }
 
 @media (prefers-color-scheme: dark) {
-    .artwork-button,
     .artwork-info button {
         border-color: #b59a70;
         background: #31271e;
+        color: #f8eddb;
+    }
+
+    .artwork-button {
         color: #f8eddb;
     }
 
