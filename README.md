@@ -7,37 +7,38 @@ for a wall-mounted iPad.
 ## Status
 
 The latest-bird and today-collage views, station and nearby setup, daily bird
-information page, and optional night schedule are implemented on the local
-integration branch. The project is not deployed. The latest-bird painting
-presents the artwork and localized bird names with Settings and a daily-species
-information control. The collage gives each unique species equal prominence,
-preserves its placement when that species is heard again, and replaces the
-oldest displayed species when the configured limit is reached. The controlled
-collage browser fixture passed at iPad portrait, iPad landscape, and desktop
-sizes. The physical iPad 2/iOS 9 acceptance pass has not been completed, so iOS
-9 compatibility is not yet confirmed.
+information page, and optional night schedule are implemented locally. The
+project is not deployed. The latest-bird painting shows the artwork, localized
+common name, Latin name, and two small controls. The collage gives each unique
+species equal prominence, preserves its placement when that species is heard
+again, and replaces the oldest displayed species when the configured limit is
+reached. The information page lists every unique species heard today regardless
+of the collage limit. The controlled collage fixture passed at iPad portrait,
+iPad landscape, and desktop sizes. The physical iPad 2/iOS 9 acceptance pass
+has not been completed, so iOS 9 compatibility is not yet confirmed.
 
 ## Features
 
 - Show the latest detected species or today's collage of unique species.
-- Keep the latest-bird painting focused on its artwork, translated common
-  name, and scientific name, with labeled Settings and artwork-information
-  controls.
+- Keep the latest-bird painting focused on the artwork, localized common name,
+  and Latin name. The painting has small Settings and information icons without
+  visible button borders or backgrounds.
 - Select one public station or nearby stations within 2, 5, or 10 kilometres.
 - Arrange unique species in an organic collage with equal visual prominence.
   Repeated detections keep a bird's place; at the selected limit, a new species
   replaces the displayed species whose latest detection is oldest. Set the
   collage limit from 2 to 32; the default is 12.
 - Use the local Fugleramme Classic bird illustrations and perches. Empty days
-  show a random local perch that stays selected for the page session. The light
-  canvas matches the `#f0ece6` paper color in the images; the dark appearance
-  uses a matching `#171512` canvas and artwork variant.
-- Open a list of every unique species heard today, with a translated common
-  name, scientific name, and artwork or the existing fallback. Expand one row
-  at a time to see its artist, collection, source, and licence. In the latest-
-  bird view, the daily scan runs when the information page opens; the collage
-  view reuses its existing daily scan. Keep a copyable list of species that
-  need artwork on the same device.
+  show a random local perch without a listening message. The light canvas
+  matches the `#f0ece6` paper color in the images; the dark appearance uses a
+  matching `#171512` canvas and artwork variant.
+- Open the information icon to see every unique species heard today,
+  independent of the collage limit. In Dutch, the page is titled “Alle
+  waargenomen vogels vandaag.” Each row shows the localized common name and
+  Latin name. Tap a row to expand its artwork source, collection, creator, and
+  licence details. In the latest-bird view, the daily scan runs when the
+  information page opens; the collage view reuses its existing scan. A copyable
+  list of species that need artwork stays on the same device.
 - Choose English, Dutch, French, German, Spanish, Italian, or Brazilian
   Portuguese. The browser language is used unless the visitor selects a
   language in Settings.
@@ -71,7 +72,7 @@ Clone the repository and start a local static web server from its root:
 ```bash
 git clone https://github.com/florisvandesande/BirdWeatherPainting.git
 cd BirdWeatherPainting
-python3 -m http.server 8000
+python3 -m http.server 8000 --bind 127.0.0.1
 ```
 
 Open <http://127.0.0.1:8000/> in a browser. Choose a public BirdWeather
@@ -220,7 +221,7 @@ Run the controlled daily-species data check by starting the static server from
 the repository root and opening its test page:
 
 ```bash
-python3 -m http.server 8000
+python3 -m http.server 8000 --bind 127.0.0.1
 ```
 
 Open <http://127.0.0.1:8000/tests/collage-data-test.html>. A passing page lists
@@ -228,12 +229,21 @@ the collage-limit, daily-species, metadata, omitted-count, and pagination
 checks. The test uses fixed API responses and does not contact BirdWeather.
 Stop the server with Control-C.
 
-The previous station, setup, and artwork information flow was checked in
-Chrome 157 at mobile, tablet, 1024 × 768, and large desktop viewports in light
-and dark browser appearances. The new daily-species data path passed a
-controlled JavaScriptCore check. The new list layout and expansion still need
-a full Chrome and Safari browser pass. Safari automation and the physical iPad 2
-were unavailable in the current environment.
+The station search, setup and restore, latest-bird painting, daily-species list,
+and artwork-detail flow were checked in Chrome 157 at mobile, tablet, 1024 × 768,
+and large desktop sizes in light and dark appearances. The controlled
+collage-data test passed with 34 species and two metadata batches of 32 and 2.
+The collage browser fixture passed 6,793 checks at 768 × 1024, 6,769 checks at
+1024 × 768, and 6,769 checks at 1440 × 900. It checks the 32-species cap,
+replacement order, wrapper overlap, non-overlapping artwork and names,
+localization, and page overflow using fixed data and local images. The blackout
+fixture passed its Settings, return-to-black, and scheduled-refresh checks.
+
+The live BirdWeather flow and the redesigned app have not had a complete
+cross-browser pass. The physical iPad 2 at 1024 × 768 and iOS 9 Safari acceptance
+pass is still outstanding; iOS 9 compatibility is not confirmed. See
+[the verification record](docs/verification.md) for completed and pending
+checks.
 
 To run the scheduled-blackout interaction check, start the local server from
 the repository root using the command in [Getting started](#getting-started),

@@ -1,6 +1,6 @@
 # Artwork sources and reuse
 
-Open the **i** button at the lower right of the painting for the current artwork's credit, other available artwork, and the list of missing illustrations. Choose **Select list** and use your device's Copy command to collect the species names and BirdWeather IDs. The list stays in browser storage on that device and contains only species identifiers and names. Clearing the site's browser data clears the list. If the browser blocks storage, the list is available while the page stays open.
+Open the **i** button at the lower right of the painting to see **Alle waargenomen vogels vandaag**, a list of every unique species heard today regardless of the collage limit. Each row shows the localized common name above the Latin name. Tap a row to expand its artwork credit, source, collection, creator, and licence details. The page also shows missing illustrations. Choose **Select list** and use your device's Copy command to collect their species names and BirdWeather IDs. The list stays in browser storage on that device and contains only species identifiers and names. Clearing the site's browser data clears the list. If the browser blocks storage, the list is available while the page stays open.
 
 ## Fugleramme Classic collection
 
@@ -11,11 +11,10 @@ chosen for the current page session. BirdWeather's scientific names are matched
 through the included BirdNET alias map; the displayed common name continues to
 come from BirdWeather's translations.
 
-When the selected station or nearby area has no detections, the painting uses a
-random perch from the local collection and keeps that perch while the page is
-open. The heading reads “Perch” and the caption explains that it is an empty
-branch. These images work without requesting an artwork image from a third-party
-host.
+When the selected station or nearby area has no detections, the painting shows
+a random perch from the local collection and keeps that perch while the page is
+open. It does not show a listening message or empty-state caption. These images
+work without requesting an artwork image from a third-party host.
 
 The source files supplied for this app were WebP. The app prepares a light and a
 dark JPEG for each illustration, with a maximum edge of 600 pixels for older

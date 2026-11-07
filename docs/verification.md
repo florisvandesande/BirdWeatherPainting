@@ -4,61 +4,54 @@ Date: 2026-11-07.
 
 ## Completed checks
 
-- On 2026-11-07, the painting markup passed structural checks for unique IDs,
-  accessible control names and targets, and removed routine painting notes.
-  Node's JavaScript parser accepted the changed painting, setup, and collage
-  scripts. These checks do not verify rendered layout or interactions.
-- The station search, setup/save/restore, latest-bird display, artwork
-  information page, and earlier licensed-art fallback were exercised in
-  Chrome 157 at 390 × 844, 820 × 1180, 1024 × 768, 1440 × 900, and 2560 ×
-  1440 in light and dark browser appearances. No viewport overflow was found
-  in those earlier flows.
-- The collage implementer used JavaScriptCore to check paginated detections,
-  unique-species ranking and tie breaks, date rollover, API failures, URL
-  settings, nearby-coordinate privacy, and translation keys in all seven
-  locales. A separate data check covered 96,333 UTC offsets across 598 time
-  zone names and aliases.
-- The daily-species data fixture passed a controlled JavaScriptCore run with 34
-  unique species and a collage limit of two. It confirmed that collage ranking,
-  membership, and the omitted count stay unchanged while the information page
-  receives metadata for every species in API-sized batches.
-- The local artwork converter processed 1,355 bird illustrations and nine
-  perches. Representative converted images were inspected at their prepared
-  size. The full app has not yet been exercised with the new Fugleramme
-  collection in a browser.
-- The artwork generator now emits one light and one dark JPEG for each of the
-  1,355 bird illustrations and nine perches. A catalogue check confirmed all
-  1,364 dark paths exist; the dark set adds 83.7 MiB. The blackbird, blue tit,
-  stonechat, and pine-bough dark previews were inspected. These file checks do
-  not verify browser rendering or scrolling.
+- The painting markup passed structural checks for unique IDs, accessible
+  control names and targets, and removal of the book title, station name, and
+  detection-time text from the painting. Node's JavaScript parser accepted the
+  changed painting, setup, artwork, and collage scripts.
+- The station search, setup and restore, latest-bird painting, daily-species
+  list, artwork details, and earlier licensed-art fallback were exercised in
+  Chrome 157 at 390 × 844, 820 × 1180, 1024 × 768, 1440 × 900, and 2560 × 1440
+  in light and dark appearances. No viewport overflow was found in those flows.
+- Settings was checked on the shared paper canvas in iPad portrait, iPad
+  landscape, and desktop sizes. Pointer opening does not leave an outline around
+  the Settings heading; keyboard focus remains visible.
+- The daily-species page showed all 25 unique species in the controlled preview
+  while the collage limit was 12. It displayed the localized common name and
+  Latin name, expanded a row to show artwork details, and omitted the artwork
+  edit summary.
+- The controlled collage-data test passed with 34 unique species, a collage
+  limit of two, and metadata batches of 32 and 2. It checks paginated detections,
+  the existing station/day query, the collage limit, replacement of the oldest
+  displayed unique species, and the complete daily-species result.
+- The controlled collage browser fixture passed 6,793 checks at 768 × 1024,
+  6,769 at 1024 × 768, and 6,769 at 1440 × 900. It checks the 32-species cap,
+  equal treatment of species, stable placement after repeated detections,
+  replacement ordering, intentional overlap between transparent wrappers,
+  non-overlapping artwork and names, localization, and page overflow. The
+  fixture uses fixed API responses and local artwork, not live BirdWeather data.
+- The controlled blackout fixture passed its checks for opening Settings from
+  the black screen, returning to black while the schedule is active, and
+  refreshing the painting after the scheduled period ends.
+- The artwork converter processed 1,355 bird illustrations and nine perches.
+  A catalogue check confirmed all 1,364 paired dark image paths exist; the dark
+  set adds 83.7 MiB. Representative light and dark previews were inspected.
+- The collage data implementer also checked paginated detections, unique-species
+  ranking, date rollover, API failures, URL settings, nearby-coordinate
+  privacy, and translation keys in all seven supported locales. A separate
+  data check covered 96,333 UTC offsets across 598 time-zone names and aliases.
 
 ## Still unverified
 
-- The simplified latest-bird painting changes from 2026-11-07 were not
-  exercised in a browser. The Computer Use service failed to start and exposed
-  no browser or app inventory, so no browser version, viewport, appearance, or
-  interaction result is available. Chrome and Safari checks at 390 × 844,
-  820 × 1180, 1440 × 900, and 2560 × 1440 in light and dark appearances remain
-  required.
-- The shared Settings canvas, Settings scrolling, and theme-specific artwork
-  selection from ticket #3 have not yet received a browser check. CUA rejected
-  the local `file://` URL under its browser URL policy, and the sandbox denied
-  binding a local Python HTTP server. The parent agent will complete the
-  browser-visible check from its authorized preview environment.
-- The complete collage and new Fugleramme flows have not received a full
-  browser pass at the supported viewport sizes.
-- Ticket #5's daily-species list and inline artwork details have not received a
-  Chrome or Safari interaction and layout check. The local preview could not be
-  opened from this subagent because the browser URL policy blocked `file://`
-  pages and the local server was not reachable; the parent agent can verify the
-  browser-visible seam from its preview environment.
-- The app has not been checked in Safari on a physical iPad 2 at 1024 × 768.
-  No physical iPad was available to this session, so the device's iOS and Safari
-  versions and all touch, installation, and Auto-Lock behavior remain
-  unverified. Do not claim iOS 9 compatibility until that acceptance pass
-  succeeds.
-- Safari WebDriver was unavailable because Remote Automation was not enabled
-  on the current Mac. This check did not change the Mac's automation settings.
+- The complete live-data flow against BirdWeather and the redesigned app across
+  Chrome and Safari have not received a full cross-browser pass. The new collage
+  layout fixture uses controlled responses and has not been checked in dark
+  appearance.
+- Safari on a physical iPad 2 at 1024 × 768 has not been checked. The device's
+  iOS and Safari versions, touch behavior, Add to Home Screen installation, and
+  Auto-Lock behavior are still unverified. Do not claim iOS 9 compatibility
+  until the physical acceptance pass succeeds.
+- Safari WebDriver was unavailable because Remote Automation was not enabled on
+  the Mac. This check did not change the Mac's automation settings.
 
 ## Environment note
 
