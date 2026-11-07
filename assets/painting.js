@@ -16,10 +16,10 @@
     var sourceActive = Boolean(config);
     var schedule = preferences.readNight();
     var display = preferences.readDisplay();
-    var collageSource = config && display.view === 'today' && window.BirdWeatherCollageData.create(config, display.limit);
+    var dailySource = config && window.BirdWeatherCollageData.create(config, display.limit);
+    var collageSource = dailySource && display.view === 'today' ? dailySource : null;
     var collageView = collageSource && window.BirdWeatherCollageView.create();
     var emptyArtworkDate = null;
-    var emptyArtworkCredit = null;
     var lastResult = null;
     var connectionState = null;
 
@@ -82,6 +82,7 @@
     }
 
     function showCollage(result) {
+        artworkInfo.setDailySpecies(result.dailySpecies);
         collageView.show(result, locale);
         if (!result.species.length) {
             nameEmptyPainting();
@@ -105,7 +106,6 @@
         }
         lastResult = null;
         emptyArtworkDate = null;
-        emptyArtworkCredit = null;
         collageView.clear();
         showLoading();
         setConnectionStatus('refreshing');
@@ -126,25 +126,12 @@
         }
     }
 
-    function setPlateCredit(credit) {
-        artworkInfo.setDisplayed(credit ? [credit] : []);
-    }
-
     function paintEmptyCollage(date) {
         if (emptyArtworkDate === date) {
-            setPlateCredit(emptyArtworkCredit);
             return;
         }
         emptyArtworkDate = date;
-        emptyArtworkCredit = null;
-        artwork.paint(image, null, function (credit) {
-            if (emptyArtworkDate === date) {
-                emptyArtworkCredit = credit;
-                if (lastResult && !lastResult.species.length) {
-                    setPlateCredit(credit);
-                }
-            }
-        });
+        artwork.paint(image, null, function () {});
     }
 
     function renderResult(error, result) {
@@ -163,7 +150,7 @@
                 }
             } else {
                 showLatest(result);
-                artwork.paint(image, result.observation && result.observation.species, setPlateCredit);
+                artwork.paint(image, result.observation && result.observation.species, function () {});
             }
         } else if (!lastResult) {
             showConnectionProblem(error);
@@ -190,6 +177,14 @@
         }
     }
 
+    artworkInfo.setDailyLoader(dailySource ? function (complete) {
+        return dailySource.load(function (error, result) {
+            if (!error) {
+                artworkInfo.setDailySpecies(result.dailySpecies);
+            }
+            complete(error, result);
+        });
+    } : null, !collageSource);
     artworkInfo.setLocale(locale);
     document.addEventListener('birdweather-language', renderLocale);
     renderLocale();

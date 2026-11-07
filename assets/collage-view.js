@@ -2,7 +2,6 @@
     'use strict';
 
     var artwork = window.BirdWeatherArtwork;
-    var artworkInfo = window.BirdWeatherArtworkInfo;
     var text = window.BirdWeatherText;
 
     function create() {
@@ -14,10 +13,6 @@
         var plates = [];
         var contentKey = '';
         var generation = 0;
-
-        function publishCredits() {
-            artworkInfo.setDisplayed(plates.map(function (plate) { return plate.credit; }));
-        }
 
         function makePlate(species, parent, hero) {
             var figure = document.createElement('figure');
@@ -39,7 +34,7 @@
             if (hero) {
                 figure.classList.add('collage-hero');
             }
-            var plate = { image: image, name: name, species: species, credit: null };
+            var plate = { image: image, name: name, species: species };
             plates.push(plate);
             var createdAt = generation;
             artwork.paint(image, species, function (credit) {
@@ -47,8 +42,6 @@
                     return;
                 }
                 figure.classList.toggle('collage-name-plate', !credit);
-                plate.credit = credit;
-                publishCredits();
             });
         }
 
@@ -89,7 +82,6 @@
             collage.hidden = true;
             latest.hidden = false;
             painting.setAttribute('aria-labelledby', 'plate-title');
-            publishCredits();
         }
 
         function show(result, locale) {

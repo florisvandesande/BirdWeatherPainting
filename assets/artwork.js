@@ -498,7 +498,7 @@
     }
 
     function repaintForAppearance() {
-        var images = document.querySelectorAll('.plate-art, .collage-specimen img');
+        var images = document.querySelectorAll('.plate-art, .collage-specimen img, .daily-species-art');
         for (var index = 0; index < images.length; index += 1) {
             var image = images[index];
             if (typeof image._birdweatherPaintCallback === 'function') {

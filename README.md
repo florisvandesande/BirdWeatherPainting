@@ -6,13 +6,13 @@ for a wall-mounted iPad.
 
 ## Status
 
-The latest-bird and today-collage views, station and nearby setup, artwork
-credits, and optional night schedule are implemented on the local integration
-branch. The project is not deployed. The latest-bird painting presents the
-artwork and localized bird names with Settings and artwork-information
-controls. The simplified painting, collage, and artwork changes still need a
-complete browser pass. The physical iPad 2/iOS 9 acceptance pass has not been
-completed, so iOS 9 compatibility is not yet confirmed.
+The latest-bird and today-collage views, station and nearby setup, daily bird
+information page, and optional night schedule are implemented on the local
+integration branch. The project is not deployed. The latest-bird painting
+presents the artwork and localized bird names with Settings and a daily-species
+information control. The simplified painting, collage, and artwork changes
+still need a complete browser pass. The physical iPad 2/iOS 9 acceptance pass
+has not been completed, so iOS 9 compatibility is not yet confirmed.
 
 ## Features
 
@@ -27,9 +27,12 @@ completed, so iOS 9 compatibility is not yet confirmed.
   show a random local perch that stays selected for the page session. The light
   canvas matches the `#f0ece6` paper color in the images; the dark appearance
   uses a matching `#171512` canvas and artwork variant.
-- Open one information page for the displayed artist, collection, source,
-  licence, and image changes. Keep a list of species that need artwork on the
-  same device.
+- Open a list of every unique species heard today, with a translated common
+  name, scientific name, and artwork or the existing fallback. Expand one row
+  at a time to see its artist, collection, source, and licence. In the latest-
+  bird view, the daily scan runs when the information page opens; the collage
+  view reuses its existing daily scan. Keep a copyable list of species that
+  need artwork on the same device.
 - Choose English, Dutch, French, German, Spanish, Italian, or Brazilian
   Portuguese. The browser language is used unless the visitor selects a
   language in Settings.
@@ -122,7 +125,7 @@ feathers and branches are retained. The paired dark files add 83.7 MiB to the
 committed collection; the browser requests only the appearance-specific image
 for each displayed plate, so it does not fetch both sets during normal use.
 Per-image original source URLs are retained in the catalogue and shown through
-the artwork information page. See
+each species row's expanded artwork details. See
 [artwork sources and reuse](docs/artwork.md) and the
 [Fugleramme attribution note](assets/plates/ATTRIBUTION.md).
 
@@ -208,12 +211,24 @@ it for the domain.
 
 ## Verification
 
+Run the controlled daily-species data check by starting the static server from
+the repository root and opening its test page:
+
+```bash
+python3 -m http.server 8000
+```
+
+Open <http://127.0.0.1:8000/tests/collage-data-test.html>. A passing page lists
+the collage-limit, daily-species, metadata, omitted-count, and pagination
+checks. The test uses fixed API responses and does not contact BirdWeather.
+Stop the server with Control-C.
+
 The previous station, setup, and artwork information flow was checked in
 Chrome 157 at mobile, tablet, 1024 × 768, and large desktop viewports in light
-and dark browser appearances. Collage data and URL settings received controlled
-JavaScriptCore checks. The simplified painting, full collage, and Fugleramme
-rendering have not yet received a complete browser pass. Safari automation and
-the physical iPad 2 were unavailable in the current environment.
+and dark browser appearances. The new daily-species data path passed a
+controlled JavaScriptCore check. The new list layout and expansion still need
+a full Chrome and Safari browser pass. Safari automation and the physical iPad 2
+were unavailable in the current environment.
 
 To run the scheduled-blackout interaction check, start the local server from
 the repository root using the command in [Getting started](#getting-started),

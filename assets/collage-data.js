@@ -55,7 +55,7 @@
                     return;
                 }
                 scanDate = date;
-                var result = { date: date, stationName: stationName, hasStations: !!ids.length, species: [], omitted: 0 };
+                var result = { date: date, stationName: stationName, hasStations: !!ids.length, species: [], dailySpecies: [], omitted: 0 };
                 if (!ids.length) {
                     finish(null, result);
                     return;
@@ -97,13 +97,45 @@
                     ranked.sort(function (a, b) { return b.count - a.count || byRecency(a, b); });
                     ranked.unshift(newest);
                     var retained = ranked.slice(0, limit).map(function (entry) { return entry.id; });
+                    var all = ranked.map(function (entry) { return entry.id; });
                     result.omitted = ranked.length - retained.length;
-                    request = api.speciesForIds(retained, function (error, species) {
-                        if (!error) {
-                            result.species = species;
+                    var speciesById = Object.create(null);
+
+                    function loadSpecies(offset) {
+                        if (aborted) {
+                            return;
                         }
-                        finish(error, result);
-                    });
+                        if (offset >= all.length) {
+                            result.dailySpecies = all.map(function (id) { return speciesById[id]; });
+                            result.species = retained.map(function (id) { return speciesById[id]; });
+                            finish(null, result);
+                            return;
+                        }
+
+                        var batch = all.slice(offset, offset + 32);
+                        var nextOffset = offset + batch.length;
+                        var callbackCompleted = false;
+                        var currentRequest = api.speciesForIds(batch, function (error, species) {
+                            callbackCompleted = true;
+                            if (aborted) {
+                                return;
+                            }
+                            if (error || !Array.isArray(species) || species.length !== batch.length) {
+                                finish(error || 'unavailable');
+                                return;
+                            }
+                            species.forEach(function (bird) {
+                                speciesById[bird.id] = bird;
+                            });
+                            loadSpecies(nextOffset);
+                        });
+                        // A synchronous response may already have advanced to the next batch.
+                        if (!aborted && !callbackCompleted) {
+                            request = currentRequest;
+                        }
+                    }
+
+                    loadSpecies(0);
                 }
 
                 function fetchPage(after) {

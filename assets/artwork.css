@@ -55,9 +55,84 @@
 }
 
 .artwork-sheet {
-    max-width: 44em;
+    max-width: 60em;
     margin: 0 auto;
     padding: 1.5rem 1.25rem 3rem;
+}
+
+.daily-list-status:empty {
+    display: none;
+}
+
+.daily-species-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+}
+
+.daily-species-list > li {
+    border-top: 1px solid #a4855a;
+}
+
+.daily-species-row {
+    display: -webkit-flex;
+    display: flex;
+    width: 100%;
+    min-height: 96px;
+    -webkit-align-items: center;
+    align-items: center;
+    padding: 0.55rem 0.65rem;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    text-align: left;
+}
+
+.daily-species-art {
+    display: block;
+    width: 64px;
+    height: 82px;
+    margin-right: 1rem;
+    -webkit-flex: 0 0 64px;
+    flex: 0 0 64px;
+    object-fit: contain;
+    background: #f0ece6;
+}
+
+.daily-species-names {
+    display: -webkit-flex;
+    display: flex;
+    min-width: 0;
+    -webkit-flex-direction: column;
+    flex-direction: column;
+    -webkit-align-items: flex-start;
+    align-items: flex-start;
+}
+
+.daily-species-common {
+    font-size: 1.2rem;
+    font-weight: bold;
+    line-height: 1.2;
+}
+
+.daily-species-scientific {
+    font-size: 1rem;
+    font-style: italic;
+    font-weight: normal;
+    line-height: 1.25;
+    margin-top: 0.2em;
+}
+
+.daily-species-details {
+    margin: 0 0.65rem 1rem 5.1rem;
+    padding: 0.6rem 0.8rem;
+    border-left: 2px solid #a4855a;
+}
+
+.daily-species-details dl {
+    margin-bottom: 0;
+    padding-bottom: 0;
+    border-bottom: 0;
 }
 
 .artwork-sheet h2 {
@@ -153,8 +228,48 @@
         color: #f8eddb;
     }
 
+    .daily-species-list > li {
+        border-color: #8c775d;
+    }
+
+    .daily-species-art {
+        background: #171512;
+    }
+
+    .daily-species-details {
+        border-color: #8c775d;
+    }
+
     .artwork-button:focus,
     .artwork-sheet :focus {
         outline-color: #f0c27a;
+    }
+}
+
+@media (max-width: 520px) {
+    .daily-species-row {
+        min-height: 84px;
+        padding: 0.45rem;
+    }
+
+    .daily-species-art {
+        width: 56px;
+        height: 72px;
+        margin-right: 0.7rem;
+        -webkit-flex-basis: 56px;
+        flex-basis: 56px;
+    }
+
+    .daily-species-common {
+        font-size: 1.05rem;
+    }
+
+    .daily-species-scientific {
+        font-size: 0.9rem;
+    }
+
+    .daily-species-details {
+        margin-left: 4.2rem;
+        padding-left: 0.6rem;
     }
 }

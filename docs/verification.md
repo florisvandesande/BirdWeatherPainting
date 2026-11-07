@@ -18,6 +18,10 @@ Date: 2026-11-07.
   settings, nearby-coordinate privacy, and translation keys in all seven
   locales. A separate data check covered 96,333 UTC offsets across 598 time
   zone names and aliases.
+- The daily-species data fixture passed a controlled JavaScriptCore run with 34
+  unique species and a collage limit of two. It confirmed that collage ranking,
+  membership, and the omitted count stay unchanged while the information page
+  receives metadata for every species in API-sized batches.
 - The local artwork converter processed 1,355 bird illustrations and nine
   perches. Representative converted images were inspected at their prepared
   size. The full app has not yet been exercised with the new Fugleramme
@@ -43,6 +47,11 @@ Date: 2026-11-07.
   browser-visible check from its authorized preview environment.
 - The complete collage and new Fugleramme flows have not received a full
   browser pass at the supported viewport sizes.
+- Ticket #5's daily-species list and inline artwork details have not received a
+  Chrome or Safari interaction and layout check. The local preview could not be
+  opened from this subagent because the browser URL policy blocked `file://`
+  pages and the local server was not reachable; the parent agent can verify the
+  browser-visible seam from its preview environment.
 - The app has not been checked in Safari on a physical iPad 2 at 1024 × 768.
   No physical iPad was available to this session, so the device's iOS and Safari
   versions and all touch, installation, and Auto-Lock behavior remain
