@@ -58,7 +58,7 @@
             returnToPainting: 'Back to painting',
             welcomeTitle: 'Welcome to BirdWeather Painting',
             welcomeIntro: 'Make a living field guide from birds heard by one public BirdWeather station or several nearby stations.',
-            guideTitle: 'Set up your iPad',
+            guideTitle: 'Tips for using the iPad',
             guideHomeScreen: 'Open this page in Safari, tap Share, then tap Add to Home Screen.',
             guideAutoLock: 'In the iPad’s Settings app, open General, then Auto-Lock, and choose Never.',
             guidePower: 'Keep the iPad connected to power while it’s on display.',
@@ -134,7 +134,7 @@
             returnToPainting: 'Terug naar schilderij',
             welcomeTitle: 'Welkom bij BirdWeather Schilderij',
             welcomeIntro: 'Maak een levende veldgids met vogels die één openbaar BirdWeather-station of meerdere stations in de buurt horen.',
-            guideTitle: 'Je iPad instellen',
+            guideTitle: 'Tips voor gebruik op de iPad',
             guideHomeScreen: 'Open deze pagina in Safari, tik op Delen en kies Zet op beginscherm.',
             guideAutoLock: 'Open Instellingen op de iPad, ga naar Algemeen, tik op Automatisch slot en kies Nooit.',
             guidePower: 'Houd de iPad aangesloten op stroom zolang het scherm aanstaat.',
@@ -210,7 +210,7 @@
             returnToPainting: 'Retour au tableau',
             welcomeTitle: 'Bienvenue dans le tableau BirdWeather',
             welcomeIntro: 'Créez un guide vivant des oiseaux entendus par une station publique BirdWeather ou plusieurs stations à proximité.',
-            guideTitle: 'Configurer votre iPad',
+            guideTitle: 'Conseils pour utiliser l’iPad',
             guideHomeScreen: 'Ouvrez cette page dans Safari, touchez Partager, puis Sur l’écran d’accueil.',
             guideAutoLock: 'Dans les Réglages de l’iPad, ouvrez Général, puis Verrouillage automatique, et choisissez Jamais.',
             guidePower: 'Laissez l’iPad branché pendant l’affichage.',
@@ -286,7 +286,7 @@
             returnToPainting: 'Zurück zum Gemälde',
             welcomeTitle: 'Willkommen beim BirdWeather-Gemälde',
             welcomeIntro: 'Erstelle einen lebendigen Vogelführer mit den Vögeln, die eine öffentliche BirdWeather-Station oder mehrere Stationen in der Nähe hören.',
-            guideTitle: 'Dein iPad einrichten',
+            guideTitle: 'Tipps für die Nutzung des iPad',
             guideHomeScreen: 'Öffne diese Seite in Safari, tippe auf Teilen und wähle Zum Home-Bildschirm.',
             guideAutoLock: 'Öffne auf dem iPad die Einstellungen, dann Allgemein und Automatische Sperre, und wähle Nie.',
             guidePower: 'Lass das iPad während der Anzeige am Strom angeschlossen.',
@@ -362,7 +362,7 @@
             returnToPainting: 'Volver al cuadro',
             welcomeTitle: 'Te damos la bienvenida al cuadro de BirdWeather',
             welcomeIntro: 'Crea una guía viva de las aves que oye una estación pública de BirdWeather o varias estaciones cercanas.',
-            guideTitle: 'Configura tu iPad',
+            guideTitle: 'Consejos para usar el iPad',
             guideHomeScreen: 'Abre esta página en Safari, toca Compartir y luego Añadir a pantalla de inicio.',
             guideAutoLock: 'En los ajustes del iPad, abre General, luego Bloqueo automático y elige Nunca.',
             guidePower: 'Mantén el iPad conectado a la corriente mientras se muestre el cuadro.',
@@ -438,7 +438,7 @@
             returnToPainting: 'Torna al quadro',
             welcomeTitle: 'Benvenuto nel quadro BirdWeather',
             welcomeIntro: 'Crea una guida vivente agli uccelli sentiti da una stazione pubblica BirdWeather o da più stazioni vicine.',
-            guideTitle: 'Configura il tuo iPad',
+            guideTitle: 'Consigli per usare l’iPad',
             guideHomeScreen: 'Apri questa pagina in Safari, tocca Condividi e poi Aggiungi alla schermata Home.',
             guideAutoLock: 'Nelle impostazioni dell’iPad, apri Generali, poi Blocco automatico, e scegli Mai.',
             guidePower: 'Tieni l’iPad collegato all’alimentazione mentre mostra il quadro.',
@@ -514,7 +514,7 @@
             returnToPainting: 'Voltar ao quadro',
             welcomeTitle: 'Boas-vindas ao quadro BirdWeather',
             welcomeIntro: 'Crie um guia vivo das aves ouvidas por uma estação pública BirdWeather ou por várias estações próximas.',
-            guideTitle: 'Configure seu iPad',
+            guideTitle: 'Dicas para usar o iPad',
             guideHomeScreen: 'Abra esta página no Safari, toque em Compartilhar e depois em Adicionar à Tela de Início.',
             guideAutoLock: 'Nos Ajustes do iPad, abra Geral, toque em Bloqueio Automático e escolha Nunca.',
             guidePower: 'Mantenha o iPad conectado à energia enquanto o quadro estiver em exibição.',
@@ -569,6 +569,13 @@
         });
     }
 
+    function formatNumber(locale, value) {
+        if (window.Intl && window.Intl.NumberFormat) {
+            return new window.Intl.NumberFormat(locale).format(value);
+        }
+        return String(value);
+    }
+
     function resolveMessage(dictionary, locale, key) {
         return (dictionary[locale] || dictionary.en)[key] || dictionary.en[key];
     }
@@ -609,6 +616,7 @@
             return typeof locale === 'string' && Object.prototype.hasOwnProperty.call(messages, locale);
         },
         formatDate: formatDate,
+        formatNumber: formatNumber,
         speciesName: speciesName,
         message: message,
         resolveMessage: resolveMessage

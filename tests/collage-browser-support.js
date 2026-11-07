@@ -124,8 +124,8 @@
     window.BirdWeatherArtwork = {
         paint: function (image, bird, complete) {
             var file = bird ? imagePaths[bird.scientificName] : null;
-            image.setAttribute('src', file ? '../assets/plates/' + file : '../assets/field-sprig.svg');
-            complete(file ? { species: bird.scientificName } : null);
+            image.setAttribute('src', file ? '../assets/artwork/' + file : '../assets/artwork/perches/birch-twig.jpg');
+            complete(file ? { species: bird.scientificName } : { speciesTextKey: 'perch' });
         }
     };
 

@@ -98,6 +98,8 @@
         caption.hidden = true;
         setText(title, '');
         setText(detail, '');
+        artwork.resetPerch();
+        artwork.paint(image, null, function () {});
     }
 
     function checkDay(now) {
@@ -131,6 +133,7 @@
             return;
         }
         emptyArtworkDate = date;
+        artwork.resetPerch();
         artwork.paint(image, null, function () {});
     }
 
@@ -142,6 +145,7 @@
             return false;
         }
         if (!error) {
+            var previousResult = lastResult;
             lastResult = result;
             if (collageView) {
                 showCollage(result);
@@ -150,6 +154,9 @@
                 }
             } else {
                 showLatest(result);
+                if (!result.observation && (!previousResult || previousResult.observation)) {
+                    artwork.resetPerch();
+                }
                 artwork.paint(image, result.observation && result.observation.species, function () {});
             }
         } else if (!lastResult) {

@@ -49,17 +49,9 @@
 
 .setup-guide {
     box-sizing: border-box;
-    padding: 1rem 1.25rem;
-    border: 1px solid #ac936d;
-    background: #efe1c3;
-}
-
-.setup-guide img {
-    display: block;
-    width: 5rem;
-    height: 4rem;
-    object-fit: contain;
-    margin: 0 auto 0.5rem;
+    padding: 1rem 0;
+    border: 0;
+    background: transparent;
 }
 
 .setup-guide h2 {
@@ -110,15 +102,18 @@
 .setup button {
     box-sizing: border-box;
     min-height: 44px;
-    border: 1px solid #8b6e48;
-    border-radius: 2px;
-    background: #fffaec;
+    border: 0;
+    border-bottom: 1px solid #8b6e48;
+    border-radius: 0;
+    background: transparent;
     color: #38281c;
     font: 1rem/1.3 "Helvetica Neue", Helvetica, Arial, sans-serif;
 }
 
 .setup button {
     padding: 0.5rem 0.7rem;
+    text-decoration: underline;
+    text-underline-offset: 0.18em;
     cursor: pointer;
 }
 
@@ -155,7 +150,6 @@
 }
 
 .setup button:disabled {
-    background: #e6dac0;
     color: #62523d;
     cursor: default;
 }
@@ -268,6 +262,8 @@
     min-height: 20px;
     height: 20px;
     margin: 0 0.55rem 0 0;
+    border: 0;
+    background: transparent;
 }
 
 .night-time-row {
@@ -295,8 +291,8 @@
 }
 
 #save-settings:not(:disabled) {
-    background: #513824;
-    color: #fff4da;
+    color: #38281c;
+    font-weight: bold;
 }
 
 @media (min-width: 721px) {
@@ -351,20 +347,14 @@
     }
 
     .setup-guide {
-        border-color: #aa8b5c;
-        background: #423225;
-    }
-
-    .setup-guide img {
-        background: #f0ece6;
-        border-radius: 50%;
+        background: transparent;
     }
 
     .setup input,
     .setup select,
     .setup button {
         border-color: #b6996e;
-        background: #2e2219;
+        background: transparent;
         color: #f5e6cb;
     }
 
@@ -381,13 +371,12 @@
 
     .setup button:disabled {
         border-color: #88765d;
-        background: #463729;
+        background: transparent;
         color: #c3b193;
     }
 
     #save-settings:not(:disabled) {
-        background: #efdcba;
-        color: #38281c;
+        color: #f5e6cb;
     }
 
     .painting-settings {

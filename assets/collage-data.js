@@ -128,9 +128,18 @@
                             return;
                         }
                         if (offset >= all.length) {
+                            function speciesWithCount(id) {
+                                var species = speciesById[id];
+                                var entry = counts[id];
+                                if (species && entry) {
+                                    species.detectionCount = entry.count;
+                                }
+                                return species;
+                            }
+
                             displayOrder = nextOrder;
-                            result.dailySpecies = all.map(function (id) { return speciesById[id]; });
-                            result.species = nextOrder.map(function (id) { return speciesById[id]; });
+                            result.dailySpecies = all.map(speciesWithCount);
+                            result.species = nextOrder.map(speciesWithCount);
                             finish(null, result);
                             return;
                         }

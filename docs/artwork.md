@@ -1,6 +1,6 @@
 # Artwork sources and reuse
 
-Open the **i** button at the lower right of the painting to see **Alle waargenomen vogels vandaag**, a list of every unique species heard today regardless of the collage limit. Each row shows the localized common name above the Latin name. Tap a row to expand its artwork credit, source, collection, creator, and licence details. The page also shows missing illustrations. Choose **Select list** and use your device's Copy command to collect their species names and BirdWeather IDs. The list stays in browser storage on that device and contains only species identifiers and names. Clearing the site's browser data clears the list. If the browser blocks storage, the list is available while the page stays open.
+Open the **i** button at the lower right of the painting to see **Alle waargenomen vogels vandaag**, a list of every unique species heard today regardless of the collage limit. Each row shows the localized common name above the Latin name. Tap a row to expand its detection count for today, optional species description, Wikipedia and eBird links, and artwork credit, source, collection, creator, and licence details. The page also shows missing illustrations. Choose **Select list** and use your device's Copy command to collect their species names and BirdWeather IDs. The list stays in browser storage on that device and contains only species identifiers and names. Clearing the site's browser data clears the list. If the browser blocks storage, the list is available while the page stays open.
 
 ## Fugleramme Classic collection
 
@@ -11,10 +11,12 @@ chosen for the current page session. BirdWeather's scientific names are matched
 through the included BirdNET alias map; the displayed common name continues to
 come from BirdWeather's translations.
 
-When the selected station or nearby area has no detections, the painting shows
-a random perch from the local collection and keeps that perch while the page is
-open. It does not show a listening message or empty-state caption. These images
-work without requesting an artwork image from a third-party host.
+While data is loading, and when the selected station or nearby area has no
+detections, the painting shows a random perch from the local collection and
+keeps that perch for the current state. A new loading or empty state chooses a
+new perch. It does not show a listening message or empty-state caption. These
+images work without requesting an artwork image from a third-party host; a
+small built-in fallback list covers a temporary catalogue failure.
 
 The source files supplied for this app were WebP. The app prepares a light and a
 dark JPEG for each illustration, with a maximum edge of 600 pixels for older
@@ -47,7 +49,7 @@ image. The subject label is not an original work title, and the app does not
 infer a specific artist from a group tag. Check the linked source record and
 ledger for details when they are available.
 The separate
-[Fugleramme attribution note](../assets/plates/ATTRIBUTION.md) describes the
+[Fugleramme attribution note](../assets/artwork/ATTRIBUTION.md) describes the
 changes and the image catalogue.
 
 The downloaded WebP inputs and BirdNET name files live in the ignored
@@ -56,12 +58,12 @@ files are available, regenerate the committed images and catalogue on macOS
 with Swift and Apple's ImageIO framework:
 
 ```bash
-swift -O scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork assets/plates
+swift -O scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork assets/artwork
 ```
 
 The script expects `birdnet_aliases.json` and `birdnet_labels_v2.4.txt` beside
 the `artwork` directory. It keeps a per-image original source URL in
-`assets/plates/catalog.json`. To preview the high-contrast blackbird and blue tit,
+`assets/artwork/catalog.json`. To preview the high-contrast blackbird and blue tit,
 the detailed European stonechat, and the fine needles on a pine bough, use the
 targeted sample set:
 
@@ -98,5 +100,5 @@ When neither the Fugleramme collection nor a historical plate matches, the paint
 ## Adding a historical plate
 
 1. Review the reuse terms for the individual file and keep its source record. Choose a work with a public-domain mark or a reuse licence whose obligations you can satisfy. Record its creator, title, source, licence, and licence URL.
-2. Save an optimized JPEG in `assets/plates/`. To resize a file to a maximum edge of 1,000 pixels on macOS, run `sips -s format jpeg -s formatOptions 75 -Z 1000 original.jpg --out assets/plates/example-bird.jpg`. Check the result at display size and record any further edits.
+2. Save an optimized JPEG in `assets/artwork/`. To resize a file to a maximum edge of 1,000 pixels on macOS, run `sips -s format jpeg -s formatOptions 75 -Z 1000 original.jpg --out assets/artwork/example-bird.jpg`. Check the result at display size and record any further edits.
 3. Add its scientific name and credit to the historical catalogue in [artwork.js](../assets/artwork.js). Verify that the expected image appears for the species and that its individual source and licence links open in the species row's expanded details.

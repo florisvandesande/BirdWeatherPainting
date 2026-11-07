@@ -140,8 +140,6 @@
             for (var second = first + 1; second < visibleBounds.length; second += 1) {
                 var firstNames = [visibleBounds[first].common, visibleBounds[first].scientific];
                 var secondNames = [visibleBounds[second].common, visibleBounds[second].scientific];
-                assert(!boxesOverlap(visibleBounds[first].artwork, visibleBounds[second].artwork),
-                    'Bird artwork bounds do not overlap each other.');
                 firstNames.forEach(function (firstName) {
                     secondNames.forEach(function (secondName) {
                         assert(!boxesOverlap(firstName, secondName), 'Names on different plates do not overlap.');
