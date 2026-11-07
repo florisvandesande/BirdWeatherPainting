@@ -10,9 +10,10 @@ The latest-bird and today-collage views, station and nearby setup, artwork
 credits, and optional night schedule are implemented on the local integration
 branch. The project is not deployed. The latest-bird painting presents the
 artwork and localized bird names with Settings and artwork-information
-controls. The simplified painting, collage, and artwork changes still need a
-complete browser pass. The physical iPad 2/iOS 9 acceptance pass has not been
-completed, so iOS 9 compatibility is not yet confirmed.
+controls. The collage now gives unique species equal prominence and keeps each
+bird in place when it is heard again. The complete browser pass and physical
+iPad 2/iOS 9 acceptance pass have not been completed, so iOS 9 compatibility
+is not yet confirmed.
 
 ## Features
 
@@ -21,8 +22,10 @@ completed, so iOS 9 compatibility is not yet confirmed.
   name, and scientific name, with labeled Settings and artwork-information
   controls.
 - Select one public station or nearby stations within 2, 5, or 10 kilometres.
-- Rank collage species by detection count while keeping the newest species as
-  the centrepiece. Set the collage limit from 2 to 32; the default is 12.
+- Arrange unique species in an organic collage with equal visual prominence.
+  Repeated detections keep a bird's place; at the selected limit, a new species
+  replaces the displayed species whose latest detection is oldest. Set the
+  collage limit from 2 to 32; the default is 12.
 - Use the local Fugleramme Classic bird illustrations and perches. Empty days
   show a random local perch that stays selected for the page session. The light
   canvas matches the `#f0ece6` paper color in the images; the dark appearance
@@ -201,12 +204,22 @@ it for the domain.
 
 ## Verification
 
-The previous station, setup, and artwork information flow was checked in
-Chrome 157 at mobile, tablet, 1024 × 768, and large desktop viewports in light
-and dark browser appearances. Collage data and URL settings received controlled
-JavaScriptCore checks. The simplified painting, full collage, and Fugleramme
-rendering have not yet received a complete browser pass. Safari automation and
-the physical iPad 2 were unavailable in the current environment.
+The station, setup, and artwork information flow was checked in Chrome 157 at
+mobile, tablet, 1024 × 768, and large desktop viewports in light and dark
+browser appearances. The controlled collage browser check is available at
+`/tests/collage-browser.html`; it supplies fixed detection responses, loads
+local artwork, and checks ordering, replacement, localization, overlap, and
+scrolling without contacting BirdWeather. Start the local server as described
+in [Getting started](#getting-started), then open
+<http://127.0.0.1:8000/tests/collage-browser.html>. Run it at 390 × 844,
+820 × 1180, 1024 × 768, 1440 × 900, and 2560 × 1440 in both Chrome and Safari,
+in light and dark appearance. The complete collage browser pass is still
+outstanding.
+
+The simplified painting and Fugleramme rendering have not yet received a
+complete browser pass. Safari automation and the physical iPad 2 were
+unavailable in the current environment. The iPad 2 at 1024 × 768 and iOS 9
+Safari acceptance pass is still outstanding.
 
 The unrelated repository server-synchronization shell check is not required to
 run or host this static application.

@@ -17,6 +17,7 @@
         var zone = '';
         var checkedDate = null;
         var scanDate = null;
+        var displayOrder = [];
 
         function dateAt(time) {
             return nearby ? calendar.deviceDate(time) : calendar.stationDate(time, zone);
@@ -29,6 +30,7 @@
             checkedDate = current;
             if (changed) {
                 scanDate = null;
+                displayOrder = [];
             }
             return changed;
         }
@@ -57,6 +59,7 @@
                 scanDate = date;
                 var result = { date: date, stationName: stationName, hasStations: !!ids.length, species: [], omitted: 0 };
                 if (!ids.length) {
+                    displayOrder = [];
                     finish(null, result);
                     return;
                 }
@@ -88,18 +91,38 @@
                 function finalize() {
                     var ranked = Object.keys(counts).map(function (id) { return counts[id]; });
                     if (!ranked.length) {
+                        displayOrder = [];
                         finish(null, result);
                         return;
                     }
-                    // Keep the newest species even when its count would put it outside the limit.
                     ranked.sort(byRecency);
-                    var newest = ranked.shift();
-                    ranked.sort(function (a, b) { return b.count - a.count || byRecency(a, b); });
-                    ranked.unshift(newest);
                     var retained = ranked.slice(0, limit).map(function (entry) { return entry.id; });
                     result.omitted = ranked.length - retained.length;
-                    request = api.speciesForIds(retained, function (error, species) {
+
+                    // Keep the surviving species in their existing order and append entrants by detection time.
+                    var selected = Object.create(null);
+                    retained.forEach(function (id) {
+                        selected[id] = true;
+                    });
+                    var nextOrder = displayOrder.filter(function (id) {
+                        return selected[id];
+                    });
+                    var alreadyDisplayed = Object.create(null);
+                    nextOrder.forEach(function (id) {
+                        alreadyDisplayed[id] = true;
+                    });
+                    var entering = ranked.filter(function (entry) {
+                        return selected[entry.id] && !alreadyDisplayed[entry.id];
+                    });
+                    entering.sort(function (a, b) {
+                        return a.latest - b.latest || (a.id < b.id ? -1 : 1);
+                    });
+                    entering.forEach(function (entry) {
+                        nextOrder.push(entry.id);
+                    });
+                    request = api.speciesForIds(nextOrder.slice(), function (error, species) {
                         if (!error) {
+                            displayOrder = nextOrder;
                             result.species = species;
                         }
                         finish(error, result);

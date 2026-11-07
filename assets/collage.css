@@ -8,188 +8,114 @@
 
 .collage h1 {
     margin: 0;
-    font-size: 1.3rem;
-    font-weight: 400;
-    line-height: 1.15;
+    font-size: 1px;
+    line-height: 1px;
 }
 
 .collage-board {
     position: absolute;
-    top: 2.25rem;
+    top: 0.25rem;
     right: 0;
-    bottom: 0.6rem;
+    bottom: 0.35rem;
     left: 0;
-}
-
-.collage-wing {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 35%;
     margin: 0;
     padding: 0;
     list-style: none;
 }
 
-.collage-left {
-    left: 0;
-}
-
-.collage-right {
-    right: 0;
-}
-
-.collage-wing li {
+.collage-item {
     position: absolute;
     box-sizing: border-box;
-    padding: 0.2rem;
-}
-
-.collage-wing li:only-child {
-    display: -webkit-flex;
-    display: flex;
-    -webkit-align-items: center;
-    align-items: center;
-    -webkit-justify-content: center;
-    justify-content: center;
-}
-
-.collage-wing li:only-child .collage-specimen {
-    width: 70%;
-    height: 60%;
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
 .collage-specimen {
     box-sizing: border-box;
+    width: 100%;
     height: 100%;
     margin: 0;
-    padding: 0.2rem;
-    overflow: hidden;
+    padding: 0;
     display: -webkit-flex;
     display: flex;
     -webkit-flex-direction: column;
     flex-direction: column;
+    -webkit-justify-content: flex-end;
+    justify-content: flex-end;
+    color: #38281c;
+    background: transparent;
+    border: 0;
+    text-align: center;
+}
+
+.collage-image {
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex: 1 1 auto;
+    flex: 1 1 auto;
+    -webkit-align-items: center;
+    align-items: center;
     -webkit-justify-content: center;
     justify-content: center;
-    background: rgba(255, 252, 240, 0.24);
-    border: 1px solid #d1b88b;
-}
-
-.collage-hero {
-    position: absolute;
-    top: 7%;
-    left: 36%;
-    width: 28%;
-    height: 86%;
-    padding: 0.85rem;
-    border-color: #a4855a;
-    background: rgba(255, 252, 240, 0.52);
-}
-
-.collage-specimen img {
-    display: block;
-    width: 100%;
     min-height: 0;
-    -webkit-flex: 1 1 0;
-    flex: 1 1 0;
+}
+
+.collage-image img {
+    display: block;
+    width: auto;
+    height: auto;
+    max-width: 62%;
+    max-height: 100%;
     object-fit: contain;
-    background: #f0ece6;
+    background: transparent;
+    pointer-events: none;
 }
 
 .collage-specimen figcaption {
+    box-sizing: border-box;
     -webkit-flex: 0 0 auto;
     flex: 0 0 auto;
-    color: #38281c;
-    padding: 0.25rem 0;
-    font-size: 0.95rem;
-    line-height: 1.12;
+    min-height: 40%;
+    padding: 0.08em 0 0;
+    color: inherit;
+    font-size: 1em;
+    line-height: 1.08;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .collage-common-name {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-}
-
-.collage-dense figcaption {
-    font-size: 0.8rem;
+    display: block;
+    width: 72%;
+    margin-right: auto;
+    margin-left: auto;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
 .collage-scientific-name {
-    display: none;
-    margin-top: 0.3em;
+    display: block;
+    width: 72%;
+    margin: 0.12em auto 0;
     color: #62482e;
+    font-size: 0.74em;
+    font-style: italic;
+    line-height: 1.06;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
 }
 
-.collage-hero figcaption {
-    font-size: 1.55rem;
-}
-
-.collage-hero .collage-scientific-name {
-    display: block;
-    font-size: 0.72em;
-}
-
-.collage-name-plate img {
-    display: none;
-}
-
-.collage-name-plate figcaption::before {
-    display: block;
-    width: 1.1rem;
-    margin: 0 auto 0.35rem;
-    border-top: 1px solid #a4855a;
-    content: "";
-}
-
-@media (orientation: portrait) and (max-width: 850px) {
-    .collage-wing {
-        top: 36%;
-        width: 50%;
-    }
-
-    .collage-hero {
-        top: 0;
-        left: 26%;
-        width: 48%;
-        height: 34%;
-        padding: 0.4rem;
-    }
-
-    .collage-hero figcaption {
-        font-size: 1.1rem;
-    }
-
-    .collage-dense figcaption {
-        font-size: 0.72rem;
-    }
+.collage-name-plate .collage-image {
+    visibility: hidden;
 }
 
 @media (prefers-color-scheme: dark) {
     .collage-specimen {
-        border-color: #8c775d;
-        background: #171512;
-    }
-
-    .collage-hero {
-        border-color: #b59a70;
-        background: #171512;
-    }
-
-    .collage-specimen img {
-        background: #171512;
-    }
-
-    .collage-specimen figcaption {
         color: #f4ecdf;
     }
 
     .collage-scientific-name {
         color: #e3c38e;
-    }
-
-    .collage-name-plate figcaption::before {
-        border-color: #b59a70;
     }
 }
