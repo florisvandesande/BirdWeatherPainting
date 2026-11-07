@@ -63,6 +63,7 @@ html.night-display,
     -webkit-flex: 1 1 0;
     flex: 1 1 0;
     object-fit: contain;
+    background: #f0ece6;
     pointer-events: none;
 }
 
@@ -130,6 +131,10 @@ html.night-display,
     }
 
     .painting {
+        background: #171512;
+    }
+
+    .plate-art {
         background: #171512;
     }
 

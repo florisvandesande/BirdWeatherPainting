@@ -1,11 +1,11 @@
-(function (window) {
+(function (window, document) {
     'use strict';
 
     var storagePrefix = 'birdweather-missing-artwork:';
     var sprig = 'assets/field-sprig.svg';
     var missingInSession = Object.create(null);
     var storageUnavailable = false;
-    var catalogPath = 'assets/plates/catalog.json';
+    var catalogPath = 'assets/plates/catalog.json?v=2';
     var catalogState = 'idle';
     var catalog = null;
     var catalogWaiters = [];
@@ -13,6 +13,7 @@
     var failedImages = Object.create(null);
     var perchOrder = null;
     var selectedPerchPath = null;
+    var appearanceQuery = window.matchMedia ? window.matchMedia('(prefers-color-scheme: dark)') : null;
     var commons = 'https://commons.wikimedia.org/wiki/File:Nederlandsche_vogelen_(KB)_-_';
     var publicDomain = 'https://creativecommons.org/publicdomain/mark/1.0/';
     var fuglerammeLicense = 'CC BY-SA 4.0';
@@ -147,6 +148,7 @@
         return value && value.license === fuglerammeLicense && value.licenseUrl === fuglerammeLicenseUrl &&
             value.attributionUrl === fuglerammeAttribution && value.creator === 'Fugleramme contributors' &&
             value.creatorUrl === fuglerammeCreator && value.paperColor === '#f0ece6' &&
+            value.darkPaperColor === '#171512' &&
             Object.prototype.toString.call(value.birds) === '[object Object]' &&
             Object.prototype.toString.call(value.aliases) === '[object Object]' &&
             Object.prototype.toString.call(value.perches) === '[object Array]';
@@ -225,7 +227,9 @@
 
     function safeImageRecord(record, source, kind, workSubject) {
         var allowedPath = kind === 'perch' ? /^perches\/[a-z0-9_-]+\.jpg$/ : /^birds\/[a-z0-9_-]+\.jpg$/;
+        var allowedDarkPath = kind === 'perch' ? /^perches\/[a-z0-9_-]+-dark\.jpg$/ : /^birds\/[a-z0-9_-]+-dark\.jpg$/;
         if (!record || typeof record.path !== 'string' || !allowedPath.test(record.path) ||
+                typeof record.darkPath !== 'string' || !allowedDarkPath.test(record.darkPath) ||
                 typeof record.source !== 'string' || record.source.length > 80 || !safeSourceUrl(record.sourceUrl)) {
             return null;
         }
@@ -233,6 +237,7 @@
         return {
             kind: kind,
             image: 'assets/plates/' + record.path,
+            darkImage: 'assets/plates/' + record.darkPath,
             workSubject: subject,
             creatorLabelKey: 'collectionPreparer',
             creator: source.creator,
@@ -412,6 +417,8 @@
     function paint(image, species, onCreditChange) {
         image._birdweatherPaintRequest = (image._birdweatherPaintRequest || 0) + 1;
         var requestId = image._birdweatherPaintRequest;
+        image._birdweatherPaintSpecies = species;
+        image._birdweatherPaintCallback = onCreditChange;
         image.onload = image.onerror = null;
         image.setAttribute('referrerpolicy', 'no-referrer');
         image.classList.add('artwork-loading');
@@ -451,7 +458,9 @@
                     onCreditChange(null);
                     return;
                 }
-                if (image.getAttribute('src') === credit.image && image.complete && image.naturalWidth) {
+                var imagePath = appearanceQuery && appearanceQuery.matches && credit.darkImage ?
+                    credit.darkImage : credit.image;
+                if (image.getAttribute('src') === imagePath && image.complete && image.naturalWidth) {
                     image.classList.remove('artwork-loading');
                     if (species) {
                         setMissing(species, false);
@@ -481,11 +490,27 @@
                     failedImages[credit.image] = true;
                     showNext();
                 };
-                image.setAttribute('src', credit.image);
+                image.setAttribute('src', imagePath);
             }
 
             showNext();
         });
+    }
+
+    function repaintForAppearance() {
+        var images = document.querySelectorAll('.plate-art, .collage-specimen img');
+        for (var index = 0; index < images.length; index += 1) {
+            var image = images[index];
+            if (typeof image._birdweatherPaintCallback === 'function') {
+                paint(image, image._birdweatherPaintSpecies, image._birdweatherPaintCallback);
+            }
+        }
+    }
+
+    if (appearanceQuery && appearanceQuery.addEventListener) {
+        appearanceQuery.addEventListener('change', repaintForAppearance);
+    } else if (appearanceQuery && appearanceQuery.addListener) {
+        appearanceQuery.addListener(repaintForAppearance);
     }
 
     readMissing();
@@ -499,4 +524,4 @@
             return entries(readMissing());
         }
     };
-}(window));
+}(window, document));

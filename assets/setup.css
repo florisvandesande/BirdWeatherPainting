@@ -1,8 +1,11 @@
 .setup {
     box-sizing: border-box;
+    height: 100%;
     min-height: 100%;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     padding: 3rem 1.5rem;
-    background: #e8d8b9;
+    background: #f0ece6;
     color: #38281c;
     color-scheme: light;
 }
@@ -12,10 +15,9 @@
     max-width: 55rem;
     margin: 0 auto;
     padding: 2.25rem 2.75rem;
-    border: 1px solid #9d8057;
-    outline: 1px solid #9d8057;
-    outline-offset: 5px;
-    background: #f9f0da;
+    border: 0;
+    outline: 0;
+    background: transparent;
     word-wrap: break-word;
     overflow-wrap: break-word;
 }
@@ -139,6 +141,7 @@
     -webkit-appearance: none;
     appearance: none;
     cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .painting-settings svg {
@@ -330,15 +333,13 @@
 
 @media (prefers-color-scheme: dark) {
     .setup {
-        background: #271e17;
-        color: #f5e6cb;
+        background: #171512;
+        color: #f4ecdf;
         color-scheme: dark;
     }
 
     .setup-page {
-        background: #36291e;
-        outline-color: #aa8b5c;
-        border-color: #aa8b5c;
+        background: transparent;
     }
 
     .setup-guide {
@@ -347,7 +348,7 @@
     }
 
     .setup-guide img {
-        background: #e8d8b9;
+        background: #f0ece6;
         border-radius: 50%;
     }
 

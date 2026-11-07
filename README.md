@@ -26,7 +26,7 @@ completed, so iOS 9 compatibility is not yet confirmed.
 - Use the local Fugleramme Classic bird illustrations and perches. Empty days
   show a random local perch that stays selected for the page session. The light
   canvas matches the `#f0ece6` paper color in the images; the dark appearance
-  uses a dark canvas.
+  uses a matching `#171512` canvas and artwork variant.
 - Open one information page for the displayed artist, collection, source,
   licence, and image changes. Keep a list of species that need artwork on the
   same device.
@@ -109,8 +109,11 @@ name plate and records the missing species on the device.
 
 The Fugleramme derivatives are CC BY-SA 4.0. The app resizes them to at most
 600 pixels, converts WebP to JPEG for older Safari, and flattens transparent
-areas onto `#f0ece6`. Smooth pale edges close to transparency are softened
-toward the same paper color while textured feathers and branches are retained.
+areas onto matching light `#f0ece6` and dark `#171512` backgrounds. Smooth pale
+edges close to transparency are softened toward each background while textured
+feathers and branches are retained. The paired dark files add 83.7 MiB to the
+committed collection; the browser requests only the appearance-specific image
+for each displayed plate, so it does not fetch both sets during normal use.
 Per-image original source URLs are retained in the catalogue and shown through
 the artwork information page. See
 [artwork sources and reuse](docs/artwork.md) and the
@@ -162,10 +165,10 @@ stonechat, and pine bough with:
 swift -O scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork .temporary/artwork-preview --preview
 ```
 
-The preview output contains only those four examples. The generator softens
-pale, smooth pixels near transparent edges toward the paper color before JPEG
-encoding. It preserves textured feather and branch detail and flattens
-transparent areas onto the same paper color.
+The preview output contains light and dark versions of those four examples.
+The generator softens pale, smooth pixels near transparent edges toward the
+selected background before JPEG encoding. It preserves textured feather and
+branch detail and flattens transparent areas onto the matching paper color.
 
 ## Preview, verification, and known limitations
 

@@ -6,6 +6,7 @@ let licenseName = "CC BY-SA 4.0"
 let licenseURL = "https://creativecommons.org/licenses/by-sa/4.0/"
 let attributionURL = "https://github.com/arnegiacomo/fugleramme/blob/main/assets/artwork/classic/ATTRIBUTION.md"
 let paperHex = "#f0ece6"
+let darkPaperHex = "#171512"
 let maxImageEdge = 600.0
 let jpegQuality = 0.68
 let previewInputs = [
@@ -40,8 +41,8 @@ func speciesName(for file: String) -> String {
     return ([words[0].capitalized] + words.dropFirst().map(String.init)).joined(separator: " ")
 }
 
-func paperColor() -> (red: Int, green: Int, blue: Int) {
-    return (240, 236, 230)
+func paperColor(_ isDark: Bool) -> (red: Int, green: Int, blue: Int) {
+    return isDark ? (23, 21, 18) : (240, 236, 230)
 }
 
 func colorVariation(_ pixels: UnsafePointer<UInt8>, width: Int, height: Int, x: Int, y: Int) -> Int {
@@ -84,7 +85,8 @@ func paleMatteCandidate(red: Int, green: Int, blue: Int) -> Bool {
         channelRange <= 65 && distanceFromPaper <= 95
 }
 
-func reducePaleFringe(_ pixels: UnsafeMutablePointer<UInt8>, alphaMask: UnsafePointer<UInt8>, width: Int, height: Int) {
+func reducePaleFringe(_ pixels: UnsafeMutablePointer<UInt8>, alphaMask: UnsafePointer<UInt8>,
+                      width: Int, height: Int, isDark: Bool) {
     let count = width * height
     let distanceCap = maximumFringeDepth + 1
     var distance = [UInt8](repeating: distanceCap, count: count)
@@ -117,7 +119,7 @@ func reducePaleFringe(_ pixels: UnsafeMutablePointer<UInt8>, alphaMask: UnsafePo
         }
     }
 
-    let paper = paperColor()
+    let paper = paperColor(isDark)
     for y in 0..<height {
         for x in 0..<width {
             let index = y * width + x
@@ -146,7 +148,7 @@ func reducePaleFringe(_ pixels: UnsafeMutablePointer<UInt8>, alphaMask: UnsafePo
     }
 }
 
-func convertImage(from inputURL: URL, to outputURL: URL) throws {
+func convertImage(from inputURL: URL, to outputURL: URL, isDark: Bool) throws {
     guard let source = CGImageSourceCreateWithURL(inputURL as CFURL, nil),
           let original = CGImageSourceCreateImageAtIndex(source, 0, nil) else {
         throw NSError(domain: "FuglerammeArtwork", code: 1,
@@ -173,13 +175,17 @@ func convertImage(from inputURL: URL, to outputURL: URL) throws {
     alphaContext.interpolationQuality = .high
     alphaContext.draw(original, in: CGRect(x: 0, y: 0, width: width, height: height))
 
-    context.setFillColor(red: 240.0 / 255.0, green: 236.0 / 255.0, blue: 230.0 / 255.0, alpha: 1.0)
+    let paper = paperColor(isDark)
+    context.setFillColor(red: CGFloat(paper.red) / 255.0,
+                         green: CGFloat(paper.green) / 255.0,
+                         blue: CGFloat(paper.blue) / 255.0,
+                         alpha: 1.0)
     context.fill(CGRect(x: 0, y: 0, width: width, height: height))
     context.interpolationQuality = .high
     context.draw(original, in: CGRect(x: 0, y: 0, width: width, height: height))
     reducePaleFringe(context.data!.bindMemory(to: UInt8.self, capacity: width * height * 4),
                      alphaMask: UnsafePointer(alphaContext.data!.bindMemory(to: UInt8.self, capacity: width * height * 4)),
-                     width: width, height: height)
+                     width: width, height: height, isDark: isDark)
 
     guard let flattened = context.makeImage(),
           let destination = CGImageDestinationCreateWithURL(outputURL as CFURL, "public.jpeg" as CFString, 1, nil) else {
@@ -241,6 +247,7 @@ func main() throws {
         "licenseUrl": licenseURL,
         "attributionUrl": attributionURL,
         "paperColor": paperHex,
+        "darkPaperColor": darkPaperHex,
         "creator": "Fugleramme contributors",
         "creatorUrl": "https://github.com/arnegiacomo/fugleramme",
         "birds": JSONObject(),
@@ -273,11 +280,15 @@ func main() throws {
             }
             let outputName = inputURL.deletingPathExtension().lastPathComponent + ".jpg"
             let outputURL = outputFolderURL.appendingPathComponent(outputName)
-            try convertImage(from: inputURL, to: outputURL)
+            let darkOutputName = inputURL.deletingPathExtension().lastPathComponent + "-dark.jpg"
+            let darkOutputURL = outputFolderURL.appendingPathComponent(darkOutputName)
+            try convertImage(from: inputURL, to: outputURL, isDark: false)
+            try convertImage(from: inputURL, to: darkOutputURL, isDark: true)
             processedInputs.insert(inputPath)
 
             let record: JSONObject = [
                 "path": "\(folderName)/\(outputName)",
+                "darkPath": "\(folderName)/\(darkOutputName)",
                 "source": sourceTag,
                 "sourceUrl": sourceURL
             ]

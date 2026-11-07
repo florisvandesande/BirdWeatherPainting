@@ -17,12 +17,21 @@ open. The heading reads “Perch” and the caption explains that it is an empty
 branch. These images work without requesting an artwork image from a third-party
 host.
 
-The source files supplied for this app were WebP. The app prepares JPEG copies
-with a maximum edge of 600 pixels for older Safari, removes embedded source
-metadata, and places transparent pixels on the exact `#f0ece6` paper color used
-by the painting. The painting keeps that paper surface in both appearance modes;
-the welcome, settings, and artwork-information surfaces follow the browser's
-light or dark preference. The adapted artwork is available under CC BY-SA 4.0.
+The source files supplied for this app were WebP. The app prepares a light and a
+dark JPEG for each illustration, with a maximum edge of 600 pixels for older
+Safari. It removes embedded source metadata and places transparent pixels on
+the matching `#f0ece6` light or `#171512` dark canvas. The welcome, settings,
+painting, and artwork-information surfaces use the same canvas color in each
+appearance. Browsers without a dark appearance preference use the light artwork
+and canvas. The source drawings can include a pale contour around the subject;
+that contour remains, while the rectangular matte matches the canvas. The
+adapted artwork is available under CC BY-SA 4.0.
+
+The paired dark images add 83.7 MiB to the committed collection. At runtime,
+each visible artwork requests only the version for the current appearance. A
+collage of up to 32 illustrations therefore requests one image per illustration,
+not both versions. Changing appearance replaces the currently displayed
+version.
 The app's information page labels the subject using the catalogue's common and
 scientific names (or the perch name), credits the collection preparer, and
 shows the per-image source tag and direct original-source link. It also links
@@ -58,11 +67,11 @@ swift -O scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork .tem
 ```
 
 The generator scales each WebP to at most 600 pixels and tracks its transparent
-edge while compositing it onto `#f0ece6`. Before JPEG encoding, it blends smooth,
-near-paper colors within a narrow edge band toward the paper color. Textured
-color variation is preserved to protect feathers, twigs, and needles. The
-preview command uses the same processing as a full generation, but writes only
-the four named examples.
+edge while compositing it onto either `#f0ece6` or `#171512`. Before JPEG
+encoding, it blends smooth, near-paper colors within a narrow edge band toward
+the selected background. Textured color variation is preserved to protect
+feathers, twigs, and needles. The preview command uses the same processing as a
+full generation, but writes only the four named examples in both colors.
 
 ## Historical plates
 

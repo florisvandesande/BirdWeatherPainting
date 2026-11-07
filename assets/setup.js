@@ -321,6 +321,7 @@
         renderLabels();
         painting.hidden = true;
         setup.hidden = false;
+        setup.scrollTop = 0;
         if (moveFocus) {
             window.scrollTo(0, 0);
             title.focus();

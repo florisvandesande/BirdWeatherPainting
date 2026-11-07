@@ -1,6 +1,6 @@
 # Verification record
 
-Date: 2026-11-06.
+Date: 2026-11-07.
 
 ## Completed checks
 
@@ -22,6 +22,11 @@ Date: 2026-11-06.
   perches. Representative converted images were inspected at their prepared
   size. The full app has not yet been exercised with the new Fugleramme
   collection in a browser.
+- The artwork generator now emits one light and one dark JPEG for each of the
+  1,355 bird illustrations and nine perches. A catalogue check confirmed all
+  1,364 dark paths exist; the dark set adds 83.7 MiB. The blackbird, blue tit,
+  stonechat, and pine-bough dark previews were inspected. These file checks do
+  not verify browser rendering or scrolling.
 
 ## Still unverified
 
@@ -31,6 +36,11 @@ Date: 2026-11-06.
   interaction result is available. Chrome and Safari checks at 390 × 844,
   820 × 1180, 1440 × 900, and 2560 × 1440 in light and dark appearances remain
   required.
+- The shared Settings canvas, Settings scrolling, and theme-specific artwork
+  selection from ticket #3 have not yet received a browser check. CUA rejected
+  the local `file://` URL under its browser URL policy, and the sandbox denied
+  binding a local Python HTTP server. The parent agent will complete the
+  browser-visible check from its authorized preview environment.
 - The complete collage and new Fugleramme flows have not received a full
   browser pass at the supported viewport sizes.
 - The app has not been checked in Safari on a physical iPad 2 at 1024 × 768.

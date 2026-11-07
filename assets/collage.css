@@ -93,6 +93,7 @@
     -webkit-flex: 1 1 0;
     flex: 1 1 0;
     object-fit: contain;
+    background: #f0ece6;
 }
 
 .collage-specimen figcaption {
@@ -168,12 +169,16 @@
 @media (prefers-color-scheme: dark) {
     .collage-specimen {
         border-color: #8c775d;
-        background: rgba(37, 34, 29, 0.55);
+        background: #171512;
     }
 
     .collage-hero {
         border-color: #b59a70;
-        background: rgba(37, 34, 29, 0.82);
+        background: #171512;
+    }
+
+    .collage-specimen img {
+        background: #171512;
     }
 
     .collage-specimen figcaption {

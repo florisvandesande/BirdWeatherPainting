@@ -45,7 +45,7 @@
     left: 0;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
-    background: #f5ead2;
+    background: #f0ece6;
     color-scheme: light;
     text-align: left;
 }
@@ -130,7 +130,7 @@
     }
 
     .artwork-info {
-        background: #1d1a17;
+        background: #171512;
         color: #f4ecdf;
         color-scheme: dark;
     }
