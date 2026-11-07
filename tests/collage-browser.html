@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BirdWeather collage browser checks</title>
+    <link rel="stylesheet" href="../assets/painting.css">
+    <link rel="stylesheet" href="../assets/collage.css">
+    <style>
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+
+        .test-results {
+            position: fixed;
+            z-index: 10;
+            top: 0.5rem;
+            left: 0.5rem;
+            max-width: 85vw;
+            max-height: 15vh;
+            overflow: auto;
+            margin: 0;
+            padding: 0.35rem 0.5rem;
+            background: rgba(240, 236, 230, 0.94);
+            color: #38281c;
+            font: 11px/1.25 Menlo, monospace;
+            text-align: left;
+            white-space: pre-wrap;
+        }
+
+        body[data-collage-preview="true"] .test-results {
+            display: none;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            .test-results {
+                background: rgba(23, 21, 18, 0.94);
+                color: #f4ecdf;
+            }
+        }
+
+    </style>
+</head>
+<body>
+    <main id="painting" class="painting" aria-labelledby="plate-title">
+        <img id="latest-plate" class="plate-art" alt="" hidden>
+        <section id="collage" class="collage" aria-labelledby="collage-title" hidden>
+            <h1 id="collage-title" class="visually-hidden"></h1>
+            <div id="collage-board" class="collage-board"></div>
+        </section>
+        <div class="plate-caption" hidden>
+            <h1 id="plate-title"></h1>
+        </div>
+    </main>
+    <pre id="test-results" class="test-results" role="status">Running collage checks…</pre>
+    <script src="../assets/text.js"></script>
+    <script src="collage-browser-support.js"></script>
+    <script src="../assets/collage-zone-data.js"></script>
+    <script src="../assets/collage-day.js"></script>
+    <script src="../assets/collage-data.js"></script>
+    <script src="../assets/collage-view.js"></script>
+    <script src="collage-browser-tests.js"></script>
+</body>
+</html>

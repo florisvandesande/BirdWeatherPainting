@@ -88,8 +88,8 @@
                 if (error) {
                     throw new Error('daily scan failed: ' + error);
                 }
-                assertEqual(data.species.map(function (bird) { return bird.id; }), ['3', '2'],
-                    'the configured collage limit and ranking remain unchanged');
+                assertEqual(data.species.map(function (bird) { return bird.id; }), ['2', '3'],
+                    'the collage keeps the newest unique species in oldest-to-newest display order');
                 assertEqual(data.dailySpecies.slice(0, 3).map(function (bird) { return bird.id; }), ['3', '2', '1'],
                     'daily rows retain the established ranking across detection pages');
                 assertEqual(data.dailySpecies.length, 34,
