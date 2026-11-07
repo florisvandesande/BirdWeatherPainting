@@ -21,6 +21,42 @@ html.night-display,
     display: none;
 }
 
+.night-display .blackout-settings:not([hidden]) {
+    display: block;
+}
+
+.blackout-settings {
+    display: none;
+    position: fixed;
+    z-index: 100;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: #000;
+    color: transparent;
+    font: inherit;
+    -webkit-appearance: none;
+    appearance: none;
+    cursor: default;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.blackout-settings:focus {
+    outline: 0;
+}
+
+.keyboard-input .blackout-settings:focus {
+    outline: 2px solid #fff;
+    outline-offset: -4px;
+}
+
 [hidden] {
     display: none !important;
 }
