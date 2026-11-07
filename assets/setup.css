@@ -156,11 +156,15 @@
     cursor: default;
 }
 
-.setup-header h1:focus,
 .setup input:focus,
 .setup select:focus,
 .setup button:focus,
 .painting-settings:focus {
+    outline: 2px solid #774a2b;
+    outline-offset: 2px;
+}
+
+.keyboard-input .setup-header h1:focus {
     outline: 2px solid #774a2b;
     outline-offset: 2px;
 }
@@ -364,7 +368,7 @@
         color-scheme: dark;
     }
 
-    .setup-header h1:focus,
+    .keyboard-input .setup-header h1:focus,
     .setup input:focus,
     .setup select:focus,
     .setup button:focus {
