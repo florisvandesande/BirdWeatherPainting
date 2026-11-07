@@ -32,17 +32,21 @@ each visible artwork requests only the version for the current appearance. A
 collage of up to 32 illustrations therefore requests one image per illustration,
 not both versions. Changing appearance replaces the currently displayed
 version.
-The app's information page labels the subject using the catalogue's common and
-scientific names (or the perch name), credits the collection preparer, and
-shows the per-image source tag and direct original-source link. It also links
-to the Fugleramme attribution ledger and CC BY-SA 4.0 licence, and describes
-the image resizing, JPEG conversion, and flattening over the paper color. The
-provided per-image manifest has only a source tag and direct source URL; tags
-can group several historical works. It does not give an exact original work
-title or individual artist for every image. The subject label is not an
-original work title, and the app does not infer a specific artist from a group
-tag. Check the linked source record and ledger for details when they are
-available.
+The daily-species information page lists each unique species heard from the
+selected source today. It uses the translated common name and scientific name,
+and expands one species at a time to show the available artwork source,
+collection, creator, and licence details. It does not display the artwork
+change summary. In latest-bird mode, the page runs the existing daily scan when
+opened; in today-collage mode, it uses the scan already loaded for the collage.
+
+For Fugleramme images, the available credit includes the collection preparer,
+per-image source tag and direct original-source link, Fugleramme attribution
+ledger, and CC BY-SA 4.0 licence. The provided per-image manifest has only a
+source tag and direct source URL; tags can group several historical works. It
+does not give an exact original work title or individual artist for every
+image. The subject label is not an original work title, and the app does not
+infer a specific artist from a group tag. Check the linked source record and
+ledger for details when they are available.
 The separate
 [Fugleramme attribution note](../assets/plates/ATTRIBUTION.md) describes the
 changes and the image catalogue.
@@ -96,4 +100,4 @@ When neither the Fugleramme collection nor a historical plate matches, the paint
 
 1. Review the reuse terms for the individual file and keep its source record. Choose a work with a public-domain mark or a reuse licence whose obligations you can satisfy. Record its creator, title, source, licence, and licence URL.
 2. Save an optimized JPEG in `assets/plates/`. To resize a file to a maximum edge of 1,000 pixels on macOS, run `sips -s format jpeg -s formatOptions 75 -Z 1000 original.jpg --out assets/plates/example-bird.jpg`. Check the result at display size and record any further edits.
-3. Add its scientific name and credit to the historical catalogue in [artwork.js](../assets/artwork.js). Verify that the expected image appears for the species and that its individual source and licence links open from the information page.
+3. Add its scientific name and credit to the historical catalogue in [artwork.js](../assets/artwork.js). Verify that the expected image appears for the species and that its individual source and licence links open in the species row's expanded details.

@@ -32,20 +32,18 @@
                 <circle cx="15" cy="18" r="2" fill="none" stroke="currentColor" stroke-width="1.8"></circle>
             </svg>
         </button>
-        <button type="button" id="artwork-button" class="artwork-button" aria-label="Artwork information" aria-controls="artwork-info" aria-expanded="false">i</button>
+        <button type="button" id="artwork-button" class="artwork-button" aria-label="All species heard today" aria-controls="artwork-info" aria-expanded="false">i</button>
         <section id="artwork-info" class="artwork-info" role="dialog" aria-modal="true" aria-labelledby="artwork-title" hidden>
             <div class="artwork-sheet">
                 <button type="button" id="artwork-close" data-artwork-text="back"></button>
-                <h2 id="artwork-title" data-artwork-text="title"></h2>
-                <h3 data-artwork-text="displayed"></h3>
-                <div id="artwork-displayed"></div>
+                <h2 id="artwork-title" data-artwork-text="todaySpecies"></h2>
+                <p id="daily-list-status" class="daily-list-status" role="status" aria-live="polite"></p>
+                <ul id="daily-species-list" class="daily-species-list"></ul>
                 <h3 id="artwork-missing-title" data-artwork-text="missing"></h3>
                 <p id="artwork-missing-empty" data-artwork-text="missingEmpty"></p>
                 <p id="artwork-copy-help" data-artwork-text="copyHelp" hidden></p>
                 <textarea id="artwork-missing" aria-labelledby="artwork-missing-title" dir="auto" readonly hidden></textarea>
                 <button type="button" id="artwork-select" data-artwork-text="select" hidden></button>
-                <h3 data-artwork-text="local"></h3>
-                <div id="artwork-local"></div>
             </div>
         </section>
     </main>
