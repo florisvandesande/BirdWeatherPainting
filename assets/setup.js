@@ -415,6 +415,7 @@
 
     if (config && savedNight) {
         openButton.setAttribute('aria-label', say('settingsTitle'));
+        blackoutButton.setAttribute('aria-label', say('settingsTitle'));
     } else {
         openSetup(false);
     }
