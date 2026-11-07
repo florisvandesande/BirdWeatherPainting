@@ -137,6 +137,7 @@
         var appDocument = appWindow.document;
         var root = appDocument.documentElement;
         var blackoutButton = appDocument.getElementById('blackout-settings');
+        var openButton = appDocument.getElementById('open-settings');
         var settings = appDocument.getElementById('setup');
         var painting = appDocument.getElementById('painting');
         var cancel = appDocument.getElementById('cancel-settings');
@@ -151,7 +152,9 @@
         check(blackoutButton && !blackoutButton.hidden, 'The black screen has no accessible Settings control.');
         check(blackoutButton.tagName === 'BUTTON' && blackoutButton.tabIndex >= 0,
             'The black screen control is not keyboard focusable.');
-        check(blackoutButton.getAttribute('aria-label'), 'The black screen control has no accessible name.');
+        check(openButton.getAttribute('aria-label') &&
+            blackoutButton.getAttribute('aria-label') === openButton.getAttribute('aria-label'),
+            'Configured night settings did not give the black screen the localized Settings name.');
         check(appWindow.getComputedStyle(root).backgroundColor === 'rgb(0, 0, 0)' &&
             appWindow.getComputedStyle(appDocument.body).backgroundColor === 'rgb(0, 0, 0)',
             'The scheduled screen is not fully black.');
@@ -182,7 +185,13 @@
         cancel.click();
         check(root.classList.contains('night-display') && !blackoutButton.hidden,
             'Returning during scheduled night hours did not restore the black screen.');
-        check(settings.hidden && painting.hidden, 'The app did not return from Settings to blackout.');
+        rect = blackoutButton.getBoundingClientRect();
+        check(settings.hidden && appWindow.getComputedStyle(blackoutButton).display !== 'none' &&
+            appWindow.getComputedStyle(painting).display === 'none' &&
+            rect.left <= 1 && rect.top <= 1 && rect.right >= appWindow.innerWidth - 1 &&
+            rect.bottom >= appWindow.innerHeight - 1 &&
+            appDocument.elementFromPoint(appWindow.innerWidth / 2, appWindow.innerHeight / 2) === blackoutButton,
+            'The app did not return from Settings to the full-screen black overlay.');
         check(appWindow.getComputedStyle(blackoutButton).outlineWidth === '0px',
             'Returning from Settings added a visible focus mark to the black screen.');
         check(requestCount === 0, 'Returning while the night schedule is active started an API request.');
