@@ -5,7 +5,7 @@
     var sprig = 'assets/field-sprig.svg';
     var missingInSession = Object.create(null);
     var storageUnavailable = false;
-    var catalogPath = 'assets/fugleramme/catalog.json';
+    var catalogPath = 'assets/plates/catalog.json';
     var catalogState = 'idle';
     var catalog = null;
     var catalogWaiters = [];
@@ -232,7 +232,7 @@
         var subject = safeWorkSubject(workSubject);
         return {
             kind: kind,
-            image: 'assets/fugleramme/' + record.path,
+            image: 'assets/plates/' + record.path,
             workSubject: subject,
             creatorLabelKey: 'collectionPreparer',
             creator: source.creator,

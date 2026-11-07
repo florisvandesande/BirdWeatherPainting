@@ -35,7 +35,7 @@ original work title, and the app does not infer a specific artist from a group
 tag. Check the linked source record and ledger for details when they are
 available.
 The separate
-[Fugleramme attribution note](../assets/fugleramme/ATTRIBUTION.md) describes the
+[Fugleramme attribution note](../assets/plates/ATTRIBUTION.md) describes the
 changes and the image catalogue.
 
 The downloaded WebP inputs and BirdNET name files live in the ignored
@@ -44,12 +44,25 @@ files are available, regenerate the committed images and catalogue on macOS
 with Swift and Apple's ImageIO framework:
 
 ```bash
-swift scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork assets/fugleramme
+swift -O scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork assets/plates
 ```
 
 The script expects `birdnet_aliases.json` and `birdnet_labels_v2.4.txt` beside
 the `artwork` directory. It keeps a per-image original source URL in
-`assets/fugleramme/catalog.json`.
+`assets/plates/catalog.json`. To preview the high-contrast blackbird and blue tit,
+the detailed European stonechat, and the fine needles on a pine bough, use the
+targeted sample set:
+
+```bash
+swift -O scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork .temporary/artwork-preview --preview
+```
+
+The generator scales each WebP to at most 600 pixels and tracks its transparent
+edge while compositing it onto `#f0ece6`. Before JPEG encoding, it blends smooth,
+near-paper colors within a narrow edge band toward the paper color. Textured
+color variation is preserved to protect feathers, twigs, and needles. The
+preview command uses the same processing as a full generation, but writes only
+the four named examples.
 
 ## Historical plates
 

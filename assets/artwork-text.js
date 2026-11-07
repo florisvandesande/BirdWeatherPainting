@@ -24,7 +24,7 @@
             license: 'Licence',
             edits: 'Changes',
             historicalEdits: 'Full plate resized and compressed. Camera metadata removed.',
-            fuglerammeEdits: 'Resized to 600 pixels and converted to JPEG. Transparent areas were placed on the app’s #f0ece6 background.',
+            fuglerammeEdits: 'Resized to 600 pixels and converted to JPEG. Transparent areas use the app’s #f0ece6 background; pale edges were softened.',
             remoteEdits: 'Displayed as supplied by BirdWeather.'
         },
         nl: {
@@ -49,7 +49,7 @@
             license: 'Licentie',
             edits: 'Bewerkingen',
             historicalEdits: 'De volledige plaat is verkleind en gecomprimeerd. Cameragegevens zijn verwijderd.',
-            fuglerammeEdits: 'Verkleind tot 600 pixels en omgezet naar JPEG. Transparante delen zijn op de achtergrondkleur #f0ece6 van de app geplaatst.',
+            fuglerammeEdits: 'Verkleind tot 600 pixels en omgezet naar JPEG. Transparante delen liggen op de #f0ece6-achtergrond van de app; lichte randen zijn verzacht.',
             remoteEdits: 'Weergegeven zoals aangeleverd door BirdWeather.'
         },
         fr: {
@@ -74,7 +74,7 @@
             license: 'Licence',
             edits: 'Modifications',
             historicalEdits: 'Planche entière redimensionnée et compressée. Métadonnées de l’appareil photo supprimées.',
-            fuglerammeEdits: 'Redimensionnée à 600 pixels et convertie en JPEG. Les zones transparentes ont été placées sur le fond #f0ece6 de l’application.',
+            fuglerammeEdits: 'Redimensionnée à 600 pixels et convertie en JPEG. Les zones transparentes sont placées sur le fond #f0ece6 de l’application ; les contours clairs sont adoucis.',
             remoteEdits: 'Affichée telle que fournie par BirdWeather.'
         },
         de: {
@@ -99,7 +99,7 @@
             license: 'Lizenz',
             edits: 'Änderungen',
             historicalEdits: 'Die vollständige Tafel wurde verkleinert und komprimiert. Kamerametadaten wurden entfernt.',
-            fuglerammeEdits: 'Auf 600 Pixel verkleinert und in JPEG umgewandelt. Transparente Bereiche wurden auf den App-Hintergrund #f0ece6 gelegt.',
+            fuglerammeEdits: 'Auf 600 Pixel verkleinert und in JPEG umgewandelt. Transparente Bereiche liegen auf dem App-Hintergrund #f0ece6; helle Ränder wurden abgeschwächt.',
             remoteEdits: 'Unverändert von BirdWeather übernommen.'
         },
         es: {
@@ -124,7 +124,7 @@
             license: 'Licencia',
             edits: 'Cambios',
             historicalEdits: 'Se redujo y comprimió la lámina completa. Se eliminaron los metadatos de la cámara.',
-            fuglerammeEdits: 'Redimensionada a 600 píxeles y convertida a JPEG. Las áreas transparentes se colocaron sobre el fondo #f0ece6 de la aplicación.',
+            fuglerammeEdits: 'Redimensionada a 600 píxeles y convertida a JPEG. Las áreas transparentes se colocan sobre el fondo #f0ece6 de la aplicación; los bordes claros se suavizaron.',
             remoteEdits: 'Se muestra tal como la proporciona BirdWeather.'
         },
         it: {
@@ -149,7 +149,7 @@
             license: 'Licenza',
             edits: 'Modifiche',
             historicalEdits: 'Tavola intera ridimensionata e compressa. Metadati della fotocamera rimossi.',
-            fuglerammeEdits: 'Ridimensionata a 600 pixel e convertita in JPEG. Le aree trasparenti sono state posizionate sullo sfondo #f0ece6 dell’app.',
+            fuglerammeEdits: 'Ridimensionata a 600 pixel e convertita in JPEG. Le aree trasparenti sono sullo sfondo #f0ece6 dell’app; i bordi chiari sono stati attenuati.',
             remoteEdits: 'Mostrata così come fornita da BirdWeather.'
         },
         'pt-BR': {
@@ -174,7 +174,7 @@
             license: 'Licença',
             edits: 'Alterações',
             historicalEdits: 'Prancha inteira reduzida e compactada. Metadados da câmera removidos.',
-            fuglerammeEdits: 'Redimensionada para 600 pixels e convertida para JPEG. As áreas transparentes foram colocadas sobre o fundo #f0ece6 do aplicativo.',
+            fuglerammeEdits: 'Redimensionada para 600 pixels e convertida para JPEG. As áreas transparentes ficam sobre o fundo #f0ece6 do aplicativo; as bordas claras foram suavizadas.',
             remoteEdits: 'Exibida como fornecida pelo BirdWeather.'
         }
     };

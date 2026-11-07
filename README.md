@@ -104,10 +104,12 @@ name plate and records the missing species on the device.
 
 The Fugleramme derivatives are CC BY-SA 4.0. The app resizes them to at most
 600 pixels, converts WebP to JPEG for older Safari, and flattens transparent
-areas onto `#f0ece6`. Per-image original source URLs are retained in the
-catalogue and shown through the artwork information page. See
+areas onto `#f0ece6`. Smooth pale edges close to transparency are softened
+toward the same paper color while textured feathers and branches are retained.
+Per-image original source URLs are retained in the catalogue and shown through
+the artwork information page. See
 [artwork sources and reuse](docs/artwork.md) and the
-[Fugleramme attribution note](assets/fugleramme/ATTRIBUTION.md).
+[Fugleramme attribution note](assets/plates/ATTRIBUTION.md).
 
 The source code is under the MIT License. This does not change the separate
 licences for the included artwork.
@@ -141,13 +143,24 @@ source files are present, regenerate the JPEGs and catalogue with Swift on
 macOS:
 
 ```bash
-swift scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork assets/fugleramme
+swift -O scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork assets/plates
 ```
 
 The source directory must contain `manifest.json`, `birds/`, and `perches/`.
 Its parent must contain `birdnet_aliases.json` and `birdnet_labels_v2.4.txt`.
 The script uses Apple's built-in Core Graphics and ImageIO frameworks; it does
-not add a runtime dependency to the website.
+not add a runtime dependency to the website. Before preparing the full
+collection, generate a targeted preview of the blackbird, blue tit, European
+stonechat, and pine bough with:
+
+```bash
+swift -O scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork .temporary/artwork-preview --preview
+```
+
+The preview output contains only those four examples. The generator softens
+pale, smooth pixels near transparent edges toward the paper color before JPEG
+encoding. It preserves textured feather and branch detail and flattens
+transparent areas onto the same paper color.
 
 ## Preview, verification, and known limitations
 
