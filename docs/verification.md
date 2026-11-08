@@ -4,18 +4,25 @@ Date: 2026-11-08.
 
 ## URL-only settings checks
 
-- In Chrome 157, the local URL-settings fixture passed its bare URL, complete
-  station URL with an unknown field, partial URL prefill, invalid optional
-  values, duplicate known field, and nearby partial URL cases.
-- Station and nearby save checks produced canonical URLs with the agreed
-  defaults, source-specific fields, language, and night schedule. Nearby
-  coordinates were rounded to five decimal places.
-- Language preview changed immediately and cancel restored the language from
-  the current URL. Setup loaded while a fixture made `localStorage` access
-  throw.
-- Chrome screenshots were visually inspected for the welcome/setup screen at
-  mobile and large desktop sizes, including dark appearance. Safari was not
-  exercised in this pass.
+- The settings page was redesigned as a one-column screen with nearby defaults,
+  source and view buttons, an always-visible species limit, a save-only action,
+  a collapsed iPad guide, and a privacy note. Both light and dark backgrounds
+  match the painting's artwork-information page.
+- The base URL now preselects nearby, a 2 km radius, today's collage, 12
+  species, automatic language, and disabled night mode without an incomplete
+  link warning. A missing source in a partial URL defaults to nearby; an
+  explicitly invalid source remains unselected.
+- The station form accepts numeric IDs only and automatically selects an exact
+  match. Location lookup keeps the coordinates editable. Settings remain in
+  the URL; the setup page has no return/cancel button.
+- The local setup fixture checks base and partial URLs, invalid source and
+  values, station-ID auto-selection, location lookup, URL saving, language
+  preview, and setup while browser storage access throws. The app does not read
+  or write `localStorage` or `sessionStorage`.
+- Chrome screenshots were visually inspected at 390 × 844 in light and dark
+  appearance, at 320 × 740 in light appearance, and at 1440 × 1000 in light and
+  dark appearance. The form stayed within the viewport at each measured size.
+  Safari was not exercised in this pass.
 - The app scripts and page contain no `localStorage` or `sessionStorage`
   access. The fixture temporarily seeds old settings to verify they are
   ignored and restores the prior values on unload.

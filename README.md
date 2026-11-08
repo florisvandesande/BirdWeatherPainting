@@ -63,12 +63,12 @@ cd BirdWeatherPainting
 python3 -m http.server 8000
 ```
 
-Open <http://127.0.0.1:8000/> in a browser. The base URL opens welcome/setup.
-Choose a public BirdWeather
-station by name or numeric ID, or select nearby stations and allow location
-access or enter coordinates manually. Choose the latest-bird or today's-collage
-view and save. To stop the local server, return to the terminal and press
-Control-C.
+Open <http://127.0.0.1:8000/> in a browser. The base URL opens the one-column
+welcome and settings page. Nearby stations, a 2 km radius, today's collage, 12
+species, automatic language, and disabled night mode are preselected. Use the
+location button to fill the editable coordinates, or enter a numeric public
+BirdWeather station ID. Choose the display settings and save. To stop the local
+server, return to the terminal and press Control-C.
 
 No package installation or application configuration file is required. Do not
 open `index.html` directly as a `file://` URL; browsers restrict the API and
@@ -91,7 +91,7 @@ The supported choices are:
 
 - `source=station` with a public numeric `station` ID, or `source=nearby` with
   `lat`, `lon`, and a `radius` of `2`, `5`, or `10` kilometres;
-- `view=latest` or `view=today`;
+- `view=latest` or `view=today`. The default is `today`;
 - `limit=1` through `limit=32` for today's collage. The default is `12`.
   Single-bird mode always shows one species.
 - `lang=auto` or one of `en`, `nl`, `fr`, `de`, `es`, `it`, and `pt-BR`;
@@ -104,12 +104,14 @@ For example, nearby mode uses a URL like:
 ?source=nearby&lat=52.12345&lon=5.12345&radius=2&view=today&limit=12&lang=nl&night=1&nightStart=22%3A00&nightEnd=07%3A00
 ```
 
-The base URL always opens welcome/setup. A URL with missing or invalid settings
-also opens setup and keeps each valid value filled in. Missing optional values
-show their defaults and must be saved to create a complete URL. A missing or
-invalid `source` is never inferred. Unknown query fields are ignored; duplicate
-known fields are invalid. Nearby coordinates are rounded to five decimal places.
-Night times use the device's local clock.
+The base URL opens welcome/setup with nearby selected and blank coordinates.
+It does not show an incomplete-link warning until a URL contains configuration
+fields. A missing `source` in a partial URL defaults to nearby; an explicitly
+invalid source remains unselected. Other valid URL values remain filled in,
+with localized feedback for partial or invalid links. Unknown query fields are
+ignored; duplicate known fields are invalid. Nearby coordinates are rounded to
+five decimal places. Night times use the device's local clock. The species
+limit remains visible in both display modes and applies to today's collage.
 
 ## Artwork and reuse
 

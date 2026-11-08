@@ -18,8 +18,9 @@
         nightEnd: true
     };
     var defaults = {
+        source: 'nearby',
         radius: '2',
-        view: 'latest',
+        view: 'today',
         limit: '12',
         lang: 'auto',
         night: false,
@@ -29,6 +30,7 @@
     var values = Object.create(null);
     var errors = Object.create(null);
     var malformedQuery = false;
+    var hasKnownQuery = false;
     var languageChoice = defaults.lang;
 
     function readQuery() {
@@ -58,6 +60,7 @@
             if (!Object.prototype.hasOwnProperty.call(knownParameters, name)) {
                 return;
             }
+            hasKnownQuery = true;
             try {
                 value = decodeURIComponent(rawValue.replace(/\+/g, ' '));
             } catch (error) {
@@ -89,7 +92,9 @@
 
     function field(name, validate, fallback) {
         if (!Object.prototype.hasOwnProperty.call(values, name) || errors[name]) {
-            errors[name] = true;
+            if (hasKnownQuery || errors[name]) {
+                errors[name] = true;
+            }
             return fallback;
         }
         var value = values[name];
@@ -118,9 +123,16 @@
             complete: false
         };
 
-        result.source = field('source', function (value) {
-            return value === 'station' || value === 'nearby';
-        }, null);
+        if (Object.prototype.hasOwnProperty.call(values, 'source')) {
+            result.source = field('source', function (value) {
+                return value === 'station' || value === 'nearby';
+            }, null);
+        } else {
+            result.source = defaults.source;
+            if (hasKnownQuery) {
+                errors.source = true;
+            }
+        }
 
         if (result.source === 'station') {
             result.station = field('station', api.validStationId, '');
@@ -129,8 +141,13 @@
                 result.station = values.station;
             }
         } else if (result.source === 'nearby') {
-            result.lat = coordinate(values.lat, 'lat');
-            result.lon = coordinate(values.lon, 'lon');
+            if (Object.prototype.hasOwnProperty.call(values, 'station') && api.validStationId(values.station)) {
+                result.station = values.station;
+            }
+            if (hasKnownQuery) {
+                result.lat = coordinate(values.lat, 'lat');
+                result.lon = coordinate(values.lon, 'lon');
+            }
             result.radius = field('radius', function (value) {
                 return value === '2' || value === '5' || value === '10';
             }, defaults.radius);
@@ -294,7 +311,8 @@
             nightStart: parsed.nightStart,
             nightEnd: parsed.nightEnd,
             errors: parsed.errors,
-            complete: parsed.complete
+            complete: parsed.complete,
+            hasKnownQuery: hasKnownQuery
         };
     }
 

@@ -58,51 +58,34 @@
     <main id="setup" class="setup" aria-labelledby="setup-title" hidden>
         <div class="setup-page">
             <header class="setup-header">
-                <p class="book-title" data-text="title"></p>
-                <h1 id="setup-title" tabindex="-1"></h1>
+                <h1 id="setup-title" tabindex="-1" data-text="title"></h1>
                 <p id="welcome-intro" data-text="welcomeIntro"></p>
             </header>
-            <div class="setup-body">
-                <div class="setup-controls">
-                    <div class="source-choice">
-                        <label for="detection-source" data-text="sourceLabel"></label>
-                        <select id="detection-source">
-                            <option value="" data-text="sourceChoose"></option>
-                            <option value="station" data-text="sourceStation"></option>
-                            <option value="nearby" data-text="sourceNearby"></option>
-                        </select>
+            <p id="url-config-status" class="setup-status" role="status"></p>
+            <div class="setup-controls">
+                <section class="setup-section" aria-labelledby="source-heading">
+                    <h2 id="source-heading" data-text="sourceLabel"></h2>
+                    <div class="setup-choice-buttons" role="group" aria-labelledby="source-heading">
+                        <button id="use-location" type="button" data-text="useLocation"
+                            aria-describedby="location-hint" aria-pressed="true"></button>
+                        <button id="station-mode-button" type="button" data-text="enterStationId"
+                            aria-pressed="false"></button>
                     </div>
-                    <p id="url-config-status" class="setup-status" role="status"></p>
-                    <div id="station-source-settings">
-                        <form id="station-search" role="search" aria-labelledby="station-query-label">
-                            <label id="station-query-label" for="station-query" data-text="stationSearchLabel"></label>
-                            <div class="search-row">
-                                <input id="station-query" type="search" maxlength="120" dir="auto"
-                                    autocomplete="off" aria-describedby="station-search-hint">
-                                <button type="submit" data-text="search"></button>
-                            </div>
-                            <p id="station-search-hint" class="setup-hint" data-text="stationSearchHint"></p>
-                        </form>
-                        <p id="station-search-status" class="setup-status" role="status"></p>
-                        <ul id="station-results" class="station-results" hidden></ul>
-                        <p id="selected-station" class="selected-station" role="status"></p>
-                    </div>
-                    <div id="nearby-source-settings" hidden>
-                        <p id="location-hint" class="setup-hint" data-text="locationHint"></p>
-                        <button id="use-location" type="button" data-text="useLocation" aria-describedby="location-hint"></button>
+                    <div id="nearby-source-settings">
                         <div class="coordinate-fields">
                             <div>
                                 <label for="nearby-latitude" data-text="latitude"></label>
-                                <input id="nearby-latitude" type="text" maxlength="24" autocomplete="off" dir="ltr"
-                                    aria-describedby="coordinate-hint">
+                                <input id="nearby-latitude" type="text" inputmode="decimal" maxlength="24"
+                                    autocomplete="off" dir="ltr" aria-describedby="coordinate-hint">
                             </div>
                             <div>
                                 <label for="nearby-longitude" data-text="longitude"></label>
-                                <input id="nearby-longitude" type="text" maxlength="24" autocomplete="off" dir="ltr"
-                                    aria-describedby="coordinate-hint">
+                                <input id="nearby-longitude" type="text" inputmode="decimal" maxlength="24"
+                                    autocomplete="off" dir="ltr" aria-describedby="coordinate-hint">
                             </div>
                         </div>
                         <p id="coordinate-hint" class="setup-hint" data-text="coordinateHint"></p>
+                        <p id="location-hint" class="setup-hint" data-text="locationHint"></p>
                         <label for="nearby-radius" data-text="radiusLabel"></label>
                         <select id="nearby-radius">
                             <option value="2">2 km</option>
@@ -111,67 +94,83 @@
                         </select>
                         <p id="location-status" class="setup-status" role="status"></p>
                     </div>
-                    <div class="source-choice">
-                        <label for="display-view" data-text="displayViewLabel"></label>
-                        <select id="display-view">
-                            <option value="latest" data-text="displayViewLatest"></option>
-                            <option value="today" data-text="displayViewToday"></option>
-                        </select>
+                    <div id="station-source-settings" hidden>
+                        <form id="station-search" role="search" aria-labelledby="station-query-label">
+                            <label id="station-query-label" for="station-query" data-text="stationSearchLabel"></label>
+                            <div class="search-row">
+                                <input id="station-query" type="search" inputmode="numeric" pattern="[0-9]*"
+                                    maxlength="18" dir="ltr" autocomplete="off"
+                                    aria-describedby="station-search-hint">
+                                <button type="submit" data-text="search"></button>
+                            </div>
+                            <p id="station-search-hint" class="setup-hint" data-text="stationSearchHint"></p>
+                        </form>
+                        <p id="station-search-status" class="setup-status" role="status"></p>
+                        <p id="selected-station" class="selected-station" role="status"></p>
                     </div>
-                    <div id="collage-limit-settings" class="source-choice" hidden>
+                </section>
+                <section class="setup-section" aria-labelledby="view-heading">
+                    <h2 id="view-heading" data-text="displayViewLabel"></h2>
+                    <div class="setup-choice-buttons setup-view-buttons" role="group" aria-labelledby="view-heading">
+                        <button id="view-today" type="button" data-text="displayViewToday" aria-pressed="true"></button>
+                        <button id="view-latest" type="button" data-text="displayViewLatest" aria-pressed="false"></button>
+                    </div>
+                    <div id="collage-limit-settings">
                         <label for="collage-limit" data-text="collageLimitLabel"></label>
                         <select id="collage-limit"></select>
                     </div>
-                    <div class="language-choice">
-                        <label for="display-language" data-text="languageLabel"></label>
-                        <select id="display-language">
-                            <option value="auto" data-text="automaticLanguage"></option>
-                            <option value="en" lang="en">English</option>
-                            <option value="nl" lang="nl">Nederlands</option>
-                            <option value="fr" lang="fr">Français</option>
-                            <option value="de" lang="de">Deutsch</option>
-                            <option value="es" lang="es">Español</option>
-                            <option value="it" lang="it">Italiano</option>
-                            <option value="pt-BR" lang="pt-BR">Português (Brasil)</option>
-                        </select>
-                    </div>
-                    <div class="night-choice">
-                        <label class="night-toggle" for="night-enabled">
-                            <input id="night-enabled" type="checkbox" aria-controls="night-times">
-                            <span data-night-text="enabled"></span>
-                        </label>
-                        <div id="night-times" hidden>
-                            <div class="night-time-row">
-                                <div>
-                                    <label for="night-start" data-night-text="start"></label>
-                                    <input id="night-start" type="time" maxlength="5" placeholder="22:00"
-                                        aria-describedby="night-hint night-status">
-                                </div>
-                                <div>
-                                    <label for="night-end" data-night-text="end"></label>
-                                    <input id="night-end" type="time" maxlength="5" placeholder="07:00"
-                                        aria-describedby="night-hint night-status">
-                                </div>
+                </section>
+                <section class="setup-section language-choice">
+                    <label for="display-language" data-text="languageLabel"></label>
+                    <select id="display-language">
+                        <option value="auto" data-text="automaticLanguage"></option>
+                        <option value="en" lang="en">English</option>
+                        <option value="nl" lang="nl">Nederlands</option>
+                        <option value="fr" lang="fr">Français</option>
+                        <option value="de" lang="de">Deutsch</option>
+                        <option value="es" lang="es">Español</option>
+                        <option value="it" lang="it">Italiano</option>
+                        <option value="pt-BR" lang="pt-BR">Português (Brasil)</option>
+                    </select>
+                </section>
+                <section class="setup-section night-choice">
+                    <label class="night-toggle" for="night-enabled">
+                        <input id="night-enabled" type="checkbox" aria-controls="night-times">
+                        <span data-night-text="enabled"></span>
+                    </label>
+                    <div id="night-times" hidden>
+                        <div class="night-time-row">
+                            <div>
+                                <label for="night-start" data-night-text="start"></label>
+                                <input id="night-start" type="time" maxlength="5" placeholder="22:00"
+                                    aria-describedby="night-hint night-status">
                             </div>
-                            <p id="night-hint" class="setup-hint" data-night-text="hint"></p>
+                            <div>
+                                <label for="night-end" data-night-text="end"></label>
+                                <input id="night-end" type="time" maxlength="5" placeholder="07:00"
+                                    aria-describedby="night-hint night-status">
+                            </div>
                         </div>
-                        <p id="night-status" class="setup-status" role="status"></p>
+                        <p id="night-hint" class="setup-hint" data-night-text="hint"></p>
                     </div>
-                    <div class="setup-actions">
-                        <button id="save-settings" type="button" disabled></button>
-                        <button id="cancel-settings" type="button" data-text="returnToPainting" hidden></button>
-                    </div>
+                    <p id="night-status" class="setup-status" role="status"></p>
+                </section>
+                <div class="setup-actions">
+                    <button id="save-settings" type="button" disabled></button>
                 </div>
-                <aside class="setup-guide" aria-labelledby="guide-title">
-                    <img src="assets/field-sprig.svg" alt="">
-                    <h2 id="guide-title" data-text="guideTitle"></h2>
-                    <ol>
-                        <li data-text="guideHomeScreen"></li>
-                        <li data-text="guideAutoLock"></li>
-                        <li data-text="guidePower"></li>
-                    </ol>
-                </aside>
+                <details id="setup-guide" class="setup-guide">
+                    <summary data-text="guideTitle"></summary>
+                    <div class="setup-guide-content">
+                        <img src="assets/field-sprig.svg" alt="">
+                        <ol>
+                            <li data-text="guideHomeScreen"></li>
+                            <li data-text="guideAutoLock"></li>
+                            <li data-text="guidePower"></li>
+                        </ol>
+                    </div>
+                </details>
             </div>
+            <footer class="setup-privacy" data-text="privacyNotice"></footer>
         </div>
     </main>
     <script src="assets/text.js"></script>

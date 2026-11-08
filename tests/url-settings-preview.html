@@ -35,7 +35,9 @@
         <button data-case="blocked">Storage blocked</button>
         <button data-case="station-save">Save station URL</button>
         <button data-case="nearby-save">Save nearby URL</button>
-        <button data-case="cancel-language">Cancel language preview</button>
+        <button data-case="language-preview">Language preview</button>
+        <button data-case="station-lookup">Station ID lookup</button>
+        <button data-case="location-lookup">Location lookup</button>
         <button data-case="artwork">Artwork information</button>
         <button id="all">Run core checks</button>
     </div>
@@ -50,35 +52,62 @@
         var storageKeys = ['birdweather.setup', 'birdweather.language'];
         var storageSeeded = false;
         var cases = {
-            bare: { query: '', check: function () { return true; } },
+            bare: { query: '', check: function (doc) {
+                return visible(doc, 'setup') && !visible(doc, 'painting') &&
+                    doc.getElementById('use-location').getAttribute('aria-pressed') === 'true' &&
+                    visible(doc, 'nearby-source-settings') && !visible(doc, 'station-source-settings') &&
+                    doc.getElementById('nearby-latitude').value === '' &&
+                    doc.getElementById('nearby-longitude').value === '' &&
+                    doc.getElementById('nearby-radius').value === '2' &&
+                    doc.getElementById('view-today').getAttribute('aria-pressed') === 'true' &&
+                    doc.getElementById('collage-limit').value === '12' &&
+                    doc.getElementById('display-language').value === 'auto' &&
+                    !doc.getElementById('night-enabled').checked &&
+                    !doc.getElementById('setup-guide').open &&
+                    !doc.getElementById('cancel-settings') &&
+                    doc.querySelector('.setup-privacy').textContent.length > 0 &&
+                    getComputedStyle(doc.querySelector('.setup-controls')).flexDirection === 'column' &&
+                    getComputedStyle(doc.querySelector('.setup')).backgroundColor ===
+                        getComputedStyle(doc.getElementById('artwork-info')).backgroundColor &&
+                    doc.getElementById('url-config-status').textContent === '';
+            } },
             valid: { query: '?source=station&station=7368&view=today&limit=12&lang=nl&night=0&nightStart=22%3A00&nightEnd=07%3A00&utm_source=fixture', check: function (doc) {
                 return visible(doc, 'painting') && !visible(doc, 'setup') && doc.documentElement.lang === 'nl';
             } },
             partial: { query: '?source=station&station=7368&view=today&limit=4&lang=de&night=1&nightStart=21%3A15', check: function (doc) {
-                return visible(doc, 'setup') && doc.getElementById('selected-station').textContent.indexOf('7368') >= 0 &&
-                    doc.getElementById('display-view').value === 'today' && doc.getElementById('collage-limit').value === '4' &&
+                return visible(doc, 'setup') && doc.getElementById('station-query').value === '7368' &&
+                    doc.getElementById('station-mode-button').getAttribute('aria-pressed') === 'true' &&
+                    doc.getElementById('selected-station').textContent.indexOf('7368') >= 0 &&
+                    doc.getElementById('view-today').getAttribute('aria-pressed') === 'true' && doc.getElementById('collage-limit').value === '4' &&
                     doc.getElementById('display-language').value === 'de' && doc.getElementById('night-enabled').checked &&
                     doc.getElementById('night-start').value === '21:15' && doc.getElementById('night-end').value === '07:00' &&
                     doc.getElementById('url-config-status').textContent.length > 0;
             } },
             'missing-source': { query: '?station=7368&view=latest&limit=12&lang=auto&night=0&nightStart=22%3A00&nightEnd=07%3A00', check: function (doc) {
-                return visible(doc, 'setup') && doc.getElementById('detection-source').value === '' &&
-                    doc.getElementById('selected-station').textContent.indexOf('7368') >= 0;
+                return visible(doc, 'setup') && doc.getElementById('use-location').getAttribute('aria-pressed') === 'true' &&
+                    visible(doc, 'nearby-source-settings') && !visible(doc, 'station-source-settings') &&
+                    doc.getElementById('view-latest').getAttribute('aria-pressed') === 'true';
+            } },
+            'invalid-source': { query: '?source=invalid&view=today&limit=12&lang=auto&night=0&nightStart=22%3A00&nightEnd=07%3A00', check: function (doc) {
+                return visible(doc, 'setup') && doc.getElementById('use-location').getAttribute('aria-pressed') === 'false' &&
+                    doc.getElementById('station-mode-button').getAttribute('aria-pressed') === 'false' &&
+                    doc.getElementById('save-settings').disabled && doc.getElementById('url-config-status').textContent.length > 0;
             } },
             'invalid-station': { query: '?source=station&station=0&view=latest&limit=12&lang=auto&night=0&nightStart=22%3A00&nightEnd=07%3A00', check: function (doc) {
-                return visible(doc, 'setup') && doc.getElementById('detection-source').value === 'station' &&
+                return visible(doc, 'setup') && doc.getElementById('station-mode-button').getAttribute('aria-pressed') === 'true' &&
+                    doc.getElementById('station-query').value === '' &&
                     doc.getElementById('selected-station').textContent === '' &&
                     doc.getElementById('station-search-status').textContent.length > 0 &&
                     doc.getElementById('save-settings').disabled;
             } },
             invalid: { query: '?source=station&station=7368&view=bad&limit=33&lang=xx&night=2&nightStart=22%3A00&nightEnd=22%3A00', check: function (doc) {
-                return visible(doc, 'setup') && doc.getElementById('display-view').value === 'latest' &&
+                return visible(doc, 'setup') && doc.getElementById('view-today').getAttribute('aria-pressed') === 'true' &&
                     doc.getElementById('collage-limit').value === '12' && doc.getElementById('display-language').value === 'auto' &&
                     doc.getElementById('night-start').value === '22:00' && doc.getElementById('night-end').value === '07:00' &&
                     doc.getElementById('url-config-status').textContent.length > 0;
             } },
             duplicate: { query: '?source=station&station=7368&view=latest&view=today&limit=8&lang=auto&night=0&nightStart=22%3A00&nightEnd=07%3A00', check: function (doc) {
-                return visible(doc, 'setup') && doc.getElementById('display-view').value === 'latest';
+                return visible(doc, 'setup') && doc.getElementById('view-today').getAttribute('aria-pressed') === 'true';
             } },
             nearby: { query: '?source=nearby&lat=52.12345&lon=bad&radius=7&view=latest&limit=12&lang=auto&night=0&nightStart=22%3A00&nightEnd=07%3A00', check: function (doc) {
                 return visible(doc, 'setup') && doc.getElementById('nearby-latitude').value === '52.12345' &&
@@ -127,7 +156,7 @@
                 frame.onload = null;
                 try {
                     var doc = frame.contentDocument;
-                    var passed = name === 'bare' ? visible(doc, 'setup') && !visible(doc, 'painting') : test.check(doc);
+                    var passed = test.check(doc);
                     if (complete) complete(passed, name);
                     else showResult(name, passed);
                 } catch (error) {
@@ -143,6 +172,10 @@
             var event = element.ownerDocument.createEvent('Event');
             event.initEvent('change', true, false);
             element.dispatchEvent(event);
+        }
+
+        function chooseView(doc, id) {
+            doc.getElementById(id).click();
         }
 
         function runSave(kind) {
@@ -167,13 +200,13 @@
                     firstLoad = false;
                     if (!visible(doc, 'setup')) throw new Error('incomplete URL did not open setup');
                     if (nearby) {
-                        change(doc.getElementById('display-view'), 'latest');
+                        chooseView(doc, 'view-latest');
                         change(doc.getElementById('collage-limit'), '9');
                         doc.getElementById('night-start').value = '';
                         doc.getElementById('night-end').value = '';
                         doc.getElementById('save-settings').click();
                     } else {
-                        change(doc.getElementById('display-view'), 'today');
+                        chooseView(doc, 'view-today');
                         change(doc.getElementById('collage-limit'), '4');
                         change(doc.getElementById('display-language'), 'nl');
                         doc.getElementById('night-enabled').checked = true;
@@ -190,17 +223,63 @@
             frame.src = '../index.html' + query;
         }
 
-        function runCancelLanguage() {
+        function runLanguagePreview() {
             frame.onload = function () {
                 frame.onload = null;
                 var doc = frame.contentDocument;
                 doc.getElementById('open-settings').click();
                 change(doc.getElementById('display-language'), 'en');
-                var previewed = doc.documentElement.lang === 'en';
-                doc.getElementById('cancel-settings').click();
-                showResult('cancel language preview', previewed && doc.documentElement.lang === 'nl', doc.documentElement.lang);
+                showResult('language preview stays unsaved until save',
+                    doc.getElementById('setup-title').textContent === 'BirdWeather Painting' &&
+                    frame.contentWindow.location.search.indexOf('lang=nl') >= 0 &&
+                    !doc.getElementById('cancel-settings'));
             };
             frame.src = '../index.html?source=station&station=7368&view=latest&limit=12&lang=nl&night=0&nightStart=22%3A00&nightEnd=07%3A00';
+        }
+
+        function runStationLookup() {
+            frame.onload = function () {
+                frame.onload = null;
+                var doc = frame.contentDocument;
+                var win = frame.contentWindow;
+                win.BirdWeatherApi.searchStations = function (id, complete) {
+                    window.setTimeout(function () {
+                        complete(null, [{ id: id, name: 'Fixture station' }]);
+                    }, 0);
+                    return { abort: function () {} };
+                };
+                doc.getElementById('station-query').value = '12345';
+                var input = doc.createEvent('Event');
+                input.initEvent('input', true, false);
+                doc.getElementById('station-query').dispatchEvent(input);
+                doc.getElementById('station-search').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
+                window.setTimeout(function () {
+                    showResult('station ID auto-selects an exact match',
+                        doc.getElementById('selected-station').textContent.indexOf('Fixture station') >= 0 &&
+                        doc.getElementById('save-settings').disabled === false);
+                }, 10);
+            };
+            frame.src = '../index.html?source=station&station=0&view=today&limit=12&lang=en&night=0&nightStart=22%3A00&nightEnd=07%3A00';
+        }
+
+        function runLocationLookup() {
+            frame.onload = function () {
+                frame.onload = null;
+                var doc = frame.contentDocument;
+                var win = frame.contentWindow;
+                Object.defineProperty(win.navigator, 'geolocation', { configurable: true, value: {
+                    getCurrentPosition: function (success) {
+                        success({ coords: { latitude: 52.123, longitude: 5.456 } });
+                    }
+                } });
+                doc.getElementById('use-location').click();
+                showResult('location button selects nearby and fills editable coordinates',
+                    doc.getElementById('use-location').getAttribute('aria-pressed') === 'true' &&
+                    doc.getElementById('nearby-latitude').value === '52.123' &&
+                    doc.getElementById('nearby-longitude').value === '5.456' &&
+                    doc.getElementById('location-status').textContent.length > 0);
+            };
+            frame.src = '../index.html';
         }
 
         function runArtwork() {
@@ -237,7 +316,7 @@
         }
 
         function runAll() {
-            var names = ['bare', 'valid', 'partial', 'missing-source', 'invalid-station', 'invalid', 'duplicate', 'nearby'];
+            var names = ['bare', 'valid', 'partial', 'missing-source', 'invalid-source', 'invalid-station', 'invalid', 'duplicate', 'nearby'];
             var failures = [];
             var index = 0;
             function next() {
@@ -263,7 +342,9 @@
                 if (cases[name]) openCase(name);
                 else if (name === 'blocked') openStorageBlocked();
                 else if (name === 'station-save' || name === 'nearby-save') runSave(name);
-                else if (name === 'cancel-language') runCancelLanguage();
+                else if (name === 'language-preview') runLanguagePreview();
+                else if (name === 'station-lookup') runStationLookup();
+                else if (name === 'location-lookup') runLocationLookup();
                 else if (name === 'artwork') runArtwork();
             });
         });
