@@ -84,7 +84,7 @@
     function displayOptions(view, limit) {
         return {
             view: view === 'today' ? 'today' : 'latest',
-            limit: typeof limit === 'string' && /^(?:[2-9]|[12][0-9]|3[0-2])$/.test(limit) ? limit : '12'
+            limit: typeof limit === 'string' && /^(?:[1-9]|[12][0-9]|3[0-2])$/.test(limit) ? limit : '12'
         };
     }
 

@@ -17,150 +17,126 @@
     position: absolute;
     top: 2.25rem;
     right: 0;
-    bottom: 0.6rem;
+    bottom: 3.8rem;
     left: 0;
-}
-
-.collage-wing {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 35%;
-    margin: 0;
-    padding: 0;
-    list-style: none;
-}
-
-.collage-left {
-    left: 0;
-}
-
-.collage-right {
-    right: 0;
-}
-
-.collage-wing li {
-    position: absolute;
-    box-sizing: border-box;
-    padding: 0.2rem;
-}
-
-.collage-wing li:only-child {
-    display: -webkit-flex;
-    display: flex;
-    -webkit-align-items: center;
-    align-items: center;
-    -webkit-justify-content: center;
-    justify-content: center;
-}
-
-.collage-wing li:only-child .collage-specimen {
-    width: 70%;
-    height: 60%;
-}
-
-.collage-specimen {
-    box-sizing: border-box;
-    height: 100%;
-    margin: 0;
-    padding: 0.2rem;
     overflow: hidden;
+}
+
+.collage-empty-state {
+    position: absolute;
+    top: 2.25rem;
+    right: 0;
+    bottom: 3.8rem;
+    left: 0;
     display: -webkit-flex;
     display: flex;
     -webkit-flex-direction: column;
     flex-direction: column;
     -webkit-justify-content: center;
     justify-content: center;
-    background: rgba(255, 252, 240, 0.24);
-    border: 1px solid #d1b88b;
+    -webkit-align-items: center;
+    align-items: center;
+    overflow: hidden;
 }
 
-.collage-hero {
+.collage-empty-art {
+    display: block;
+    width: 60%;
+    max-width: 360px;
+    min-height: 0;
+    max-height: 72%;
+    object-fit: contain;
+}
+
+.collage-empty-state h2 {
+    margin: 0.25em 0 0;
+    font-size: 2rem;
+    font-weight: 400;
+    line-height: 1.1;
+}
+
+.collage-empty-state p {
+    margin: 0.35em auto 0;
+    max-width: 35em;
+    font-size: 1.1rem;
+}
+
+.collage-specimen {
     position: absolute;
-    top: 7%;
-    left: 36%;
-    width: 28%;
-    height: 86%;
-    padding: 0.85rem;
-    border-color: #a4855a;
-    background: rgba(255, 252, 240, 0.52);
+    box-sizing: border-box;
+    display: block;
+    margin: 0;
+    padding: 0;
+    overflow: visible;
+    border: 0;
+    background: transparent;
+    text-align: center;
 }
 
 .collage-specimen img {
     display: block;
+    box-sizing: border-box;
     width: 100%;
     min-height: 0;
-    -webkit-flex: 1 1 0;
-    flex: 1 1 0;
     object-fit: contain;
 }
 
 .collage-specimen figcaption {
-    -webkit-flex: 0 0 auto;
-    flex: 0 0 auto;
+    box-sizing: border-box;
+    overflow: hidden;
     color: #38281c;
-    padding: 0.25rem 0;
+    padding: 0.15em 0 0;
     font-size: 0.95rem;
-    line-height: 1.12;
+    line-height: 1.08;
+    text-shadow: 0 1px 2px #f0ece6, 1px 0 2px #f0ece6, -1px 0 2px #f0ece6;
 }
 
 .collage-common-name {
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-box-orient: vertical;
-    -webkit-line-clamp: 2;
-}
-
-.collage-dense figcaption {
-    font-size: 0.8rem;
+    display: block;
+    overflow: visible;
+    word-wrap: break-word;
 }
 
 .collage-scientific-name {
-    display: none;
-    margin-top: 0.3em;
-    color: #62482e;
-}
-
-.collage-hero figcaption {
-    font-size: 1.55rem;
-}
-
-.collage-hero .collage-scientific-name {
     display: block;
-    font-size: 0.72em;
+    overflow: visible;
+    margin-top: 0.1em;
+    color: #62482e;
+    font-size: 0.9em;
+    font-style: italic;
+    white-space: normal;
+    word-wrap: break-word;
 }
 
 .collage-name-plate img {
     display: none;
 }
 
-.collage-name-plate figcaption::before {
-    display: block;
-    width: 1.1rem;
-    margin: 0 auto 0.35rem;
+.collage-name-plate figcaption {
     border-top: 1px solid #a4855a;
-    content: "";
 }
 
-@media (orientation: portrait) and (max-width: 850px) {
-    .collage-wing {
-        top: 36%;
-        width: 50%;
+@media (max-width: 700px), (max-height: 550px) {
+    .collage-board {
+        right: 0;
+        left: 0;
+        bottom: 3.6rem;
     }
 
-    .collage-hero {
-        top: 0;
-        left: 26%;
-        width: 48%;
-        height: 34%;
-        padding: 0.4rem;
+    .collage-empty-state {
+        bottom: 3.6rem;
     }
 
-    .collage-hero figcaption {
-        font-size: 1.1rem;
+    .collage-empty-art {
+        width: 72%;
+        max-height: 68%;
     }
 
-    .collage-dense figcaption {
-        font-size: 0.72rem;
+    .collage-empty-state h2 {
+        font-size: 1.5rem;
+    }
+
+    .collage-empty-state p {
+        font-size: 0.95rem;
     }
 }

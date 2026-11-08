@@ -4,10 +4,15 @@
     var artwork = window.BirdWeatherArtwork;
     var artworkInfo = window.BirdWeatherArtworkInfo;
     var text = window.BirdWeatherText;
+    var layout = window.BirdWeatherCollageLayout;
 
     function create() {
         var painting = document.getElementById('painting');
         var latest = document.getElementById('latest-plate');
+        var emptyState = document.getElementById('collage-empty-state');
+        var emptyArt = document.getElementById('collage-empty-art');
+        var emptyTitle = document.getElementById('collage-empty-title');
+        var emptyDetail = document.getElementById('collage-empty-detail');
         var collage = document.getElementById('collage');
         var title = document.getElementById('collage-title');
         var board = document.getElementById('collage-board');
@@ -15,12 +20,18 @@
         var plates = [];
         var contentKey = '';
         var generation = 0;
+        var resizeTimer = null;
+        var arranged = false;
+        var arrangementFailed = false;
+        var lastResult = null;
+        var lastLocale = null;
+        var building = false;
 
         function publishCredits() {
             artworkInfo.setDisplayed(plates.map(function (plate) { return plate.credit; }));
         }
 
-        function makePlate(species, parent, hero) {
+        function makePlate(species) {
             var figure = document.createElement('figure');
             figure.className = 'collage-specimen';
             var image = document.createElement('img');
@@ -36,47 +47,46 @@
             caption.appendChild(scientific);
             figure.appendChild(image);
             figure.appendChild(caption);
-            parent.appendChild(figure);
-            if (hero) {
-                figure.classList.add('collage-hero');
-            }
-            var plate = { image: image, name: name, species: species, credit: null };
+            board.appendChild(figure);
+            var plate = {
+                figure: figure,
+                image: image,
+                caption: caption,
+                name: name,
+                species: species,
+                credit: null,
+                ready: false
+            };
             plates.push(plate);
             var createdAt = generation;
-            artwork.paint(image, species, function (credit) {
+            artwork.paintCollage(image, species, function (credit, ready) {
                 if (createdAt !== generation) {
                     return;
                 }
-                figure.classList.toggle('collage-name-plate', !credit);
-                plate.credit = credit;
-                publishCredits();
+                if (ready) {
+                    figure.classList.toggle('collage-name-plate', !credit);
+                    plate.credit = credit;
+                    plate.ready = true;
+                    publishCredits();
+                    arrangeIfReady();
+                }
             });
         }
 
-        function fillWing(species, side) {
-            if (!species.length) {
+        function arrangeIfReady() {
+            if (building || arranged || arrangementFailed || !plates.length ||
+                    !plates.every(function (plate) { return plate.ready; })) {
                 return;
             }
-            var wing = document.createElement('ul');
-            wing.className = 'collage-wing collage-' + side;
-            wing.setAttribute('role', 'list');
-            var columns = species.length <= 3 ? 1 : (species.length <= 9 ? 2 : 3);
-            var rows = Math.ceil(species.length / columns);
-            if (species.length > 9) {
-                wing.classList.add('collage-dense');
-            }
-            species.forEach(function (bird, index) {
-                var item = document.createElement('li');
-                var row = Math.floor(index / columns);
-                var rowSize = Math.min(columns, species.length - row * columns);
-                item.style.left = ((index % columns + (columns - rowSize) / 2) * 100 / columns) + '%';
-                item.style.top = (row * 100 / rows) + '%';
-                item.style.width = (100 / columns) + '%';
-                item.style.height = (100 / rows) + '%';
-                wing.appendChild(item);
-                makePlate(bird, item, false);
+            var currentGeneration = generation;
+            layout.arrange(plates, board, function (packed) {
+                if (currentGeneration !== generation) {
+                    return;
+                }
+                arranged = packed;
+                arrangementFailed = !packed;
+                board.classList.toggle('collage-packed', packed);
             });
-            board.appendChild(wing);
         }
 
         function clear() {
@@ -86,7 +96,14 @@
             });
             plates = [];
             contentKey = '';
+            arranged = false;
+            arrangementFailed = false;
+            building = false;
             board.textContent = '';
+            board.classList.remove('collage-packed');
+            emptyState.hidden = true;
+            board.hidden = false;
+            emptyArt.hidden = true;
             collage.hidden = true;
             latest.hidden = false;
             omitted.hidden = true;
@@ -99,16 +116,36 @@
                 if (contentKey) {
                     clear();
                 }
+                title.textContent = text.message(locale, 'displayViewToday');
+                omitted.hidden = true;
+                emptyState.hidden = false;
+                board.hidden = true;
+                collage.hidden = false;
+                latest.hidden = true;
+                painting.setAttribute('aria-labelledby', 'collage-title');
+                lastResult = result;
+                lastLocale = locale;
                 return;
             }
-            var key = JSON.stringify(result.species);
+            emptyState.hidden = true;
+            board.hidden = false;
+            emptyArt.hidden = true;
+            collage.hidden = false;
+            latest.hidden = true;
+            lastResult = result;
+            lastLocale = locale;
+            var rect = board.getBoundingClientRect();
+            var retainedIds = result.species.map(function (bird) { return bird.id; }).sort();
+            var key = JSON.stringify(retainedIds) + ':' + locale + ':' +
+                Math.round(rect.width) + 'x' + Math.round(rect.height);
             if (key !== contentKey) {
                 clear();
                 contentKey = key;
-                makePlate(result.species[0], board, true);
-                var split = Math.ceil((result.species.length - 1) / 2) + 1;
-                fillWing(result.species.slice(1, split), 'left');
-                fillWing(result.species.slice(split), 'right');
+                collage.hidden = false;
+                latest.hidden = true;
+                building = true;
+                result.species.forEach(makePlate);
+                building = false;
             }
             plates.forEach(function (plate) {
                 var common = text.speciesName(locale, plate.species);
@@ -126,9 +163,48 @@
             collage.hidden = false;
             latest.hidden = true;
             painting.setAttribute('aria-labelledby', 'collage-title');
+            arrangeIfReady();
         }
 
-        return { show: show, clear: clear };
+        function handleResize() {
+            if (resizeTimer) {
+                window.clearTimeout(resizeTimer);
+            }
+            resizeTimer = window.setTimeout(function () {
+                resizeTimer = null;
+                if (contentKey && plates.length) {
+                    if (lastResult) {
+                        show(lastResult, lastLocale);
+                    }
+                }
+            }, 120);
+        }
+
+        window.addEventListener('resize', handleResize);
+        window.addEventListener('orientationchange', handleResize);
+
+        function showEmpty(titleText, detailText) {
+            emptyTitle.textContent = titleText;
+            emptyDetail.textContent = detailText;
+            collage.hidden = false;
+            latest.hidden = true;
+            emptyState.hidden = false;
+            board.hidden = true;
+            emptyArt.hidden = false;
+            omitted.hidden = true;
+            painting.setAttribute('aria-labelledby', 'collage-empty-title');
+        }
+
+        function paintEmpty(complete) {
+            var createdAt = generation;
+            artwork.paintCollage(emptyArt, null, function (credit, ready) {
+                if (ready && createdAt === generation) {
+                    complete(credit);
+                }
+            });
+        }
+
+        return { show: show, showEmpty: showEmpty, paintEmpty: paintEmpty, clear: clear };
     }
 
     window.BirdWeatherCollageView = { create: create };

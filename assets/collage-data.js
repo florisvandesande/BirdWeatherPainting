@@ -91,11 +91,7 @@
                         finish(null, result);
                         return;
                     }
-                    // Keep the newest species even when its count would put it outside the limit.
                     ranked.sort(byRecency);
-                    var newest = ranked.shift();
-                    ranked.sort(function (a, b) { return b.count - a.count || byRecency(a, b); });
-                    ranked.unshift(newest);
                     var retained = ranked.slice(0, limit).map(function (entry) { return entry.id; });
                     result.omitted = ranked.length - retained.length;
                     request = api.speciesForIds(retained, function (error, species) {

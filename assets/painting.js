@@ -102,9 +102,7 @@
         if (!result.species.length) {
             var state = nearby && !result.hasStations ? 'nearbyNoStations' : 'collageEmpty';
             detail.className = '';
-            setText(title, say('perch'));
-            title.removeAttribute('lang');
-            setText(detail, say('emptyBranch'));
+            collageView.showEmpty(say('perch'), say('emptyBranch'));
             detectionTime.hidden = true;
             observationNote.hidden = false;
             setText(observationNote, say(state));
@@ -152,7 +150,7 @@
         }
         emptyArtworkDate = date;
         emptyArtworkCredit = null;
-        artwork.paint(image, null, function (credit) {
+        collageView.paintEmpty(function (credit) {
             if (emptyArtworkDate === date) {
                 emptyArtworkCredit = credit;
                 if (lastResult && !lastResult.species.length) {

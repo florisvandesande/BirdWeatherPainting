@@ -368,7 +368,7 @@
     nightStart.addEventListener('change', changeNight);
     nightEnd.addEventListener('change', changeNight);
 
-    for (var cap = 2; cap <= 32; cap += 1) {
+    for (var cap = 1; cap <= 32; cap += 1) {
         var option = document.createElement('option');
         option.value = option.textContent = String(cap);
         limitSelect.appendChild(option);
