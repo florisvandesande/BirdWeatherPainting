@@ -62,7 +62,7 @@
         var name = filename.replace(/\.png(?:\?.*)?$/i, '.webp'), data = geometry['birds/' + name];
         return data && data.box && data.box.length === 4 ? data.box : [0, 0, 1, 1];
     }
-    function silhouette(image, width, height, box, mirrored) {
+    function silhouette(image, width, height, crop, mirrored, erosion) {
         var canvas = document.createElement('canvas');
         canvas.width = width; canvas.height = height;
         var context = canvas.getContext('2d'), source = new Uint8Array(width * height);
@@ -71,7 +71,7 @@
             return source;
         }
         try {
-            context.drawImage(image, 0, 0, width, height);
+            context.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height);
             var pixels = context.getImageData(0, 0, width, height).data;
             for (var y = 0; y < height; y += 1) {
                 for (var x = 0; x < width; x += 1) {
@@ -80,11 +80,11 @@
                 }
             }
             var eroded = new Uint8Array(source.length), any = false;
-            for (y = EROSION; y < height - EROSION; y += 1) {
-                for (x = EROSION; x < width - EROSION; x += 1) {
+            for (y = erosion; y < height - erosion; y += 1) {
+                for (x = erosion; x < width - erosion; x += 1) {
                     var keep = 1;
-                    for (var dy = -EROSION; dy <= EROSION && keep; dy += 1) {
-                        for (var dx = -EROSION; dx <= EROSION; dx += 1) {
+                    for (var dy = -erosion; dy <= erosion && keep; dy += 1) {
+                        for (var dx = -erosion; dx <= erosion; dx += 1) {
                             if (!source[(y + dy) * width + x + dx]) { keep = 0; break; }
                         }
                     }
@@ -99,12 +99,19 @@
     }
     function prepare(entry, weight, scale, boardWidth, boardHeight, base) {
         var box = entry.box, nw = entry.image.naturalWidth || 1, nh = entry.image.naturalHeight || 1;
-        var span = Math.max((box[2] - box[0]) * nw, (box[3] - box[1]) * nh);
-        var ratio = span > 0 ? Math.max(nw, nh) / span : 1;
-        var dim = Math.max(24, Math.round(base * scale * weight));
-        var artWidth = Math.max(1, Math.round(dim * nw / Math.max(nw, nh)));
-        var artHeight = Math.max(1, Math.round(dim * nh / Math.max(nw, nh)));
-        var shortSide = Math.min(boardWidth, boardHeight), fontSize = Math.max(11, Math.round(shortSide * 0.032 * scale));
+        var crop = {
+            x: Math.max(0, Math.floor(box[0] * nw)),
+            y: Math.max(0, Math.floor(box[1] * nh)),
+            right: Math.min(nw, Math.ceil(box[2] * nw)),
+            bottom: Math.min(nh, Math.ceil(box[3] * nh))
+        };
+        crop.width = Math.max(1, crop.right - crop.x);
+        crop.height = Math.max(1, crop.bottom - crop.y);
+        var imageScale = Math.max(12, Math.round(base * scale * weight)) / Math.max(crop.width, crop.height);
+        var artWidth = Math.max(1, Math.round(crop.width * imageScale));
+        var artHeight = Math.max(1, Math.round(crop.height * imageScale));
+        var shortSide = Math.min(boardWidth, boardHeight), fontSize = Math.max(7, Math.round(shortSide * 0.032 * scale));
+        var erosion = Math.max(1, Math.round(EROSION * shortSide / 1200));
         var caption = entry.caption;
         caption.style.display = 'block'; caption.style.visibility = 'hidden'; caption.style.position = 'absolute';
         caption.style.fontSize = fontSize + 'px'; caption.style.lineHeight = '1.08';
@@ -121,7 +128,7 @@
         var labelWidth = Math.min(maxLabelWidth, Math.max(artWidth, Math.ceil(textWidth)));
         caption.style.width = labelWidth + 'px';
         var labelHeight = Math.max(fontSize * 2, Math.ceil(caption.scrollHeight));
-        var mask = silhouette(entry.image, artWidth, artHeight, box, entry.mirrored);
+        var mask = silhouette(entry.image, artWidth, artHeight, crop, entry.mirrored, erosion);
         var columnTotal = 0, columnCount = 0;
         for (var py = 0; py < artHeight; py += 1) {
             for (var px = 0; px < artWidth; px += 1) {
@@ -145,8 +152,12 @@
         caption.style.left = labelLeft + 'px'; caption.style.top = labelTop + 'px';
         caption.style.width = labelWidth + 'px'; caption.style.height = labelHeight + 'px';
         entry.figure.style.width = entry.figureWidth + 'px'; entry.figure.style.height = entry.figureHeight + 'px';
-        entry.image.style.position = 'absolute'; entry.image.style.left = imageLeft + 'px'; entry.image.style.top = '0';
-        entry.image.style.width = artWidth + 'px'; entry.image.style.height = artHeight + 'px';
+        entry.artWindow.style.left = imageLeft + 'px'; entry.artWindow.style.top = '0';
+        entry.artWindow.style.width = artWidth + 'px'; entry.artWindow.style.height = artHeight + 'px';
+        entry.image.style.position = 'absolute';
+        entry.image.style.left = -(entry.mirrored ? nw - crop.right : crop.x) * imageScale + 'px';
+        entry.image.style.top = -crop.y * imageScale + 'px';
+        entry.image.style.width = (nw * imageScale) + 'px'; entry.image.style.height = (nh * imageScale) + 'px';
         entry.image.style.transform = entry.mirrored ? 'scaleX(-1)' : '';
         caption.style.visibility = 'visible';
     }
@@ -201,7 +212,7 @@
             var entry = entries[i], spot = spiral(entry, occupied, width, height);
             if (!spot) { return false; }
             placeMask(entry, spot[0], spot[1], occupied, width);
-            placements.push({ entry: entry, x: spot[0] + entry.figureLeft, y: spot[1] });
+            placements.push({ entry: entry, x: spot[0], y: spot[1] });
         }
         var minX = Math.min.apply(Math, placements.map(function (p) { return p.x; }));
         var minY = Math.min.apply(Math, placements.map(function (p) { return p.y; }));

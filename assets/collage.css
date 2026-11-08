@@ -81,6 +81,12 @@
     object-fit: contain;
 }
 
+.collage-art-window {
+    position: absolute;
+    display: block;
+    overflow: hidden;
+}
+
 .collage-specimen figcaption {
     box-sizing: border-box;
     overflow: hidden;

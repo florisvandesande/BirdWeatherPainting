@@ -9,8 +9,9 @@ for a wall-mounted iPad.
 The latest-bird and today-collage views, station and nearby setup, artwork
 credits, and optional night schedule are implemented on the local integration
 branch. The project is not deployed. The supplied artwork has been converted to
-transparent PNGs; the collage is being checked in a browser across the 1–32
-species range in portrait and landscape layouts.
+transparent PNGs. A controlled browser preview successfully packed every count
+from 1 to 32 at 390 × 844 portrait and 1024 × 768 landscape. The full live
+BirdWeather flow and the physical iPad acceptance pass remain outstanding.
 The physical iPad 2/iOS 9 acceptance pass has not been completed, so iOS 9
 compatibility is not yet confirmed.
 
@@ -161,8 +162,11 @@ does not need the ignored source WebPs to run the app.
 ## Preview, verification, and known limitations
 
 There is no build step for the website. Serve the repository root with the
-Python command above to preview it. The app's full flow still needs verification
-on the physical iPad 2 at 1024 × 768 landscape. Until that pass succeeds, treat
+Python command above to preview it. The collage was visually inspected in a
+controlled preview at 390 × 844 portrait and 1024 × 768 landscape. All 64
+combinations of 1–32 birds and both orientations packed successfully with
+every image loaded. The full live BirdWeather flow still needs verification on
+the physical iPad 2 at 1024 × 768 landscape. Until that pass succeeds, treat
 iOS 9 Safari behavior as unverified. See
 [the verification record](docs/verification.md) for completed and pending
 checks.
@@ -191,9 +195,13 @@ it for the domain.
 
 The previous station, setup, and artwork information flow was checked in
 Chrome 157 at mobile, tablet, 1024 × 768, and large desktop viewports in light
-and dark browser appearances. The new collage and PNG rendering are being
-checked in a controlled browser preview. The physical iPad 2 is unavailable,
-so its native Safari behavior remains unverified.
+and dark browser appearances. In a controlled preview using the app's collage
+view, the browser packed all 1–32 bird counts in portrait (390 × 844) and
+landscape (1024 × 768), with all artwork loaded. Every count and orientation
+was visually inspected in contact sheets; full-size checks included 1, 8, 16,
+and 32 birds in portrait and 32 birds in landscape. At 32 birds, labels shrink
+to fit the available area. The physical iPad 2 is unavailable, so its native
+Safari behavior remains unverified.
 
 The unrelated repository server-synchronization shell check is not required to
 run or host this static application.

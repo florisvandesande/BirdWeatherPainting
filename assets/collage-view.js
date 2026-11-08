@@ -34,8 +34,11 @@
         function makePlate(species) {
             var figure = document.createElement('figure');
             figure.className = 'collage-specimen';
+            var artWindow = document.createElement('span');
+            artWindow.className = 'collage-art-window';
             var image = document.createElement('img');
             image.alt = '';
+            artWindow.appendChild(image);
             var caption = document.createElement('figcaption');
             caption.dir = 'auto';
             var name = document.createElement('span');
@@ -45,11 +48,12 @@
             scientific.className = 'collage-scientific-name';
             scientific.textContent = species.scientificName;
             caption.appendChild(scientific);
-            figure.appendChild(image);
+            figure.appendChild(artWindow);
             figure.appendChild(caption);
             board.appendChild(figure);
             var plate = {
                 figure: figure,
+                artWindow: artWindow,
                 image: image,
                 caption: caption,
                 name: name,
