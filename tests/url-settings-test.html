@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>URL settings browser test</title>
+    <style>
+        body { margin: 1rem; font: 16px/1.4 sans-serif; }
+        iframe { display: block; width: min(100%, 1024px); height: 768px; border: 1px solid #777; }
+        #test-status[data-result="passed"] { color: #176b2c; }
+        #test-status[data-result="failed"] { color: #a11; }
+    </style>
+</head>
+<body>
+    <h1>URL settings browser test</h1>
+    <p id="test-status" role="status">Running URL settings checks…</p>
+    <iframe id="app-under-test" title="BirdWeather app under test"></iframe>
+    <script src="url-settings-test.js"></script>
+</body>
+</html>

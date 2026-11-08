@@ -1,6 +1,6 @@
 # Artwork sources and reuse
 
-Open the **i** button at the lower right of the painting to see **Alle waargenomen vogels vandaag**, a list of every unique species heard today regardless of the collage limit. Each row shows the localized common name above the Latin name. Tap a row to expand its detection count for today, optional species description, Wikipedia and eBird links, and artwork credit, source, collection, creator, and licence details. The page also shows missing illustrations. Choose **Select list** and use your device's Copy command to collect their species names and BirdWeather IDs. The list stays in browser storage on that device and contains only species identifiers and names. Clearing the site's browser data clears the list. If the browser blocks storage, the list is available while the page stays open.
+Open the **i** button at the lower right of the painting to see **Alle waargenomen vogels vandaag**, a list of every unique species heard today regardless of the collage limit. Each row shows the localized common name above the Latin name. Tap a row to expand its detection count for today, optional species description, Wikipedia and eBird links, and artwork credit, source, collection, creator, and licence details. Missing artwork is shown with the existing Perch or field-sprig fallback; the information surface has no missing-artwork report or copy workflow.
 
 ## Fugleramme Classic collection
 

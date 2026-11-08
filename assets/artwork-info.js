@@ -10,10 +10,6 @@
     var closeButton = document.getElementById('artwork-close');
     var dailyStatus = document.getElementById('daily-list-status');
     var dailyList = document.getElementById('daily-species-list');
-    var list = document.getElementById('artwork-missing');
-    var empty = document.getElementById('artwork-missing-empty');
-    var select = document.getElementById('artwork-select');
-    var copyHelp = document.getElementById('artwork-copy-help');
     var locale = 'en';
     var dailySpecies = [];
     var entries = [];
@@ -115,9 +111,6 @@
             if (expandedSpeciesId === entry.id) {
                 renderCreditDetails(entry);
             }
-            if (!dialog.hidden) {
-                renderMissing();
-            }
         });
     }
 
@@ -214,18 +207,6 @@
         updateDailyStatus();
     }
 
-    function renderMissing() {
-        var rows = artwork.missingSpecies().map(function (entry) {
-            return entry.commonName + ' — ' + entry.scientificName + ' (' + entry.id + ')';
-        });
-        var missingText = rows.join('\n');
-        if (list.value !== missingText) {
-            list.value = missingText;
-        }
-        empty.hidden = !!rows.length;
-        list.hidden = select.hidden = copyHelp.hidden = !rows.length;
-    }
-
     function updateDailyStatus() {
         var message = '';
         if (dailyLoading) {
@@ -272,9 +253,6 @@
         button.setAttribute('aria-label', text.message(locale, 'title'));
         entries.forEach(updateEntry);
         updateDailyStatus();
-        if (!dialog.hidden) {
-            renderMissing();
-        }
     }
 
     function setDailyLoader(loader, refreshOnOpen) {
@@ -283,7 +261,6 @@
     }
 
     function open() {
-        renderMissing();
         button.setAttribute('aria-expanded', 'true');
         painting.classList.add('artwork-open');
         dialog.hidden = false;
@@ -307,11 +284,6 @@
 
     button.addEventListener('click', open);
     closeButton.addEventListener('click', close);
-    select.addEventListener('click', function () {
-        list.focus();
-        list.select();
-        list.setSelectionRange(0, list.value.length);
-    });
     dialog.addEventListener('keydown', function (event) {
         if (event.keyCode === 27) {
             event.preventDefault();
