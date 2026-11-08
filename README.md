@@ -25,7 +25,8 @@ compatibility is not yet confirmed.
 - Size collage birds from the supplied body-mass data and pack their transparent
   silhouettes with the selected-language common and scientific names.
 - Use the local Fugleramme Classic bird illustrations and perches. Empty days
-  show a randomly selected empty perch. Transparent areas show the painting's
+  and loading states show a randomly selected perch. If a bird illustration
+  is unavailable, show a perch instead. Transparent areas show the painting's
   `#f0ece6` paper surface.
 - Open one information page for the displayed artist, collection, source,
   licence, and image changes.
@@ -74,7 +75,9 @@ open `index.html` directly as a `file://` URL; browsers restrict the API and
 catalog requests from local files.
 
 To exercise URL parsing and the setup screens in a local browser, open
-<http://127.0.0.1:8000/tests/url-settings-preview.html>.
+<http://127.0.0.1:8000/tests/url-settings-preview.html>. To check that a missing
+Fugleramme illustration is replaced by a perch in both display modes, open
+<http://127.0.0.1:8000/tests/artwork-fallback-preview.html>.
 
 ## Settings and URLs
 
@@ -110,12 +113,12 @@ Night times use the device's local clock.
 
 ## Artwork and reuse
 
-Single-bird mode keeps its presentation and detection behavior while using the
-supplied PNG artwork and its BirdWeather fallback. Both display modes use the
-same transparent PNG catalogue at `assets/artwork/birds/` and
-`assets/artwork/perches/`. BirdWeather's translated common names provide each
-collage label, with the scientific name below it. The empty-collage perch uses
-the same PNG artwork.
+Single-bird mode keeps its detection behavior while using the supplied PNG
+artwork. Both display modes use the same transparent PNG catalogue at
+`assets/artwork/birds/` and `assets/artwork/perches/`. When a Fugleramme bird
+image is missing or fails to load, a randomly selected perch is shown instead.
+In collages, that perch stays with the species label. BirdWeather's translated
+common names provide each collage label, with the scientific name below it.
 
 The Fugleramme derivatives are CC BY-SA 4.0. PNGs retain transparency and are
 resized to at most 600 pixels to preserve the existing single-bird source size

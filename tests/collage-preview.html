@@ -12,6 +12,7 @@
         .preview { position: relative; flex: 1; min-height: 0; background: #f0ece6; }
         #collage-board { top: 0; bottom: 0; }
         #status { padding: 0.4rem 0.6rem; white-space: pre-wrap; }
+        .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; }
     </style>
 </head>
 <body>
@@ -22,24 +23,30 @@
         <button id="portrait">Portrait</button>
         <button id="landscape">Landscape</button>
         <button id="transition">Check replacement</button>
+        <button id="empty">Empty day</button>
+        <button id="missing">Missing bird image</button>
     </div>
     <div id="status">Loading artwork catalog…</div>
-    <main id="collage" class="preview"><h1 id="collage-title" hidden></h1><div id="collage-board" class="collage-board"></div>
-        <div id="collage-omitted" hidden></div><div id="collage-empty-state" hidden>
-            <img id="collage-empty-art" hidden><h2 id="collage-empty-title"></h2><p id="collage-empty-detail"></p>
+    <main id="collage" class="collage preview"><div id="collage-board" class="collage-board"></div>
+        <div id="collage-omitted" class="visually-hidden" hidden></div><div id="collage-empty-state" hidden>
+            <img id="collage-empty-art" hidden>
         </div>
     </main>
     <div id="painting" hidden></div><div id="latest-plate" hidden></div>
     <script src="../assets/collage-layout.js"></script>
     <script>
         window.fixtureSpeciesByName = Object.create(null);
+        window.fixturePerches = [];
         window.fixtureImageDelay = 0;
         window.BirdWeatherArtwork = {
             paintCollage: function (image, bird, callback) {
-                var record = window.fixtureSpeciesByName[bird.scientificName.toLowerCase()];
+                var record = bird ? window.fixtureSpeciesByName[bird.scientificName.toLowerCase()] :
+                    window.fixturePerches[Math.floor(Math.random() * window.fixturePerches.length)];
+                var missingBird = !!bird && !record;
+                if (missingBird) record = window.fixturePerches[Math.floor(Math.random() * window.fixturePerches.length)];
                 if (!record || !record.path) { callback(null, true); return; }
                 window.setTimeout(function () {
-                    image.onload = function () { callback({ image: record.path }, true); };
+                    image.onload = function () { callback({ image: record.path, kind: bird && !missingBird ? 'bird' : 'perch' }, true); };
                     image.onerror = function () { callback(null, true); };
                     image.src = record.path;
                 }, window.fixtureImageDelay);
@@ -153,6 +160,9 @@
         fetch('../assets/artwork/catalog.json').then(function (response) { return response.json(); }).then(function (catalog) {
             speciesList = Object.keys(catalog.birds).map(function (key) { return catalog.birds[key]; })
                 .map(species).filter(Boolean).slice(0, 32);
+            window.fixturePerches = catalog.perches.map(function (perch) {
+                return { path: '../assets/artwork/' + perch.path };
+            });
             speciesList.forEach(function (bird) { window.fixtureSpeciesByName[bird.scientificName.toLowerCase()] = bird; });
             var collageView = window.BirdWeatherCollageView.create();
             document.getElementById('show').onclick = function () {
@@ -206,12 +216,50 @@
                 }
                 waitForInitial();
             };
+            document.getElementById('empty').onclick = function () {
+                collageView.showEmpty('en');
+                collageView.paintEmpty(function (credit) {
+                    var emptyState = document.getElementById('collage-empty-state');
+                    var image = document.getElementById('collage-empty-art');
+                    var passed = !emptyState.hidden && credit && credit.kind === 'perch' &&
+                        image.naturalWidth > 0 && emptyState.children.length === 1 &&
+                        !document.querySelector('#collage h1, #collage-empty-state h2, #collage-empty-state p');
+                    status.textContent = passed ? 'PASS: empty collage shows only a random perch' :
+                        'FAIL: empty collage contains text or no perch';
+                });
+            };
+            document.getElementById('missing').onclick = function () {
+                board.textContent = '';
+                collageView.show({ species: [{ id: '987654321', commonName: 'Test woodpecker',
+                    scientificName: 'Picus testii' }], omitted: 0 }, 'en');
+                function verify() {
+                    var figure = document.querySelector('.collage-layer-active .collage-specimen');
+                    if (!figure) { window.setTimeout(verify, 50); return; }
+                    var image = figure.querySelector('img');
+                    var caption = figure.querySelector('figcaption');
+                    var passed = image.naturalWidth > 0 && /perches\//.test(image.getAttribute('src')) &&
+                        caption.textContent.indexOf('Test woodpecker') >= 0 &&
+                        caption.textContent.indexOf('Picus testii') >= 0 &&
+                        !figure.classList.contains('collage-name-plate');
+                    status.textContent = passed ? 'PASS: missing species keeps its name with a perch' :
+                        'FAIL: missing species lost its perch or label';
+                }
+                verify();
+            };
             status.textContent = speciesList.length + ' artwork files ready';
             var params = new URLSearchParams(window.location.search);
             if (params.get('orientation') === 'portrait') { orientationName = 'portrait'; setBoardSize(390, 844); }
             if (params.get('orientation') === 'landscape') { orientationName = 'landscape'; setBoardSize(1024, 768); }
             if (params.get('transition') === '1') {
                 document.getElementById('transition').click();
+                return;
+            }
+            if (params.get('empty') === '1') {
+                document.getElementById('empty').click();
+                return;
+            }
+            if (params.get('missing') === '1') {
+                document.getElementById('missing').click();
                 return;
             }
             if (params.get('all') === '1') {

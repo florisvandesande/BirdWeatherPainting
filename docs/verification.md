@@ -23,8 +23,23 @@ Date: 2026-11-08.
 
 ## Completed checks
 
+- The painting chrome changes were visually inspected in Chrome 157 at 390 ×
+  844 and 1440 × 900. Single mode keeps the full artwork and both controls in
+  view; the settings control is a sliders icon. The collage screenshot at
+  390 × 844 has no title or footer, retains room for both controls, and shows
+  complete birds and their labels. The loading state also showed a local perch
+  with the loading message at 1.2rem.
+- The Chrome collage fixture passed counts 1–32 in portrait and landscape,
+  including full image bounds and non-overlap checks. Its empty-day case showed
+  only a perch; its missing-art case kept the species labels and substituted a
+  perch in that species' slot. The real artwork fallback fixture passed for
+  both single and collage modes using local perch PNGs.
+- Light and dark control appearances were visually checked at mobile size. The
+  dark controls use the matching dark fill. Safari was not exercised in this
+  visual pass.
+
 - The station search, setup/save/restore, latest-bird display, artwork
-  information page, and earlier licensed-art fallback were exercised in
+  information page, and earlier artwork flow were exercised in
   Chrome 157 at 390 × 844, 820 × 1180, 1024 × 768, 1440 × 900, and 2560 ×
   1440 in light and dark browser appearances. No viewport overflow was found
   in those earlier flows.

@@ -12,89 +12,13 @@
     var collageCatalogWaiters = [];
     var selectedBirdImages = Object.create(null);
     var failedImages = Object.create(null);
+    var selectedSpeciesPerches = Object.create(null);
     var perchOrder = null;
     var selectedPerchPath = null;
     var fuglerammeLicense = 'CC BY-SA 4.0';
     var fuglerammeLicenseUrl = 'https://creativecommons.org/licenses/by-sa/4.0/';
     var fuglerammeAttribution = 'https://github.com/arnegiacomo/fugleramme/blob/main/assets/artwork/classic/ATTRIBUTION.md';
     var fuglerammeCreator = 'https://github.com/arnegiacomo/fugleramme';
-
-    function readCreator(value) {
-        // BirdWeather supplies either a name or one credit anchor. Read only its text and href.
-        if (typeof value !== 'string' || value.length > 1024 || !value.trim()) {
-            return null;
-        }
-        var match = /^<a\s+([^<>]+)>([^<>]+)<\/a>$/i.exec(value.trim());
-        if (!match) {
-            return /^[^<>]{1,160}$/.test(value.trim()) ? { name: value.trim() } : null;
-        }
-
-        var attributes = match[1];
-        var href = '';
-        while (attributes) {
-            var attribute = /^\s*([a-z]+)\s*=\s*(?:"([^"]*)"|'([^']*)')\s*/i.exec(attributes);
-            if (!attribute || !/^(href|title|class|rel)$/i.test(attribute[1])) {
-                return null;
-            }
-            if (attribute[1].toLowerCase() === 'href') {
-                if (href) {
-                    return null;
-                }
-                href = attribute[2] || attribute[3] || '';
-            }
-            attributes = attributes.slice(attribute[0].length);
-        }
-        if (/^\/\//.test(href)) {
-            href = 'https:' + href;
-        }
-        if (!/^https?:\/\/[a-z0-9.-]+(?::\d{1,5})?(?:[/?#][^\s<>"'\\]*)?$/i.test(href) ||
-                !match[2].trim() || match[2].length > 160) {
-            return null;
-        }
-        // The parser sees only the bounded, tag-free anchor text.
-        var creator = new window.DOMParser().parseFromString(match[2], 'text/html').body.textContent.trim();
-        return creator ? { name: creator, url: href } : null;
-    }
-
-    function approvedLicenseUrl(license) {
-        var cc = typeof license === 'string' && /^CC BY(-SA)? (2\.0|2\.5|3\.0|4\.0)$/.exec(license);
-        if (cc) {
-            return 'https://creativecommons.org/licenses/' + (cc[1] ? 'by-sa/' : 'by/') + cc[2] + '/';
-        }
-        if (license === 'CC0 1.0') {
-            return 'https://creativecommons.org/publicdomain/zero/1.0/';
-        }
-        return license === 'Public Domain Mark 1.0' ? publicDomain : '';
-    }
-
-    function remotePlate(species) {
-        var image = species.imageUrl;
-        // Only the expected raster paths on the BirdWeather media host are requested.
-        var path = typeof image === 'string' && image.length <= 512 &&
-            /^https:\/\/media\.birdweather\.com\/species\/([1-9][0-9]{0,17})\/[a-zA-Z0-9_.-]+\.(?:jpg|jpeg|png)$/.exec(image);
-        if (!path || path[1] !== String(species.id)) {
-            return null;
-        }
-        var license = species.imageLicense;
-        var licenseUrl = approvedLicenseUrl(license);
-        if (!licenseUrl || (species.imageLicenseUrl !== licenseUrl && species.imageLicenseUrl !== licenseUrl.slice(0, -1))) {
-            return null;
-        }
-        var creator = readCreator(species.imageCredit);
-        if (!creator) {
-            return null;
-        }
-        return {
-            species: species.scientificName,
-            image: image,
-            creator: creator.name,
-            creatorUrl: creator.url,
-            source: image,
-            license: license,
-            licenseUrl: licenseUrl,
-            edits: 'remoteEdits'
-        };
-    }
 
     function normalizeName(value) {
         return typeof value === 'string' ? value.replace(/[_-]+/g, ' ').replace(/\s+/g, ' ').trim().toLowerCase() : '';
@@ -290,7 +214,7 @@
         return records;
     }
 
-    function perchCredits(source) {
+    function perchCredits(source, speciesKey) {
         if (!perchOrder) {
             perchOrder = source.perches.slice(0);
             for (var index = perchOrder.length - 1; index > 0; index -= 1) {
@@ -310,7 +234,19 @@
                 records.push(credit);
             }
         });
-        if (selectedPerchPath) {
+        if (speciesKey) {
+            var selectedSpeciesPerch = selectedSpeciesPerches[speciesKey];
+            if (!selectedSpeciesPerch && records.length) {
+                var randomIndex = Math.floor(Math.random() * records.length);
+                selectedSpeciesPerch = records[randomIndex].image;
+                selectedSpeciesPerches[speciesKey] = selectedSpeciesPerch;
+            }
+            if (selectedSpeciesPerch) {
+                records.sort(function (first, second) {
+                    return first.image === selectedSpeciesPerch ? -1 : second.image === selectedSpeciesPerch ? 1 : 0;
+                });
+            }
+        } else if (selectedPerchPath) {
             records.sort(function (first, second) {
                 return first.image === selectedPerchPath ? -1 : second.image === selectedPerchPath ? 1 : 0;
             });
@@ -332,13 +268,8 @@
             }
             var candidates = species ? birdImages(species, source || { birds: {}, aliases: {} }) :
                 source ? perchCredits(source) : [];
-            if (species) {
-                var remote = remotePlate(species);
-                if (remote) {
-                    candidates.push(remote);
-                }
-            }
             var candidateIndex = 0;
+            var perchFallbackStarted = false;
 
             function showNext() {
                 if (image._birdweatherPaintRequest !== requestId) {
@@ -347,6 +278,13 @@
                 var credit = candidates[candidateIndex];
                 candidateIndex += 1;
                 if (!credit) {
+                    if (species && source && !perchFallbackStarted) {
+                        perchFallbackStarted = true;
+                        candidates = perchCredits(source, normalizeName(species.scientificName));
+                        candidateIndex = 0;
+                        showNext();
+                        return;
+                    }
                     image.onload = image.onerror = null;
                     image.classList.remove('artwork-loading');
                     image.setAttribute('src', sprig);
@@ -403,6 +341,7 @@
             var records = species ? birdImages(species, source || { birds: {}, aliases: {} }, true) :
                 source ? perchCredits(source) : [];
             var candidateIndex = 0;
+            var perchFallbackStarted = false;
 
             function showNext() {
                 if (image._birdweatherPaintRequest !== requestId) {
@@ -411,6 +350,13 @@
                 var credit = records[candidateIndex];
                 candidateIndex += 1;
                 if (!credit) {
+                    if (species && source && !perchFallbackStarted) {
+                        perchFallbackStarted = true;
+                        records = perchCredits(source, normalizeName(species.scientificName));
+                        candidateIndex = 0;
+                        showNext();
+                        return;
+                    }
                     image.onload = image.onerror = null;
                     image.classList.remove('artwork-loading');
                     image.removeAttribute('src');

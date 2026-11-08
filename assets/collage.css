@@ -3,21 +3,14 @@
     -webkit-flex: 1 1 auto;
     flex: 1 1 auto;
     min-height: 0;
-    margin: -0.5vh -4vw 0;
-}
-
-.collage h1 {
     margin: 0;
-    font-size: 1.3rem;
-    font-weight: 400;
-    line-height: 1.15;
 }
 
 .collage-board {
     position: absolute;
-    top: 2.25rem;
+    top: 0;
     right: 0;
-    bottom: 3.8rem;
+    bottom: 0;
     left: 0;
     overflow: hidden;
 }
@@ -38,9 +31,9 @@
 
 .collage-empty-state {
     position: absolute;
-    top: 2.25rem;
+    top: 0;
     right: 0;
-    bottom: 3.8rem;
+    bottom: 0;
     left: 0;
     display: -webkit-flex;
     display: flex;
@@ -131,26 +124,9 @@
 }
 
 @media (max-width: 700px), (max-height: 550px) {
-    .collage-board {
-        right: 0;
-        left: 0;
-        bottom: 3.6rem;
-    }
-
-    .collage-empty-state {
-        bottom: 3.6rem;
-    }
-
     .collage-empty-art {
         width: 72%;
         max-height: 68%;
     }
 
-    .collage-empty-state h2 {
-        font-size: 1.5rem;
-    }
-
-    .collage-empty-state p {
-        font-size: 0.95rem;
-    }
 }

@@ -8,9 +8,9 @@
     min-width: 44px;
     min-height: 44px;
     padding: 0.35em 0.8em;
-    border: 1px solid #82633d;
-    border-radius: 3px;
-    background: #fbf4df;
+    border: 0;
+    border-radius: 0;
+    background: #f0ece6;
     color: #38281c;
     font: inherit;
     cursor: pointer;
@@ -111,7 +111,7 @@
 @media (prefers-color-scheme: dark) {
     .artwork-button,
     .artwork-info button {
-        border-color: #b59a70;
+        border: 0;
         background: #31271e;
         color: #f8eddb;
     }

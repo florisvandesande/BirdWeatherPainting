@@ -115,11 +115,12 @@
 .setup button,
 .painting-settings {
     padding: 0.5rem 0.7rem;
+    border: 0;
+    background: #f0ece6;
     cursor: pointer;
 }
 
 .setup button:disabled {
-    background: #e6dac0;
     color: #62523d;
     cursor: default;
 }
@@ -139,8 +140,22 @@
     bottom: 28px;
     left: 28px;
     max-width: 40%;
-    background: #f9f0da;
     text-align: start;
+}
+
+.painting-settings svg {
+    display: block;
+    width: 24px;
+    height: 24px;
+}
+
+.painting-settings svg path,
+.painting-settings svg circle {
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.75;
+    stroke-linecap: round;
+    stroke-linejoin: round;
 }
 
 .setup-hint,
@@ -264,11 +279,6 @@
     margin: 0.15rem 0.4rem 0.15rem 0;
 }
 
-#save-settings:not(:disabled) {
-    background: #513824;
-    color: #fff4da;
-}
-
 @media (min-width: 721px) {
     .setup-body {
         display: -webkit-flex;
@@ -352,18 +362,10 @@
     }
 
     .setup button:disabled {
-        border-color: #88765d;
-        background: #463729;
         color: #c3b193;
     }
 
-    #save-settings:not(:disabled) {
-        background: #efdcba;
-        color: #38281c;
-    }
-
     .painting-settings {
-        border-color: #b6996e;
         background: #2e2219;
         color: #f5e6cb;
     }

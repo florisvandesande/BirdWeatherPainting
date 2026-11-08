@@ -12,9 +12,6 @@
     var image = document.getElementById('latest-art');
     var artwork = window.BirdWeatherArtwork;
     var artworkInfo = window.BirdWeatherArtworkInfo;
-    var stationName = document.getElementById('station-name');
-    var detectionTime = document.getElementById('detection-time');
-    var time = detectionTime.getElementsByTagName('time')[0];
     var observationNote = document.getElementById('observation-note');
     var connectionStatus = document.getElementById('connection-status');
     var sourceActive = Boolean(config);
@@ -33,6 +30,7 @@
     }
 
     function showStationHelp(state) {
+        title.classList.remove('is-loading');
         title.textContent = say(state);
         detail.textContent = say(state + 'Detail');
     }
@@ -57,16 +55,12 @@
 
     function showLatest(result) {
         var observation = result.observation;
-        var heading = nearby ?
-            say(result.stationName ? 'nearbyDetectionHeading' : 'nearbyHeading',
-                { radius: config.radius, name: result.stationName }) : result.stationName;
-        setText(stationName, heading);
+        title.classList.remove('is-loading');
         detail.className = observation ? 'scientific-name' : '';
         if (!observation) {
             setText(title, say('perch'));
             title.removeAttribute('lang');
             setText(detail, say('emptyBranch'));
-            detectionTime.hidden = true;
             observationNote.hidden = false;
             setText(observationNote, say(emptyState(result)));
             return;
@@ -75,9 +69,6 @@
         setText(title, common.name);
         title.setAttribute('lang', common.language);
         setText(detail, observation.species.scientificName);
-        detectionTime.hidden = false;
-        time.setAttribute('datetime', observation.timestamp);
-        setText(time, say('observed', { time: text.formatDate(locale, observation), zone: observation.zone }));
         var now = new Date();
         var heard = new Date(observation.time);
         // Nearby observations can span time zones. Compare days in the device's calendar.
@@ -97,13 +88,11 @@
     }
 
     function showCollage(result) {
-        setText(stationName, nearby ? say('nearbyHeading', { radius: config.radius }) : result.stationName);
         collageView.show(result, locale);
         if (!result.species.length) {
             var state = nearby && !result.hasStations ? 'nearbyNoStations' : 'collageEmpty';
             detail.className = '';
-            collageView.showEmpty(say('perch'), say('emptyBranch'));
-            detectionTime.hidden = true;
+            collageView.showEmpty(locale);
             observationNote.hidden = false;
             setText(observationNote, say(state));
         } else {
@@ -112,10 +101,11 @@
     }
 
     function showLoading() {
+        title.classList.add('is-loading');
         detail.className = '';
         setText(detail, '');
-        setText(stationName, nearby ? say('nearbyHeading', { radius: config.radius }) : '');
         setText(title, say('loading'));
+        artwork.paint(image, null, setPlateCredit);
     }
 
     function checkDay(now) {
@@ -132,6 +122,7 @@
     }
 
     function showConnectionProblem(state) {
+        title.classList.remove('is-loading');
         if (state === 'collageZoneUnavailable') {
             showStationHelp('collageZone');
         } else {
@@ -153,9 +144,7 @@
         collageView.paintEmpty(function (credit) {
             if (emptyArtworkDate === date) {
                 emptyArtworkCredit = credit;
-                if (lastResult && !lastResult.species.length) {
-                    setPlateCredit(credit);
-                }
+                setPlateCredit(credit);
             }
         });
     }
@@ -197,7 +186,6 @@
         locale = preferences.locale();
         document.documentElement.lang = locale;
         document.title = say('title');
-        setText(document.querySelector('#painting [data-text="title"]'), document.title);
         setConnectionStatus(connectionState);
         if (lastResult) {
             if (collageView) {

@@ -11,10 +11,7 @@
         var latest = document.getElementById('latest-plate');
         var emptyState = document.getElementById('collage-empty-state');
         var emptyArt = document.getElementById('collage-empty-art');
-        var emptyTitle = document.getElementById('collage-empty-title');
-        var emptyDetail = document.getElementById('collage-empty-detail');
         var collage = document.getElementById('collage');
-        var title = document.getElementById('collage-title');
         var board = document.getElementById('collage-board');
         var omitted = document.getElementById('collage-omitted');
         var activeLayer = null;
@@ -27,6 +24,11 @@
 
         function publishCredits(plates) {
             artworkInfo.setDisplayed(plates.map(function (plate) { return plate.credit; }));
+        }
+
+        function labelPaintingAsCollage(locale) {
+            painting.removeAttribute('aria-labelledby');
+            painting.setAttribute('aria-label', text.message(locale, 'displayViewToday'));
         }
 
         function createLayer(staging) {
@@ -111,13 +113,14 @@
                 }
                 contentKey = '';
                 publishCredits([]);
-                title.textContent = text.message(locale, 'displayViewToday');
                 omitted.hidden = true;
                 emptyState.hidden = false;
+                emptyState.setAttribute('role', 'img');
+                emptyState.setAttribute('aria-label', text.message(locale, 'perch'));
                 board.hidden = true;
                 collage.hidden = false;
                 latest.hidden = true;
-                painting.setAttribute('aria-labelledby', 'collage-title');
+                labelPaintingAsCollage(locale);
                 return;
             }
 
@@ -126,11 +129,10 @@
             emptyArt.hidden = true;
             collage.hidden = false;
             latest.hidden = true;
-            title.textContent = text.message(locale, 'displayViewToday');
             omitted.textContent = result.omitted ? text.message(locale,
                 result.omitted === 1 ? 'collageOneOmitted' : 'collageOmitted', { count: result.omitted }) : '';
             omitted.hidden = !result.omitted;
-            painting.setAttribute('aria-labelledby', 'collage-title');
+            labelPaintingAsCollage(locale);
 
             var rect = board.getBoundingClientRect();
             var width = Math.max(1, Math.floor(rect.width));
@@ -214,6 +216,7 @@
             collage.hidden = true;
             latest.hidden = false;
             omitted.hidden = true;
+            painting.removeAttribute('aria-label');
             painting.setAttribute('aria-labelledby', 'plate-title');
             publishCredits([]);
         }
@@ -233,7 +236,7 @@
         window.addEventListener('resize', handleResize);
         window.addEventListener('orientationchange', handleResize);
 
-        function showEmpty(titleText, detailText) {
+        function showEmpty(locale) {
             cancelPending();
             if (activeLayer) {
                 activeLayer.remove();
@@ -242,17 +245,17 @@
             activePlates = [];
             contentKey = '';
             lastResult = null;
-            lastLocale = null;
+            lastLocale = locale;
             publishCredits([]);
-            emptyTitle.textContent = titleText;
-            emptyDetail.textContent = detailText;
             collage.hidden = false;
             latest.hidden = true;
             emptyState.hidden = false;
+            emptyState.setAttribute('role', 'img');
+            emptyState.setAttribute('aria-label', text.message(locale, 'perch'));
             board.hidden = true;
             emptyArt.hidden = false;
             omitted.hidden = true;
-            painting.setAttribute('aria-labelledby', 'collage-empty-title');
+            labelPaintingAsCollage(locale);
         }
 
         function paintEmpty(complete) {

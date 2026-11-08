@@ -30,7 +30,7 @@ html.night-display,
     box-sizing: border-box;
     height: 100%;
     overflow: hidden;
-    padding: 5vh 9vw 3vh;
+    padding: 5% 5% 10% 5%;
     background: #f0ece6;
     text-align: center;
     display: -webkit-flex;
@@ -41,38 +41,9 @@ html.night-display,
     overflow-wrap: break-word;
 }
 
-.painting::before,
-.painting::after {
-    position: absolute;
-    pointer-events: none;
-    content: "";
-    border: 1px solid #a4855a;
-}
-
-.painting::before {
-    top: 15px;
-    right: 15px;
-    bottom: 15px;
-    left: 15px;
-}
-
-.painting::after {
-    top: 20px;
-    right: 20px;
-    bottom: 20px;
-    left: 20px;
-    border-color: #d1b88b;
-}
-
-.plate-header,
-.plate-caption,
-.plate-footer {
+.plate-caption {
     -webkit-flex: 0 0 auto;
     flex: 0 0 auto;
-}
-
-.plate-header {
-    padding-bottom: 2vh;
 }
 
 .book-title {
@@ -90,16 +61,6 @@ html.night-display,
     border-top: 1px solid #a4855a;
 }
 
-.station-name {
-    margin: 0;
-    color: #62482e;
-    font-size: 1rem;
-}
-
-.station-name:empty {
-    display: none;
-}
-
 .plate-content {
     display: -webkit-flex;
     display: flex;
@@ -109,6 +70,8 @@ html.night-display,
     flex-direction: column;
     -webkit-align-items: center;
     align-items: center;
+    width: 100%;
+    min-width: 0;
     min-height: 0;
 }
 
@@ -116,6 +79,7 @@ html.night-display,
     display: block;
     width: 74%;
     max-width: 490px;
+    min-width: 0;
     min-height: 0;
     -webkit-flex: 1 1 0;
     flex: 1 1 0;
@@ -135,6 +99,10 @@ html.night-display,
     line-height: 1.08;
 }
 
+.plate-caption h1.is-loading {
+    font-size: 1.2rem;
+}
+
 .plate-caption p {
     margin: 0.45em auto 0;
     max-width: 35em;
@@ -147,32 +115,21 @@ html.night-display,
     font-style: italic;
 }
 
-.plate-footer {
-    min-height: 3.2em;
-    color: #62482e;
-    font: 0.95rem/1.4 "Helvetica Neue", Helvetica, Arial, sans-serif;
-}
-
-.plate-footer::before {
-    content: "";
-    display: block;
-    width: 26px;
-    margin: 0 auto 0.55rem;
-    border-top: 1px solid #a4855a;
-}
-
-.plate-footer p {
-    margin: 0.12em 0;
-}
-
-.plate-footer p:empty {
-    margin: 0;
+.visually-hidden {
+    position: absolute !important;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
 }
 
 @media (max-width: 700px), (max-height: 550px) {
     .painting {
-        padding-top: 28px;
-        padding-bottom: 28px;
+        padding: 5% 5% 10% 5%;
     }
 
     .plate-caption h1 {
@@ -184,7 +141,4 @@ html.night-display,
         font-size: 1rem;
     }
 
-    .plate-footer {
-        font-size: 0.85rem;
-    }
 }

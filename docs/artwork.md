@@ -9,14 +9,16 @@ The painting uses the local Fugleramme PNG collection at
 `assets/artwork/birds/` and `assets/artwork/perches/`. BirdWeather's scientific
 names are matched through the included BirdNET alias map; displayed common
 names continue to come from BirdWeather translations. Single-bird mode keeps
-its existing presentation and detection behavior. If a local image is missing,
-the credited BirdWeather fallback remains available.
+its existing detection behavior. If a bird image is missing or fails to load,
+a random perch from `assets/artwork/perches/` is shown instead of a remote
+BirdWeather species image. In a collage, the perch takes that species' place
+and its common and scientific names stay visible.
 
 When the selected station or nearby area has no detections, the painting uses a
-random local perch. The heading reads “Perch” and the caption explains that it
-is an empty branch. The PNGs keep transparent backgrounds, are resized to a
-maximum edge of 600 pixels, and have embedded source metadata removed. The
-adapted artwork is available under CC BY-SA 4.0.
+random local perch. In an empty collage, only the perch is visible. While data
+loads, a random perch appears in the painting area. The PNGs keep transparent
+backgrounds, are resized to a maximum edge of 600 pixels, and have embedded
+source metadata removed. The adapted artwork is available under CC BY-SA 4.0.
 
 Collage mode also uses body masses from `bird_sizes.csv` and visible-image
 bounds from `geometry.json` when sizing and packing birds. Its labels use the
@@ -43,15 +45,3 @@ committed catalogue and supporting data in `assets/artwork/`, converts the
 WebPs to transparent PNGs capped at a 600-pixel longest edge, and changes only
 image path extensions in the catalogue. The runtime PNGs are committed, so the
 ignored source WebPs are not needed by a fresh clone.
-
-## BirdWeather fallback
-
-When the Fugleramme catalogue has no matching species or local PNG, the
-painting can use a raster image served from BirdWeather's species media path.
-It requires a matching species ID, a creator credit, and an exact match between
-an accepted Creative Commons licence label and its official URL. Accepted
-labels are CC BY and CC BY-SA versions 2.0, 2.5, 3.0, and 4.0, CC0 1.0, and
-Public Domain Mark 1.0. The painting displays these images as supplied and
-includes a link to the delivered image, the applicable licence, and any creator
-link supplied in the credit. When the credit is incomplete or the image fails
-to load, the species name and a botanical ornament are displayed.

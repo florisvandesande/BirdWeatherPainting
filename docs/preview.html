@@ -10,10 +10,6 @@
 </head>
 <body>
     <main class="painting" aria-labelledby="plate-title">
-        <header class="plate-header">
-            <p class="book-title">BirdWeather Painting</p>
-        <p class="station-name">Sample artwork</p>
-        </header>
         <section class="plate-content">
             <img class="plate-art" src="../assets/artwork/birds/archilochus-colubris.png" alt="Ruby-throated Hummingbird illustration">
             <div class="plate-caption">
@@ -22,10 +18,14 @@
                 <p>Sample layout · not a live detection</p>
             </div>
         </section>
-        <footer class="plate-footer">
-            <p>Sample painting layout · not a live detection.</p>
-        </footer>
-        <button class="painting-settings" type="button" aria-label="Settings preview">Settings</button>
+        <button class="painting-settings" type="button" aria-label="Settings preview">
+            <svg aria-hidden="true" focusable="false" viewBox="0 0 24 24">
+                <path d="M4 6h7m4 0h5M4 12h3m4 0h9M4 18h9m4 0h3" />
+                <circle cx="13" cy="6" r="2" />
+                <circle cx="9" cy="12" r="2" />
+                <circle cx="15" cy="18" r="2" />
+            </svg>
+        </button>
         <button type="button" class="artwork-button" aria-label="Artwork information preview">i</button>
     </main>
 </body>
