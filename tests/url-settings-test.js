@@ -61,19 +61,40 @@
             imageLicense: '',
             imageLicenseUrl: ''
         };
+        var fallbackSpecies = {
+            id: '3',
+            commonName: 'Controlled Artwork Fallback',
+            scientificName: 'Species without local artwork',
+            translations: [],
+            imageUrl: '',
+            imageCredit: '',
+            imageLicense: '',
+            imageLicenseUrl: ''
+        };
+
+        function responseSpecies() {
+            return /(?:^|[?&])fallback=1(?:&|$)/.test(appWindow.location.search) ? fallbackSpecies : species;
+        }
+
+        function responseObservation() {
+            if (/(?:^|[?&])empty=1(?:&|$)/.test(appWindow.location.search)) {
+                return null;
+            }
+            return {
+                timestamp: '2026-11-07T12:00:00Z',
+                time: Date.parse('2026-11-07T12:00:00Z'),
+                offsetMinutes: 0,
+                zone: 'UTC',
+                species: responseSpecies()
+            };
+        }
 
         api.searchStations = function (term, complete) {
             complete(null, [{ id: term === '8089' ? '8089' : '1', name: 'Controlled station' }]);
             return { abort: function () {} };
         };
         api.latestForStation = function (stationId, complete) {
-            complete(null, { stationName: 'Controlled station ' + stationId, observation: {
-                timestamp: '2026-11-07T12:00:00Z',
-                time: Date.parse('2026-11-07T12:00:00Z'),
-                offsetMinutes: 0,
-                zone: 'UTC',
-                species: species
-            } });
+            complete(null, { stationName: 'Controlled station ' + stationId, observation: responseObservation() });
             return { abort: function () {} };
         };
         api.nearbyStationIds = function (coordinates, radius, complete) {
@@ -84,13 +105,7 @@
             if (config.source === 'station') {
                 return api.latestForStation(config.station, complete);
             }
-            complete(null, { stationName: 'Controlled nearby station', observation: {
-                timestamp: '2026-11-07T12:00:00Z',
-                time: Date.parse('2026-11-07T12:00:00Z'),
-                offsetMinutes: 0,
-                zone: 'UTC',
-                species: species
-            } });
+            complete(null, { stationName: 'Controlled nearby station', observation: responseObservation() });
             return { abort: function () {} };
         };
         api.collageStation = function (stationId, complete) {
@@ -106,7 +121,7 @@
             return { abort: function () {} };
         };
         api.speciesForIds = function (ids, complete) {
-            complete(null, ids.map(function () { return species; }));
+            complete(null, ids.map(function () { return responseSpecies(); }));
             return { abort: function () {} };
         };
     }
@@ -114,10 +129,15 @@
     function loadApp(url) {
         return new Promise(function (resolve) {
             frame.onload = function () {
-                controlledApi(frame.contentWindow);
-                window.setTimeout(function () { resolve(frame.contentWindow); }, 20);
+                var appWindow = frame.contentWindow;
+                check(appWindow.BirdWeatherFixture && typeof appWindow.BirdWeatherFixture.start === 'function',
+                    'The app exposes the deterministic URL fixture startup seam before requesting BirdWeather.');
+                appWindow.Math.random = function () { return 0; };
+                controlledApi(appWindow);
+                appWindow.BirdWeatherFixture.start();
+                window.setTimeout(function () { resolve(appWindow); }, 20);
             };
-            frame.src = url;
+            frame.src = url + (url.indexOf('?') === -1 ? '?' : '&') + 'fixture=url-settings';
         });
     }
 
@@ -207,8 +227,10 @@
         check(appDocument.documentElement.lang === 'fr', 'A complete station URL selects its requested language.');
         appDocument.getElementById('open-settings').click();
         check(appDocument.getElementById('display-view').value === 'latest' &&
-            appDocument.getElementById('collage-limit').value === '7',
-            'Opening Settings preserves the requested view and collage limit from the URL.');
+            appDocument.getElementById('collage-limit').value === '7' &&
+            appDocument.getElementById('display-language').value === 'fr' &&
+            !appDocument.getElementById('night-enabled').checked,
+            'Opening Settings preserves the station URL view, language, collage limit, and disabled night setting.');
         appDocument.getElementById('cancel-settings').click();
         appDocument.getElementById('artwork-button').click();
         await wait(500);
@@ -225,6 +247,24 @@
             'A complete nearby URL opens the painting instead of setup.');
         check(appDocument.getElementById('open-settings').getAttribute('aria-label').length > 0,
             'The nearby painting keeps its accessible Settings control.');
+        appDocument.getElementById('open-settings').click();
+        check(appDocument.getElementById('display-view').value === 'latest' &&
+            appDocument.getElementById('collage-limit').value === '8' &&
+            appDocument.getElementById('display-language').value === 'auto' &&
+            !appDocument.getElementById('night-enabled').checked,
+            'Opening Settings preserves the nearby URL view, language, collage limit, and disabled night setting.');
+        appDocument.getElementById('cancel-settings').click();
+
+        appWindow = await loadApp('../index.html?source=nearby&lat=52.123456&lon=5.123454&radius=5&view=today&limit=9&lang=nl&night=1&nightStart=23%3A00&nightEnd=23%3A30');
+        appDocument = appWindow.document;
+        appDocument.getElementById('open-settings').click();
+        check(appDocument.getElementById('display-view').value === 'today' &&
+            appDocument.getElementById('collage-limit').value === '9' &&
+            appDocument.getElementById('display-language').value === 'nl' &&
+            appDocument.getElementById('night-enabled').checked &&
+            appDocument.getElementById('night-start').value === '23:00' &&
+            appDocument.getElementById('night-end').value === '23:30',
+            'Opening Settings preserves the nearby URL view, language, collage limit, and enabled night schedule.');
 
         appWindow = await loadApp('../index.html?source=nearby&lat=52.123456&radius=5&view=today&limit=12&lang=nl&night=0');
         appDocument = appWindow.document;
@@ -234,6 +274,37 @@
         check(appDocument.getElementById('location-status').textContent.length > 0,
             'A partial nearby URL shows an actionable location message.');
 
+        appWindow = await loadApp('../index.html?source=nearby&lat=91&lon=5&radius=5&view=latest&limit=12&lang=nl&night=0');
+        appDocument = appWindow.document;
+        check(!appDocument.getElementById('setup').hidden && appDocument.getElementById('painting').hidden,
+            'A nearby URL with invalid coordinates returns to setup.');
+        check(appDocument.getElementById('location-status').textContent.length > 0,
+            'Invalid nearby coordinates show an actionable location message.');
+
+        appWindow = await loadApp('../index.html?source=nearby&lat=52.12345&lon=5.12345&radius=3&view=latest&limit=12&lang=nl&night=0');
+        appDocument = appWindow.document;
+        check(!appDocument.getElementById('setup').hidden &&
+            /radius|straal|rayon|radio|raggio|raio/i.test(appDocument.getElementById('setup-url-status').textContent),
+            'An invalid nearby radius identifies the radius field instead of reporting invalid coordinates.');
+        check(appDocument.getElementById('location-status').textContent === '',
+            'An invalid nearby radius does not report that a location is required when coordinates are valid.');
+
+        async function assertNearbyUrlInvalid(query, label) {
+            var nearbyWindow = await loadApp('../index.html?source=nearby&lat=52.12345&lon=5.12345&radius=5&' + query);
+            var nearbyDocument = nearbyWindow.document;
+            check(!nearbyDocument.getElementById('setup').hidden && nearbyDocument.getElementById('painting').hidden,
+                label + ' returns to setup with valid nearby coordinates preserved.');
+            check(nearbyDocument.getElementById('location-status').textContent === '' &&
+                /link|lien|enlace|collegamento/i.test(nearbyDocument.getElementById('setup-url-status').textContent),
+                label + ' reports the invalid URL field instead of locationRequired.');
+        }
+
+        await assertNearbyUrlInvalid('view=bad&limit=12&lang=en&night=0', 'An invalid nearby view');
+        await assertNearbyUrlInvalid('view=latest&limit=1&lang=en&night=0', 'An invalid nearby limit');
+        await assertNearbyUrlInvalid('view=latest&limit=12&lang=xx&night=0', 'An invalid nearby language');
+        await assertNearbyUrlInvalid('view=latest&limit=12&lang=en&night=1&nightStart=bad&nightEnd=23%3A30',
+            'An invalid nearby night schedule');
+
         appWindow = await loadApp('../index.html?source=station&station=8089&view=bad&limit=12&lang=nl&night=0');
         appDocument = appWindow.document;
         check(!appDocument.getElementById('setup').hidden, 'An invalid view value returns to setup.');
@@ -241,6 +312,43 @@
             'Invalid URL values show an actionable setup message.');
         check(appDocument.getElementById('painting').hidden,
             'The invalid URL never opens the painting.');
+
+        appWindow = await loadApp('../index.html?source=station&station=8089&view=latest&limit=1&lang=nl&night=0');
+        appDocument = appWindow.document;
+        check(!appDocument.getElementById('setup').hidden && appDocument.getElementById('setup-url-status').textContent.length > 0,
+            'An invalid collage limit returns to setup with an actionable message.');
+
+        appWindow = await loadApp('../index.html?source=station&station=8089&view=latest&limit=12&lang=xx&night=0');
+        appDocument = appWindow.document;
+        check(!appDocument.getElementById('setup').hidden && appDocument.getElementById('setup-url-status').textContent.length > 0,
+            'An invalid language returns to setup with an actionable message.');
+
+        appWindow = await loadApp('../index.html?source=station&station=8089&view=latest&limit=12&lang=nl&night=1&nightStart=bad&nightEnd=23%3A30');
+        appDocument = appWindow.document;
+        check(!appDocument.getElementById('setup').hidden && appDocument.getElementById('night-status').textContent.length > 0,
+            'An invalid night schedule returns to setup with an actionable message.');
+
+        appWindow = await loadApp('../index.html?source=station&station=8089&view=latest&limit=12&limit=12&lang=nl&night=0');
+        appDocument = appWindow.document;
+        check(!appDocument.getElementById('setup').hidden && appDocument.getElementById('setup-url-status').textContent.length > 0,
+            'A duplicate configuration parameter returns to setup instead of choosing silently.');
+
+        appWindow = await loadApp('../index.html?source=station&station=8089&view=latest&limit=12&lang=nl&night=0&legacy=ignored');
+        appDocument = appWindow.document;
+        check(appDocument.getElementById('setup').hidden && !appDocument.getElementById('painting').hidden,
+            'An unknown legacy parameter is ignored while the complete canonical configuration opens the painting.');
+
+        appWindow = await loadApp('../index.html?source=station&station=8089&view=latest&limit=12&lang=nl&night=0&fallback=1');
+        appDocument = appWindow.document;
+        await wait(500);
+        check(/assets\/field-sprig\.svg$/.test(appDocument.getElementById('latest-art').src),
+            'Missing local artwork uses the artwork fallback image.');
+
+        appWindow = await loadApp('../index.html?source=station&station=8089&view=latest&limit=12&lang=nl&night=0&empty=1');
+        appDocument = appWindow.document;
+        await wait(500);
+        check(/assets\/artwork\/perches\/[a-z-]+\.jpg$/.test(appDocument.getElementById('latest-art').src),
+            'An empty result uses a deterministic Perch fallback image.');
 
         status.setAttribute('data-result', 'passed');
         status.textContent = 'Passed: ' + checks.length + ' URL-only configuration checks.';
