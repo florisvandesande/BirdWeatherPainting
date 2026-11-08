@@ -8,20 +8,23 @@ for a wall-mounted iPad.
 
 The latest-bird and today-collage views, station and nearby setup, artwork
 credits, and optional night schedule are implemented on the local integration
-branch. The project is not deployed. Desktop checks have covered the earlier
-station, setup, and artwork flows; the finished collage and artwork changes
-still need a complete browser pass. The physical iPad 2/iOS 9 acceptance pass
-has not been completed, so iOS 9 compatibility is not yet confirmed.
+branch. The project is not deployed. Collage artwork conversion and visual
+acceptance remain blocked because the supplied WebP source directory is absent.
+The physical iPad 2/iOS 9 acceptance pass has not been completed, so iOS 9
+compatibility is not yet confirmed.
 
 ## Features
 
 - Show the latest detected species or today's collage of unique species.
 - Select one public station or nearby stations within 2, 5, or 10 kilometres.
-- Rank collage species by detection count while keeping the newest species as
-  the centrepiece. Set the collage limit from 2 to 32; the default is 12.
+- Retain the most recently observed collage species. When the limit is full, a
+  new species replaces the one heard least recently. Choose 1–32 species; the
+  default is 12.
+- Size collage birds from the supplied body-mass data and pack their transparent
+  silhouettes with the selected-language common and scientific names.
 - Use the local Fugleramme Classic bird illustrations and perches. Empty days
-  show a randomly selected empty perch. The artwork background uses the same
-  `#f0ece6` paper color as the images.
+  show a randomly selected empty perch. Transparent areas show the painting's
+  `#f0ece6` paper surface.
 - Open one information page for the displayed artist, collection, source,
   licence, and image changes. Keep a list of species that need artwork on the
   same device.
@@ -46,7 +49,7 @@ is not live BirdWeather data.
   That device flow is still unverified.
 - Python 3 is optional and used only to preview the static files locally.
 - Apple's Swift compiler and ImageIO framework are optional and needed only to
-  regenerate the Fugleramme JPEGs from the downloaded WebP source files.
+  convert the collage WebP files to transparent PNGs.
 
 ## Getting started
 
@@ -81,7 +84,8 @@ The supported choices are:
 - `source=station` with a public numeric `station` ID, or `source=nearby` with a
   `radius` of `2`, `5`, or `10` kilometres;
 - `view=latest` or `view=today`;
-- `limit=2` through `limit=32` for today's collage. The default is `12`.
+- `limit=1` through `limit=32` for today's collage. The default is `12`.
+  Single-bird mode always shows one species.
 
 Nearby coordinates are saved in this browser's local storage and are not added
 to the URL. BirdWeather receives the nearby search area when the page queries
@@ -95,17 +99,19 @@ values for you.
 
 ## Artwork and reuse
 
-The app uses local Fugleramme Classic artwork first, with matching based on
-scientific names and the included BirdNET alias map. BirdWeather's translated
-common names provide the displayed species names. If no local image matches,
-the app may use one of its public-domain historical plates or a BirdWeather
-image whose returned credit and licence are accepted. Otherwise it shows a
-name plate and records the missing species on the device.
+Single-bird mode keeps its existing presentation and detection behavior while
+using the supplied PNG artwork when available; the existing historical and
+credited BirdWeather fallbacks remain available. Collage mode loads only
+transparent PNGs from `assets/artwork/birds/` and
+`assets/artwork/perches/`; it does not use the older Fugleramme JPEG artwork.
+BirdWeather's translated common names provide each collage label, with the
+scientific name below it. The collage PNG source files are not currently
+present in this checkout, so the illustrated layout cannot yet be visually
+accepted. The empty-collage perch uses the same PNG artwork.
 
-The Fugleramme derivatives are CC BY-SA 4.0. The app resizes them to at most
-600 pixels, converts WebP to JPEG for older Safari, and flattens transparent
-areas onto `#f0ece6`. Per-image original source URLs are retained in the
-catalogue and shown through the artwork information page. See
+The Fugleramme derivatives are CC BY-SA 4.0. PNGs retain transparency and are
+resized to at most 1,200 pixels. Per-image source URLs are retained in the
+artwork catalog and shown through the artwork information page. See
 [artwork sources and reuse](docs/artwork.md) and the
 [Fugleramme attribution note](assets/fugleramme/ATTRIBUTION.md).
 
@@ -135,19 +141,22 @@ BirdWeather data.
 
 ## Local artwork preparation
 
-The original WebP files and name data are kept in the ignored
-`.temporary/assets/` directory and are not needed at runtime. If the downloaded
-source files are present, regenerate the JPEGs and catalogue with Swift on
-macOS:
+The collage WebP files and name data belong in the ignored
+`.temporary/asset/` directory and are not needed at runtime. When the supplied
+files are present, convert the collage illustrations and update their catalog
+with Swift on macOS:
 
 ```bash
-swift scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork assets/fugleramme
+swift scripts/prepare_collage_artwork.swift .temporary/asset/artwork assets/artwork
 ```
 
 The source directory must contain `manifest.json`, `birds/`, and `perches/`.
 Its parent must contain `birdnet_aliases.json` and `birdnet_labels_v2.4.txt`.
-The script uses Apple's built-in Core Graphics and ImageIO frameworks; it does
-not add a runtime dependency to the website.
+The existing `assets/artwork/geometry.json` and `bird_sizes.csv` files are
+required and preserved. The script uses Apple's built-in Core Graphics and
+ImageIO frameworks; it does not add a runtime dependency to the website. In
+this checkout, `.temporary/asset/artwork/` is absent, so conversion has not
+been run and the collage illustration files are unavailable.
 
 ## Preview, verification, and known limitations
 
@@ -182,10 +191,11 @@ it for the domain.
 
 The previous station, setup, and artwork information flow was checked in
 Chrome 157 at mobile, tablet, 1024 × 768, and large desktop viewports in light
-and dark browser appearances. Collage data and URL settings received controlled
-JavaScriptCore checks. The full collage and Fugleramme rendering have not yet
-received a complete browser pass. Safari automation and the physical iPad 2
-were unavailable in the current environment.
+and dark browser appearances. The changed collage and PNG rendering have not
+received a complete browser pass. The source WebPs are absent, so counts 1–32,
+silhouette overlap, crop, labels, and perch acceptance remain unverified.
+Safari automation and the physical iPad 2 were unavailable in this agent
+environment.
 
 The unrelated repository server-synchronization shell check is not required to
 run or host this static application.

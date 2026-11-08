@@ -4,52 +4,44 @@ Open the **i** button at the lower right of the painting for the current artwork
 
 ## Fugleramme Classic collection
 
-The painting checks the local Fugleramme image collection first. The committed
-collection contains 1,355 bird illustrations grouped under 787 scientific
-names and nine perches. When several illustrations match a species, one is
-chosen for the current page session. BirdWeather's scientific names are matched
-through the included BirdNET alias map; the displayed common name continues to
-come from BirdWeather's translations.
+The painting uses the local Fugleramme PNG collection at
+`assets/artwork/birds/` and `assets/artwork/perches/`. BirdWeather's scientific
+names are matched through the included BirdNET alias map; displayed common
+names continue to come from BirdWeather translations. Single-bird mode keeps
+its existing presentation and detection behavior. If a local image is missing,
+the existing historical-plate and credited BirdWeather fallbacks remain
+available.
 
 When the selected station or nearby area has no detections, the painting uses a
-random perch from the local collection and keeps that perch while the page is
-open. The heading reads “Perch” and the caption explains that it is an empty
-branch. These images work without requesting an artwork image from a third-party
-host.
+random local perch. The heading reads “Perch” and the caption explains that it
+is an empty branch. The PNGs keep transparent backgrounds, are resized to a
+maximum edge of 1,200 pixels, and have embedded source metadata removed. The
+adapted artwork is available under CC BY-SA 4.0.
 
-The source files supplied for this app were WebP. The app prepares JPEG copies
-with a maximum edge of 600 pixels for older Safari, removes embedded source
-metadata, and places transparent pixels on the exact `#f0ece6` paper color used
-by the painting. The painting keeps that paper surface in both appearance modes;
-the welcome, settings, and artwork-information surfaces follow the browser's
-light or dark preference. The adapted artwork is available under CC BY-SA 4.0.
-The app's information page labels the subject using the catalogue's common and
-scientific names (or the perch name), credits the collection preparer, and
-shows the per-image source tag and direct original-source link. It also links
-to the Fugleramme attribution ledger and CC BY-SA 4.0 licence, and describes
-the image resizing, JPEG conversion, and flattening over the paper color. The
-provided per-image manifest has only a source tag and direct source URL; tags
-can group several historical works. It does not give an exact original work
-title or individual artist for every image. The subject label is not an
-original work title, and the app does not infer a specific artist from a group
-tag. Check the linked source record and ledger for details when they are
-available.
-The separate
-[Fugleramme attribution note](../assets/fugleramme/ATTRIBUTION.md) describes the
-changes and the image catalogue.
+Collage mode also uses body masses from `bird_sizes.csv` and visible-image
+bounds from `geometry.json` when sizing and packing birds. Its labels use the
+selected-language common name plus the scientific name. The artwork information
+page credits the collection preparer and shows each image's source tag, direct
+source URL, Fugleramme attribution ledger, and CC BY-SA 4.0 licence. The source
+manifest gives a source tag and direct URL, but may not identify the exact
+original work title or an individual artist.
 
 The downloaded WebP inputs and BirdNET name files live in the ignored
-`.temporary/assets/` directory and are not needed at runtime. If those source
-files are available, regenerate the committed images and catalogue on macOS
-with Swift and Apple's ImageIO framework:
+`.temporary/asset/` directory and are not needed at runtime.
+
+## Preparing artwork
+
+When the supplied files are available under `.temporary/asset/artwork/`, run:
 
 ```bash
-swift scripts/prepare_fugleramme_artwork.swift .temporary/assets/artwork assets/fugleramme
+swift scripts/prepare_collage_artwork.swift .temporary/asset/artwork assets/artwork
 ```
 
-The script expects `birdnet_aliases.json` and `birdnet_labels_v2.4.txt` beside
-the `artwork` directory. It keeps a per-image original source URL in
-`assets/fugleramme/catalog.json`.
+The source folder must include `manifest.json`, `birds/`, and `perches/`; its
+parent must include `birdnet_aliases.json` and `birdnet_labels_v2.4.txt`. The
+script preserves `geometry.json` and `bird_sizes.csv` and writes the PNGs and
+catalog to the output directory. The source WebP folder is currently absent,
+so no collage PNGs can be generated or visually checked from this checkout.
 
 ## Historical plates
 

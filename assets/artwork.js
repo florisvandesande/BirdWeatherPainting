@@ -5,10 +5,14 @@
     var sprig = 'assets/field-sprig.svg';
     var missingInSession = Object.create(null);
     var storageUnavailable = false;
-    var catalogPath = 'assets/fugleramme/catalog.json';
+    var catalogPath = 'assets/artwork/catalog.json';
+    var collageCatalogPath = 'assets/artwork/catalog.json';
     var catalogState = 'idle';
     var catalog = null;
     var catalogWaiters = [];
+    var collageCatalogState = 'idle';
+    var collageCatalog = null;
+    var collageCatalogWaiters = [];
     var selectedBirdImages = Object.create(null);
     var failedImages = Object.create(null);
     var perchOrder = null;
@@ -166,17 +170,25 @@
         return value;
     }
 
-    function loadCatalog(complete) {
-        if (catalogState === 'ready' || catalogState === 'failed') {
-            complete(catalog);
+    function loadCatalog(complete, forCollage) {
+        var state = forCollage ? collageCatalogState : catalogState;
+        var cached = forCollage ? collageCatalog : catalog;
+        var waiters = forCollage ? collageCatalogWaiters : catalogWaiters;
+        var path = forCollage ? collageCatalogPath : catalogPath;
+        if (state === 'ready' || state === 'failed') {
+            complete(cached);
             return;
         }
-        catalogWaiters.push(complete);
-        if (catalogState === 'loading') {
+        waiters.push(complete);
+        if (state === 'loading') {
             return;
         }
 
-        catalogState = 'loading';
+        if (forCollage) {
+            collageCatalogState = 'loading';
+        } else {
+            catalogState = 'loading';
+        }
         var request;
         var completed = false;
 
@@ -185,19 +197,27 @@
                 return;
             }
             completed = true;
-            catalog = prepareCatalog(value);
-            catalogState = catalog ? 'ready' : 'failed';
-            var waiters = catalogWaiters;
-            catalogWaiters = [];
+            var prepared = prepareCatalog(value);
+            if (forCollage) {
+                collageCatalog = prepared;
+                collageCatalogState = prepared ? 'ready' : 'failed';
+                waiters = collageCatalogWaiters;
+                collageCatalogWaiters = [];
+            } else {
+                catalog = prepared;
+                catalogState = prepared ? 'ready' : 'failed';
+                waiters = catalogWaiters;
+                catalogWaiters = [];
+            }
             waiters.forEach(function (waiter) {
-                waiter(catalog);
+                waiter(prepared);
             });
         }
 
         try {
             request = new XMLHttpRequest();
             request.timeout = 12000;
-            request.open('GET', catalogPath, true);
+            request.open('GET', path, true);
             request.onreadystatechange = function () {
                 if (request.readyState !== 4) {
                     return;
@@ -224,7 +244,7 @@
     }
 
     function safeImageRecord(record, source, kind, workSubject) {
-        var allowedPath = kind === 'perch' ? /^perches\/[a-z0-9_-]+\.jpg$/ : /^birds\/[a-z0-9_-]+\.jpg$/;
+        var allowedPath = kind === 'perch' ? /^perches\/[a-z0-9_-]+\.png$/ : /^birds\/[a-z0-9_-]+\.png$/;
         if (!record || typeof record.path !== 'string' || !allowedPath.test(record.path) ||
                 typeof record.source !== 'string' || record.source.length > 80 || !safeSourceUrl(record.sourceUrl)) {
             return null;
@@ -232,7 +252,7 @@
         var subject = safeWorkSubject(workSubject);
         return {
             kind: kind,
-            image: 'assets/fugleramme/' + record.path,
+            image: 'assets/artwork/' + record.path,
             workSubject: subject,
             creatorLabelKey: 'collectionPreparer',
             creator: source.creator,
@@ -247,7 +267,7 @@
         };
     }
 
-    function birdImages(species, source) {
+    function birdImages(species, source, stableChoice) {
         var name = normalizeName(species.scientificName);
         var names = [name];
         var words = name.split(' ');
@@ -302,7 +322,7 @@
                 return first.image === selected ? -1 : second.image === selected ? 1 : 0;
             });
         } else if (records.length > 1) {
-            var selectedIndex = Math.floor(Math.random() * records.length);
+            var selectedIndex = stableChoice ? Number(species.id) % records.length : Math.floor(Math.random() * records.length);
             var selectedRecord = records.splice(selectedIndex, 1)[0];
             records.unshift(selectedRecord);
             selectedBirdImages[name] = selectedRecord.image;
@@ -488,10 +508,88 @@
         });
     }
 
+    function collageImagePath(credit) {
+        return /^assets\/artwork\/(?:birds|perches)\/[a-z0-9_-]+\.png$/.test(credit.image) ? credit.image : null;
+    }
+
+    function paintCollage(image, species, onCreditChange) {
+        image._birdweatherPaintRequest = (image._birdweatherPaintRequest || 0) + 1;
+        var requestId = image._birdweatherPaintRequest;
+        image.onload = image.onerror = null;
+        image.setAttribute('referrerpolicy', 'no-referrer');
+        image.classList.add('artwork-loading');
+        onCreditChange(null, false);
+
+        loadCatalog(function (source) {
+            if (image._birdweatherPaintRequest !== requestId) {
+                return;
+            }
+            var records = species ? birdImages(species, source || { birds: {}, aliases: {} }, true) :
+                source ? perchCredits(source) : [];
+            var candidateIndex = 0;
+
+            function showNext() {
+                if (image._birdweatherPaintRequest !== requestId) {
+                    return;
+                }
+                var credit = records[candidateIndex];
+                candidateIndex += 1;
+                if (!credit) {
+                    image.onload = image.onerror = null;
+                    image.classList.remove('artwork-loading');
+                    image.removeAttribute('src');
+                    if (species) {
+                        setMissing(species, true);
+                    }
+                    onCreditChange(null, true);
+                    return;
+                }
+                var imagePath = collageImagePath(credit);
+                if (!imagePath || failedImages[imagePath]) {
+                    showNext();
+                    return;
+                }
+                credit.image = imagePath;
+                if (image.getAttribute('src') === imagePath && image.complete && image.naturalWidth) {
+                    image.classList.remove('artwork-loading');
+                    if (species) {
+                        setMissing(species, false);
+                    } else {
+                        selectedPerchPath = imagePath;
+                    }
+                    onCreditChange(credit, true);
+                    return;
+                }
+                image.onload = function () {
+                    image.onload = image.onerror = null;
+                    if (image._birdweatherPaintRequest !== requestId) {
+                        return;
+                    }
+                    image.classList.remove('artwork-loading');
+                    if (species) {
+                        setMissing(species, false);
+                    } else {
+                        selectedPerchPath = imagePath;
+                    }
+                    onCreditChange(credit, true);
+                };
+                image.onerror = function () {
+                    image.onload = image.onerror = null;
+                    failedImages[imagePath] = true;
+                    showNext();
+                };
+                image.setAttribute('src', imagePath);
+            }
+
+            showNext();
+        }, true);
+    }
+
     readMissing();
 
     window.BirdWeatherArtwork = {
         paint: paint,
+        paintCollage: paintCollage,
         localCredits: function () {
             return entries(plates);
         },

@@ -100,6 +100,7 @@
         setText(stationName, nearby ? say('nearbyHeading', { radius: config.radius }) : result.stationName);
         collageView.show(result, locale);
         if (!result.species.length) {
+            collageView.showEmpty();
             var state = nearby && !result.hasStations ? 'nearbyNoStations' : 'collageEmpty';
             detail.className = '';
             setText(title, say('perch'));
@@ -152,7 +153,7 @@
         }
         emptyArtworkDate = date;
         emptyArtworkCredit = null;
-        artwork.paint(image, null, function (credit) {
+        collageView.paintEmpty(function (credit) {
             if (emptyArtworkDate === date) {
                 emptyArtworkCredit = credit;
                 if (lastResult && !lastResult.species.length) {
