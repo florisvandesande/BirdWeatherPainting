@@ -1,6 +1,7 @@
 # Artwork sources and reuse
 
-Open the **i** button at the lower right of the painting for the current artwork's credit, other available artwork, and the list of missing illustrations. Choose **Select list** and use your device's Copy command to collect the species names and BirdWeather IDs. The list stays in browser storage on that device and contains only species identifiers and names. Clearing the site's browser data clears the list. If the browser blocks storage, the list is available while the page stays open.
+Open the **i** button at the lower right of the painting for the displayed
+artwork's credit and other available local artwork.
 
 ## Fugleramme Classic collection
 

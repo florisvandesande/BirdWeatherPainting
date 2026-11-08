@@ -46,11 +46,6 @@
                 <h2 id="artwork-title" data-artwork-text="title"></h2>
                 <h3 data-artwork-text="displayed"></h3>
                 <div id="artwork-displayed"></div>
-                <h3 id="artwork-missing-title" data-artwork-text="missing"></h3>
-                <p id="artwork-missing-empty" data-artwork-text="missingEmpty"></p>
-                <p id="artwork-copy-help" data-artwork-text="copyHelp" hidden></p>
-                <textarea id="artwork-missing" aria-labelledby="artwork-missing-title" dir="auto" readonly hidden></textarea>
-                <button type="button" id="artwork-select" data-artwork-text="select" hidden></button>
                 <h3 data-artwork-text="local"></h3>
                 <div id="artwork-local"></div>
             </div>
@@ -68,10 +63,12 @@
                     <div class="source-choice">
                         <label for="detection-source" data-text="sourceLabel"></label>
                         <select id="detection-source">
+                            <option value="" data-text="sourceChoose"></option>
                             <option value="station" data-text="sourceStation"></option>
                             <option value="nearby" data-text="sourceNearby"></option>
                         </select>
                     </div>
+                    <p id="url-config-status" class="setup-status" role="status"></p>
                     <div id="station-source-settings">
                         <form id="station-search" role="search" aria-labelledby="station-query-label">
                             <label id="station-query-label" for="station-query" data-text="stationSearchLabel"></label>
@@ -133,7 +130,6 @@
                             <option value="it" lang="it">Italiano</option>
                             <option value="pt-BR" lang="pt-BR">Português (Brasil)</option>
                         </select>
-                        <p id="language-status" class="setup-status" role="status"></p>
                     </div>
                     <div class="night-choice">
                         <label class="night-toggle" for="night-enabled">

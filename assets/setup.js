@@ -16,6 +16,7 @@
     var searchForm = document.getElementById('station-search');
     var searchInput = document.getElementById('station-query');
     var searchStatus = document.getElementById('station-search-status');
+    var urlConfigStatus = document.getElementById('url-config-status');
     var resultList = document.getElementById('station-results');
     var sourceSelect = document.getElementById('detection-source');
     var stationSettings = document.getElementById('station-source-settings');
@@ -31,7 +32,6 @@
     var limitSelect = document.getElementById('collage-limit');
     var limitSettings = document.getElementById('collage-limit-settings');
     var languageSelect = document.getElementById('display-language');
-    var languageStatus = document.getElementById('language-status');
     var nightEnabled = document.getElementById('night-enabled');
     var nightTimes = document.getElementById('night-times');
     var nightStart = document.getElementById('night-start');
@@ -42,6 +42,7 @@
     var nightStatusKey = '';
     var selectionSummary = document.getElementById('selected-station');
     var labels = setup.querySelectorAll('[data-text]');
+    var urlDraft = preferences.draft();
     var config = preferences.read();
     var draft;
     var selectedName;
@@ -59,7 +60,7 @@
         var nearby = draft.source === 'nearby';
         stationSettings.hidden = nearby;
         nearbySettings.hidden = !nearby;
-        saveButton.disabled = !nearby && !api.validStationId(station);
+        saveButton.disabled = draft.source === null || (!nearby && !api.validStationId(station));
         if (selectedName) {
             selectionSummary.textContent = say('selectedStationName', { name: selectedName });
         } else {
@@ -80,10 +81,16 @@
     }
 
     function readNightDraft() {
-        var schedule = night.create(nightEnabled.checked, nightStart.value || null, nightEnd.value || null);
-        if (!schedule && !nightEnabled.checked) {
-            schedule = night.create(false, null, null);
+        if (!nightEnabled.checked) {
+            var start = night.validTime(nightStart.value) ? nightStart.value : urlDraft.nightStart;
+            var end = night.validTime(nightEnd.value) ? nightEnd.value : urlDraft.nightEnd;
+            if (start === end) {
+                start = urlDraft.nightStart;
+                end = urlDraft.nightEnd;
+            }
+            return night.create(false, start, end);
         }
+        var schedule = night.create(true, nightStart.value || null, nightEnd.value || null);
         if (!schedule) {
             var invalidField = night.validTime(nightStart.value) ? nightEnd : nightStart;
             invalidField.setAttribute('aria-invalid', 'true');
@@ -108,6 +115,7 @@
         saveButton.textContent = say(config ? 'saveSettings' : 'openPainting');
         openButton.textContent = say('settingsTitle');
         searchStatus.textContent = statusKey ? say(statusKey) : '';
+        urlConfigStatus.textContent = urlDraft.complete ? '' : say('urlConfigIncomplete');
         locationStatus.textContent = locationStatusKey ? say(locationStatusKey) : '';
         renderSelection();
         showResults(results);
@@ -128,6 +136,8 @@
     function selectStation(station, button) {
         draft.station = station.id;
         selectedName = station.name;
+        statusKey = '';
+        searchStatus.textContent = '';
         var oldChoice = resultList.querySelector('[aria-pressed="true"]');
         if (oldChoice) {
             oldChoice.setAttribute('aria-pressed', 'false');
@@ -194,6 +204,7 @@
 
     function changeSource() {
         draft.source = sourceSelect.value;
+        sourceSelect.removeAttribute('aria-invalid');
         abortSearch();
         if (statusKey === 'searchingStations') {
             setStatus('');
@@ -206,10 +217,12 @@
         renderSelection();
     }
 
-    function enterCoordinates() {
+    function enterCoordinates(event) {
         locationAttempt += 1;
         locationButton.disabled = false;
-        clearCoordinateErrors();
+        if (event && event.target) {
+            event.target.removeAttribute('aria-invalid');
+        }
         setLocationStatus('');
     }
 
@@ -263,8 +276,16 @@
     }
 
     function saveSetup() {
+        if (draft.source !== 'station' && draft.source !== 'nearby') {
+            sourceSelect.setAttribute('aria-invalid', 'true');
+            urlConfigStatus.textContent = say('urlSourceRequired');
+            sourceSelect.focus();
+            return;
+        }
+        sourceSelect.removeAttribute('aria-invalid');
         draft.view = viewSelect.value;
         draft.limit = limitSelect.value;
+        draft.lang = preferences.getLanguage();
         if (draft.source === 'nearby') {
             enterCoordinates();
             var lat = readCoordinate(latitude, 90);
@@ -284,40 +305,53 @@
         }
         var saved = preferences.save(draft);
         if (!saved) {
-            if (draft.source === 'nearby') {
-                setLocationStatus('locationStorageUnavailable');
-            } else {
-                setStatus('stationStorageUnavailable');
-            }
+            urlConfigStatus.textContent = say('urlConfigInvalid');
         }
     }
 
     function openSetup(moveFocus) {
-        var nearby = preferences.nearbyDraft();
-        var display = preferences.readDisplay();
-        draft = { source: nearby.selected ? 'nearby' : 'station', station: config && config.station };
+        urlDraft = preferences.draft();
+        [sourceSelect, viewSelect, limitSelect, languageSelect, nightEnabled, nightStart, nightEnd, radiusSelect]
+            .forEach(function (field) { field.removeAttribute('aria-invalid'); });
+        draft = {
+            source: urlDraft.source,
+            station: urlDraft.station,
+            coordinates: { lat: urlDraft.lat, lon: urlDraft.lon },
+            radius: urlDraft.radius
+        };
         sourceSelect.value = draft.source;
-        radiusSelect.value = nearby.radius;
-        latitude.value = nearby.coordinates ? String(nearby.coordinates.lat) : '';
-        longitude.value = nearby.coordinates ? String(nearby.coordinates.lon) : '';
+        radiusSelect.value = urlDraft.radius;
+        latitude.value = urlDraft.lat === null ? '' : String(urlDraft.lat);
+        longitude.value = urlDraft.lon === null ? '' : String(urlDraft.lon);
         clearCoordinateErrors();
+        if (urlDraft.errors.lat) latitude.setAttribute('aria-invalid', 'true');
+        if (urlDraft.errors.lon) longitude.setAttribute('aria-invalid', 'true');
+        if (urlDraft.errors.radius) radiusSelect.setAttribute('aria-invalid', 'true');
+        if (urlDraft.errors.source) sourceSelect.setAttribute('aria-invalid', 'true');
+        if (urlDraft.errors.view) viewSelect.setAttribute('aria-invalid', 'true');
+        if (urlDraft.errors.limit) limitSelect.setAttribute('aria-invalid', 'true');
+        if (urlDraft.errors.lang) languageSelect.setAttribute('aria-invalid', 'true');
+        if (urlDraft.errors.night) nightEnabled.setAttribute('aria-invalid', 'true');
         locationButton.disabled = false;
-        locationStatusKey = nearby.selected && !nearby.coordinates ? 'locationRequired' : '';
+        locationStatusKey = draft.source === 'nearby' && (draft.coordinates.lat === null || draft.coordinates.lon === null) ?
+            'locationRequired' : '';
         selectedName = '';
         searchInput.value = '';
         results = [];
-        statusKey = !nearby.selected && !config && preferences.hasSourceParameter() ? 'stationAddressInvalid' : '';
-        viewSelect.value = display.view;
-        limitSelect.value = display.limit;
+        statusKey = draft.source === 'station' && urlDraft.errors.station ? 'stationAddressInvalid' : '';
+        viewSelect.value = urlDraft.view;
+        limitSelect.value = urlDraft.limit;
         showCollageLimit();
-        languageSelect.value = preferences.getLanguage();
+        languageSelect.value = urlDraft.lang;
         welcomeIntro.hidden = Boolean(config);
         backButton.hidden = !config || !savedNight;
-        nightEnabled.checked = savedNight ? savedNight.enabled : preferences.parameter('night') === '1';
-        nightStart.value = savedNight ? savedNight.start || '22:00' : '';
-        nightEnd.value = savedNight ? savedNight.end || '07:00' : '';
+        nightEnabled.checked = urlDraft.night;
+        nightStart.value = urlDraft.nightStart;
+        nightEnd.value = urlDraft.nightEnd;
         changeNight();
-        nightStatusKey = savedNight ? '' : 'invalidSaved';
+        if (urlDraft.errors.nightStart) nightStart.setAttribute('aria-invalid', 'true');
+        if (urlDraft.errors.nightEnd) nightEnd.setAttribute('aria-invalid', 'true');
+        nightStatusKey = urlDraft.errors.nightStart || urlDraft.errors.nightEnd ? 'invalidSaved' : '';
         renderLabels();
         painting.hidden = true;
         setup.hidden = false;
@@ -332,15 +366,22 @@
         locationAttempt += 1;
         setup.hidden = true;
         painting.hidden = false;
+        preferences.resetLanguage();
+        locale = preferences.locale();
+        languageSelect.value = preferences.getLanguage();
+        renderLabels();
+        var languageEvent = document.createEvent('Event');
+        languageEvent.initEvent('birdweather-language', false, false);
+        document.dispatchEvent(languageEvent);
         window.scrollTo(0, 0);
         openButton.focus();
     }
 
     function changeLanguage() {
-        var stored = preferences.setLanguage(languageSelect.value);
+        preferences.setLanguage(languageSelect.value);
+        languageSelect.removeAttribute('aria-invalid');
         locale = preferences.locale();
         renderLabels();
-        languageStatus.textContent = stored ? '' : say('languageStorageUnavailable');
         var event = document.createEvent('Event');
         event.initEvent('birdweather-language', false, false);
         document.dispatchEvent(event);
@@ -357,14 +398,22 @@
     locationButton.addEventListener('click', requestLocation);
     latitude.addEventListener('input', enterCoordinates);
     longitude.addEventListener('input', enterCoordinates);
-    viewSelect.addEventListener('change', showCollageLimit);
+    viewSelect.addEventListener('change', function () {
+        viewSelect.removeAttribute('aria-invalid');
+        showCollageLimit();
+    });
+    limitSelect.addEventListener('change', function () { limitSelect.removeAttribute('aria-invalid'); });
+    radiusSelect.addEventListener('change', function () { radiusSelect.removeAttribute('aria-invalid'); });
     languageSelect.addEventListener('change', changeLanguage);
     openButton.addEventListener('click', function () {
         openSetup(true);
     });
     backButton.addEventListener('click', closeSetup);
     saveButton.addEventListener('click', saveSetup);
-    nightEnabled.addEventListener('change', changeNight);
+    nightEnabled.addEventListener('change', function () {
+        nightEnabled.removeAttribute('aria-invalid');
+        changeNight();
+    });
     nightStart.addEventListener('change', changeNight);
     nightEnd.addEventListener('change', changeNight);
 

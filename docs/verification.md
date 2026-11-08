@@ -1,6 +1,25 @@
 # Verification record
 
-Date: 2026-11-06.
+Date: 2026-11-08.
+
+## URL-only settings checks
+
+- In Chrome 157, the local URL-settings fixture passed its bare URL, complete
+  station URL with an unknown field, partial URL prefill, invalid optional
+  values, duplicate known field, and nearby partial URL cases.
+- Station and nearby save checks produced canonical URLs with the agreed
+  defaults, source-specific fields, language, and night schedule. Nearby
+  coordinates were rounded to five decimal places.
+- Language preview changed immediately and cancel restored the language from
+  the current URL. The artwork information page retained artwork credits and
+  no longer includes missing-artwork reporting. Setup loaded while a fixture
+  made `localStorage` access throw.
+- Chrome screenshots were visually inspected for the welcome/setup screen at
+  mobile and large desktop sizes, including dark appearance. Safari was not
+  exercised in this pass.
+- The app scripts and page contain no `localStorage` or `sessionStorage`
+  access. The fixture temporarily seeds old settings to verify they are
+  ignored and restores the prior values on unload.
 
 ## Completed checks
 

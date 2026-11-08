@@ -4,151 +4,240 @@
     var api = window.BirdWeatherApi;
     var text = window.BirdWeatherText;
     var night = window.BirdWeatherNight;
-    var setupKey = 'birdweather.setup';
-    var languageKey = 'birdweather.language';
-    var savedLanguage = readLocal(languageKey);
-    var languageChoice = text.supportsLocale(savedLanguage) ? savedLanguage : 'auto';
+    var knownParameters = {
+        source: true,
+        station: true,
+        lat: true,
+        lon: true,
+        radius: true,
+        view: true,
+        limit: true,
+        lang: true,
+        night: true,
+        nightStart: true,
+        nightEnd: true
+    };
+    var defaults = {
+        radius: '2',
+        view: 'latest',
+        limit: '12',
+        lang: 'auto',
+        night: false,
+        nightStart: '22:00',
+        nightEnd: '07:00'
+    };
+    var values = Object.create(null);
+    var errors = Object.create(null);
+    var malformedQuery = false;
+    var languageChoice = defaults.lang;
 
-    function parameter(name, unique) {
-        var expression = new RegExp('(?:^\\?|&)' + name + '(?:=([^&]*))?(?=&|$)', 'g');
-        var match = expression.exec(window.location.search);
-        if (!match) {
+    function readQuery() {
+        var query = window.location.search.replace(/^\?/, '');
+        if (query.length > 8192) {
+            malformedQuery = true;
+            query = query.slice(0, 8192);
+        }
+        if (!query) {
+            return;
+        }
+        query.split('&').forEach(function (part) {
+            if (!part) {
+                return;
+            }
+            var separator = part.indexOf('=');
+            var rawName = separator < 0 ? part : part.slice(0, separator);
+            var rawValue = separator < 0 ? '' : part.slice(separator + 1);
+            var name;
+            var value;
+            try {
+                name = decodeURIComponent(rawName.replace(/\+/g, ' '));
+            } catch (error) {
+                malformedQuery = true;
+                return;
+            }
+            if (!Object.prototype.hasOwnProperty.call(knownParameters, name)) {
+                return;
+            }
+            try {
+                value = decodeURIComponent(rawValue.replace(/\+/g, ' '));
+            } catch (error) {
+                value = '';
+                malformedQuery = true;
+            }
+            if (Object.prototype.hasOwnProperty.call(values, name)) {
+                errors[name] = true;
+                malformedQuery = true;
+            } else {
+                values[name] = value;
+            }
+        });
+    }
+
+    function coordinate(value, field) {
+        if (typeof value !== 'string' || !/^[-+]?(?:[0-9]+(?:\.[0-9]*)?|\.[0-9]+)$/.test(value)) {
+            errors[field] = true;
             return null;
         }
-        if (unique && expression.test(window.location.search)) {
-            return '';
-        }
-        try {
-            return decodeURIComponent(match[1] || '');
-        } catch (error) {
-            return '';
-        }
-    }
-
-    function readLocal(key) {
-        try {
-            return JSON.parse(window.localStorage.getItem(key));
-        } catch (error) {
+        var number = Number(value);
+        var limit = field === 'lat' ? 90 : 180;
+        if (!isFinite(number) || number < -limit || number > limit) {
+            errors[field] = true;
             return null;
         }
+        return number;
     }
 
-    function writeLocal(key, value) {
-        try {
-            window.localStorage.setItem(key, JSON.stringify(value));
-            return true;
-        } catch (error) {
-            return false;
+    function field(name, validate, fallback) {
+        if (!Object.prototype.hasOwnProperty.call(values, name) || errors[name]) {
+            errors[name] = true;
+            return fallback;
         }
-    }
-
-    function stationConfig(source, station) {
-        return (source === 'station' || source === null) && api.validStationId(station) ?
-            { source: 'station', station: station } : null;
-    }
-
-    function hasSourceParameter() {
-        return parameter('source') !== null || parameter('station') !== null;
-    }
-
-    function readLocation(saved) {
-        var coordinates = saved && saved.coordinates;
-        return api.validCoordinates(coordinates) ? { lat: coordinates.lat, lon: coordinates.lon } : null;
-    }
-
-    function radius(value) {
-        return value === '5' || value === '10' ? value : '2';
-    }
-
-    function nearbyDraft() {
-        var saved = readLocal(setupKey);
-        var fromAddress = hasSourceParameter();
-        var selected = (fromAddress ? parameter('source') : saved && saved.source) === 'nearby';
-        var value = selected ? (fromAddress ? parameter('radius') : saved.radius) : null;
-        return { selected: selected, radius: radius(value), coordinates: readLocation(saved) };
-    }
-
-    function read() {
-        var nearby = nearbyDraft();
-        if (nearby.selected) {
-            return nearby.coordinates ?
-                { source: 'nearby', radius: nearby.radius, coordinates: nearby.coordinates } : null;
+        var value = values[name];
+        if (!validate(value)) {
+            errors[name] = true;
+            return fallback;
         }
-        if (hasSourceParameter()) {
-            return stationConfig(parameter('source'), parameter('station'));
-        }
-        var saved = readLocal(setupKey);
-        return saved ? stationConfig(saved.source, saved.station) : null;
+        return value;
     }
 
-    function displayOptions(view, limit) {
-        return {
-            view: view === 'today' ? 'today' : 'latest',
-            limit: typeof limit === 'string' && /^(?:[1-9]|[12][0-9]|3[0-2])$/.test(limit) ? limit : '12'
+    function parse() {
+        readQuery();
+        var result = {
+            source: null,
+            station: '',
+            lat: null,
+            lon: null,
+            radius: defaults.radius,
+            view: defaults.view,
+            limit: defaults.limit,
+            lang: defaults.lang,
+            night: defaults.night,
+            nightStart: defaults.nightStart,
+            nightEnd: defaults.nightEnd,
+            errors: errors,
+            complete: false
         };
+
+        result.source = field('source', function (value) {
+            return value === 'station' || value === 'nearby';
+        }, null);
+
+        if (result.source === 'station') {
+            result.station = field('station', api.validStationId, '');
+            if (Object.prototype.hasOwnProperty.call(values, 'station') && !errors.station) {
+                // Keep a valid station ID available for the setup summary.
+                result.station = values.station;
+            }
+        } else if (result.source === 'nearby') {
+            result.lat = coordinate(values.lat, 'lat');
+            result.lon = coordinate(values.lon, 'lon');
+            result.radius = field('radius', function (value) {
+                return value === '2' || value === '5' || value === '10';
+            }, defaults.radius);
+        } else {
+            if (Object.prototype.hasOwnProperty.call(values, 'station') && api.validStationId(values.station)) {
+                result.station = values.station;
+            }
+            result.lat = coordinate(values.lat, 'lat');
+            result.lon = coordinate(values.lon, 'lon');
+            if (Object.prototype.hasOwnProperty.call(values, 'radius') &&
+                    (values.radius === '2' || values.radius === '5' || values.radius === '10')) {
+                result.radius = values.radius;
+            }
+        }
+
+        result.view = field('view', function (value) {
+            return value === 'latest' || value === 'today';
+        }, defaults.view);
+        result.limit = field('limit', function (value) {
+            return /^(?:[1-9]|[12][0-9]|3[0-2])$/.test(value);
+        }, defaults.limit);
+        result.lang = field('lang', function (value) {
+            return value === 'auto' || text.supportsLocale(value);
+        }, defaults.lang);
+        result.night = field('night', function (value) {
+            return value === '1' || value === '0';
+        }, '0') === '1';
+        result.nightStart = field('nightStart', night.validTime, defaults.nightStart);
+        result.nightEnd = field('nightEnd', night.validTime, defaults.nightEnd);
+        if (result.nightStart === result.nightEnd) {
+            errors.nightStart = true;
+            errors.nightEnd = true;
+            result.nightStart = defaults.nightStart;
+            result.nightEnd = defaults.nightEnd;
+        }
+
+        languageChoice = result.lang;
+        result.complete = !malformedQuery && !Object.keys(errors).some(function (key) { return errors[key]; });
+        if (result.source === 'station' && !api.validStationId(result.station)) {
+            result.complete = false;
+        }
+        if (result.source === 'nearby' && (!api.validCoordinates({ lat: result.lat, lon: result.lon }) ||
+                errors.radius)) {
+            result.complete = false;
+        }
+        if (!result.source) {
+            result.complete = false;
+        }
+        return result;
     }
 
-    function readDisplay() {
-        var view = parameter('view', true);
-        var limit = parameter('limit', true);
-        if (view !== null || limit !== null || hasSourceParameter()) {
-            return displayOptions(view, limit);
-        }
-        var saved = readLocal(setupKey);
-        return displayOptions(saved && saved.view, saved && saved.limit);
+    var parsed = parse();
+
+    function roundedCoordinate(value) {
+        var rounded = Number(Number(value).toFixed(5));
+        return String(rounded === 0 ? 0 : rounded);
     }
 
-    function readNight() {
-        var flag = parameter('night', true);
-        var start = parameter('nightStart', true);
-        var end = parameter('nightEnd', true);
-        if (flag !== null || start !== null || end !== null) {
-            return night.fromAddress(flag, start, end);
+    function queryFor(config) {
+        var parts = [];
+        function add(name, value) {
+            parts.push(encodeURIComponent(name) + '=' + encodeURIComponent(String(value)));
         }
-
-        var saved = !hasSourceParameter() && readLocal(setupKey);
-        return saved && saved.night ? night.create(saved.night.enabled, saved.night.start, saved.night.end) :
-            night.create(false, null, null);
+        add('source', config.source);
+        if (config.source === 'station') {
+            add('station', config.station);
+        } else {
+            add('lat', roundedCoordinate(config.coordinates.lat));
+            add('lon', roundedCoordinate(config.coordinates.lon));
+            add('radius', config.radius);
+        }
+        add('view', config.view);
+        add('limit', config.limit);
+        add('lang', config.lang);
+        add('night', config.night.enabled ? '1' : '0');
+        add('nightStart', config.night.start);
+        add('nightEnd', config.night.end);
+        return parts.join('&');
     }
 
     function save(config) {
-        var display = displayOptions(config.view, config.limit);
-        var displayQuery = '&view=' + display.view + '&limit=' + display.limit;
+        var display = {
+            view: config.view === 'today' ? 'today' : 'latest',
+            limit: /^(?:[1-9]|[12][0-9]|3[0-2])$/.test(String(config.limit)) ? String(config.limit) : defaults.limit
+        };
         var schedule = config.night && night.create(config.night.enabled, config.night.start, config.night.end);
-        if (!schedule) {
+        if (!schedule || (config.source !== 'station' && config.source !== 'nearby')) {
             return false;
         }
-        var nightQuery = night.toQuery(schedule);
-        if (config.source === 'nearby' && api.validCoordinates(config.coordinates)) {
-            var selectedRadius = radius(config.radius);
-            if (!writeLocal(setupKey, {
-                source: 'nearby',
-                radius: selectedRadius,
-                coordinates: config.coordinates,
-                view: display.view,
-                limit: display.limit,
-                night: schedule
-            })) {
-                return false;
-            }
-            window.location.assign('?source=nearby&radius=' + selectedRadius + displayQuery + nightQuery);
-            return true;
-        }
-        var selected = stationConfig(config.source, config.station);
-        if (!selected) {
+        var normalized = {
+            source: config.source,
+            station: config.station,
+            coordinates: config.coordinates,
+            radius: config.radius,
+            view: display.view,
+            limit: display.limit,
+            lang: config.lang === 'auto' || text.supportsLocale(config.lang) ? config.lang : 'auto',
+            night: schedule
+        };
+        if (normalized.source === 'station' && !api.validStationId(normalized.station)) {
             return false;
         }
-        var coordinates = readLocation(readLocal(setupKey));
-        if (coordinates) {
-            selected.coordinates = coordinates;
-        }
-        selected.view = display.view;
-        selected.limit = display.limit;
-        selected.night = schedule;
-        if (!writeLocal(setupKey, selected)) {
+        if (normalized.source === 'nearby' && (!api.validCoordinates(normalized.coordinates) ||
+                ['2', '5', '10'].indexOf(normalized.radius) < 0)) {
             return false;
         }
-        window.location.assign('?source=station&station=' + encodeURIComponent(selected.station) + displayQuery + nightQuery);
+        window.location.assign(window.location.pathname + '?' + queryFor(normalized) + window.location.hash);
         return true;
     }
 
@@ -161,7 +250,11 @@
             return false;
         }
         languageChoice = value;
-        return writeLocal(languageKey, value);
+        return true;
+    }
+
+    function resetLanguage() {
+        languageChoice = parsed.lang;
     }
 
     function locale() {
@@ -172,16 +265,48 @@
         return text.localeFor(languages && languages.length ? languages : [window.navigator.language || 'en']);
     }
 
+    function read() {
+        if (!parsed.complete) {
+            return null;
+        }
+        return parsed.source === 'nearby' ? {
+            source: parsed.source,
+            coordinates: { lat: parsed.lat, lon: parsed.lon },
+            radius: parsed.radius
+        } : { source: parsed.source, station: parsed.station };
+    }
+
+    function readNight() {
+        return night.create(parsed.night, parsed.nightStart, parsed.nightEnd);
+    }
+
+    function draft() {
+        return {
+            source: parsed.source,
+            station: parsed.station,
+            lat: parsed.lat,
+            lon: parsed.lon,
+            radius: parsed.radius,
+            view: parsed.view,
+            limit: parsed.limit,
+            lang: parsed.lang,
+            night: parsed.night,
+            nightStart: parsed.nightStart,
+            nightEnd: parsed.nightEnd,
+            errors: parsed.errors,
+            complete: parsed.complete
+        };
+    }
+
     window.BirdWeatherPreferences = {
         read: read,
-        readDisplay: readDisplay,
-        nearbyDraft: nearbyDraft,
-        save: save,
+        readDisplay: function () { return { view: parsed.view, limit: parsed.limit }; },
         readNight: readNight,
-        parameter: parameter,
-        hasSourceParameter: hasSourceParameter,
+        draft: draft,
+        save: save,
         getLanguage: getLanguage,
         setLanguage: setLanguage,
+        resetLanguage: resetLanguage,
         locale: locale
     };
 }(window));

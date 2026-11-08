@@ -28,11 +28,10 @@ compatibility is not yet confirmed.
   show a randomly selected empty perch. Transparent areas show the painting's
   `#f0ece6` paper surface.
 - Open one information page for the displayed artist, collection, source,
-  licence, and image changes. Keep a list of species that need artwork on the
-  same device.
+  licence, and image changes.
 - Choose English, Dutch, French, German, Spanish, Italian, or Brazilian
   Portuguese. The browser language is used unless the visitor selects a
-  language in Settings.
+  language in Settings; the choice is saved in the URL.
 - Optionally turn the screen black on a local night schedule. Polling pauses
   while the display is black.
 - Use the website without a project account, API key, PHP server, database,
@@ -63,7 +62,8 @@ cd BirdWeatherPainting
 python3 -m http.server 8000
 ```
 
-Open <http://127.0.0.1:8000/> in a browser. Choose a public BirdWeather
+Open <http://127.0.0.1:8000/> in a browser. The base URL opens welcome/setup.
+Choose a public BirdWeather
 station by name or numeric ID, or select nearby stations and allow location
 access or enter coordinates manually. Choose the latest-bird or today's-collage
 view and save. To stop the local server, return to the terminal and press
@@ -73,31 +73,40 @@ No package installation or application configuration file is required. Do not
 open `index.html` directly as a `file://` URL; browsers restrict the API and
 catalog requests from local files.
 
+To exercise URL parsing and the setup screens in a local browser, open
+<http://127.0.0.1:8000/tests/url-settings-preview.html>.
+
 ## Settings and URLs
 
-The settings page writes shareable display choices to the URL. For example:
+The URL is the only source of saved settings. A complete station URL looks like:
 
 ```text
-?source=station&station=7368&view=today&limit=12
+?source=station&station=7368&view=today&limit=12&lang=auto&night=0&nightStart=22%3A00&nightEnd=07%3A00
 ```
 
 The supported choices are:
 
-- `source=station` with a public numeric `station` ID, or `source=nearby` with a
-  `radius` of `2`, `5`, or `10` kilometres;
+- `source=station` with a public numeric `station` ID, or `source=nearby` with
+  `lat`, `lon`, and a `radius` of `2`, `5`, or `10` kilometres;
 - `view=latest` or `view=today`;
 - `limit=1` through `limit=32` for today's collage. The default is `12`.
   Single-bird mode always shows one species.
+- `lang=auto` or one of `en`, `nl`, `fr`, `de`, `es`, `it`, and `pt-BR`;
+- `night=0` or `night=1`, plus `nightStart` and `nightEnd` in 24-hour `HH:MM`
+  format. The times are present in saved URLs even when night mode is off.
 
-Nearby coordinates are saved in this browser's local storage and are not added
-to the URL. BirdWeather receives the nearby search area when the page queries
-stations and detections. On the same device, opening the base URL restores the
-saved settings. Browser storage can be cleared in the browser's website data
-settings; doing so also clears the saved settings and missing-artwork list.
+For example, nearby mode uses a URL like:
 
-Night settings use the iPad's local clock. For example, a configured URL may
-include `night=1`, `nightStart=22:00`, and `nightEnd=07:00`. Setup writes these
-values for you.
+```text
+?source=nearby&lat=52.12345&lon=5.12345&radius=2&view=today&limit=12&lang=nl&night=1&nightStart=22%3A00&nightEnd=07%3A00
+```
+
+The base URL always opens welcome/setup. A URL with missing or invalid settings
+also opens setup and keeps each valid value filled in. Missing optional values
+show their defaults and must be saved to create a complete URL. A missing or
+invalid `source` is never inferred. Unknown query fields are ignored; duplicate
+known fields are invalid. Nearby coordinates are rounded to five decimal places.
+Night times use the device's local clock.
 
 ## Artwork and reuse
 
@@ -120,13 +129,13 @@ licences for the included artwork.
 
 ## Privacy and network use
 
-The app has no project server and sends no app settings or missing-artwork list
-to the repository owner. It calls BirdWeather's public GraphQL API directly
-from the browser and needs internet access for new observations. In nearby
-mode, the selected search area is sent to BirdWeather. Precise coordinates and
-the missing-artwork list stay in browser storage on the device. A static host
-such as GitHub Pages may record visitor IP addresses for routine security and
-operations.
+The app has no project server and does not use application-owned browser
+storage. Settings are visible in the URL, browser history, and bookmarks. Nearby
+coordinates are included in that URL, and the nearby search area is sent to
+BirdWeather's public GraphQL API. The app needs internet access for new
+observations. A static host such as GitHub Pages may record visitor IP addresses
+for routine security and operations. Old settings stored by earlier versions
+are ignored.
 
 ## Install on the iPad
 
