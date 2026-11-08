@@ -17,38 +17,10 @@
     var failedImages = Object.create(null);
     var perchOrder = null;
     var selectedPerchPath = null;
-    var commons = 'https://commons.wikimedia.org/wiki/File:Nederlandsche_vogelen_(KB)_-_';
-    var publicDomain = 'https://creativecommons.org/publicdomain/mark/1.0/';
     var fuglerammeLicense = 'CC BY-SA 4.0';
     var fuglerammeLicenseUrl = 'https://creativecommons.org/licenses/by-sa/4.0/';
     var fuglerammeAttribution = 'https://github.com/arnegiacomo/fugleramme/blob/main/assets/artwork/classic/ATTRIBUTION.md';
     var fuglerammeCreator = 'https://github.com/arnegiacomo/fugleramme';
-
-    function historicalPlate(species, file, title, work, source) {
-        return {
-            species: species,
-            image: 'assets/plates/' + file + '.jpg',
-            creator: 'Christiaan Andreas Sepp & Jan Christiaan Sepp',
-            title: title,
-            work: work,
-            source: commons + source + '.jpg',
-            collection: 'KB, nationale bibliotheek, KW 1047 B 10–14',
-            license: 'Public Domain Mark 1.0',
-            licenseUrl: publicDomain,
-            edits: 'historicalEdits'
-        };
-    }
-
-    var plates = {
-        'Erithacus rubecula': historicalPlate('Erithacus rubecula', 'erithacus-rubecula',
-            'Roodborst', 'Nederlandsche vogelen, I · 48', 'Erithacus_rubecula_(086b)'),
-        'Turdus merula': historicalPlate('Turdus merula', 'turdus-merula',
-            'Merel', 'Nederlandsche vogelen, I · 10', 'Turdus_merula_(016f)'),
-        'Parus major': historicalPlate('Parus major', 'parus-major',
-            'Koolmees', 'Nederlandsche vogelen, II · 60', 'Parus_major_(112b)'),
-        'Cyanistes caeruleus': historicalPlate('Cyanistes caeruleus', 'cyanistes-caeruleus',
-            'Pimpelmees', 'Nederlandsche vogelen, I · 24', 'Cyanistes_caeruleus_(044b)')
-    };
 
     function readCreator(value) {
         // BirdWeather supplies either a name or one credit anchor. Read only its text and href.
@@ -444,10 +416,6 @@
             var candidates = species ? birdImages(species, source || { birds: {}, aliases: {} }) :
                 source ? perchCredits(source) : [];
             if (species) {
-                var historical = Object.prototype.hasOwnProperty.call(plates, species.scientificName) && plates[species.scientificName];
-                if (historical) {
-                    candidates.push(historical);
-                }
                 var remote = remotePlate(species);
                 if (remote) {
                     candidates.push(remote);
@@ -587,11 +555,32 @@
 
     readMissing();
 
+    function localCredits() {
+        var source = catalog || collageCatalog;
+        if (!source) {
+            return [];
+        }
+        return ['Erithacus rubecula', 'Turdus merula', 'Parus major', 'Cyanistes caeruleus']
+            .map(function (scientificName) {
+                var entry = source.birds[normalizeName(scientificName)];
+                var image = entry && entry.images && entry.images[0];
+                if (!entry || !image) {
+                    return null;
+                }
+                var subject = entry.commonName + ' (' + entry.scientificName + ')';
+                var credit = safeImageRecord(image, source, 'bird', subject);
+                if (credit) {
+                    credit.species = scientificName;
+                }
+                return credit;
+            }).filter(function (credit) { return !!credit; });
+    }
+
     window.BirdWeatherArtwork = {
         paint: paint,
         paintCollage: paintCollage,
         localCredits: function () {
-            return entries(plates);
+            return localCredits();
         },
         missingSpecies: function () {
             return entries(readMissing());

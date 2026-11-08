@@ -39,7 +39,7 @@
     overflow: hidden;
 }
 
-.collage-empty-image {
+.collage-empty-art {
     display: block;
     width: 60%;
     max-width: 360px;
@@ -121,5 +121,22 @@
         right: 0;
         left: 0;
         bottom: 3.6rem;
+    }
+
+    .collage-empty-state {
+        bottom: 3.6rem;
+    }
+
+    .collage-empty-art {
+        width: 72%;
+        max-height: 68%;
+    }
+
+    .collage-empty-state h2 {
+        font-size: 1.5rem;
+    }
+
+    .collage-empty-state p {
+        font-size: 0.95rem;
     }
 }

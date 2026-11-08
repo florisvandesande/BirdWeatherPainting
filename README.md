@@ -38,9 +38,9 @@ compatibility is not yet confirmed.
 
 ## Visual preview
 
-The repository includes a [static preview of a Fugleramme bird plate](docs/preview.html).
-It uses the app's display styles and a local image; the sample observation text
-is not live BirdWeather data.
+The repository includes a [static painting layout preview](docs/preview.html).
+It uses the app's display styles and botanical ornament; its sample text is not
+live BirdWeather data.
 
 ## Requirements
 
@@ -99,21 +99,19 @@ values for you.
 
 ## Artwork and reuse
 
-Single-bird mode keeps its existing presentation and detection behavior while
-using the supplied PNG artwork when available; the existing historical and
-credited BirdWeather fallbacks remain available. Collage mode loads only
-transparent PNGs from `assets/artwork/birds/` and
-`assets/artwork/perches/`; it does not use the older Fugleramme JPEG artwork.
-BirdWeather's translated common names provide each collage label, with the
-scientific name below it. The collage PNG source files are not currently
-present in this checkout, so the illustrated layout cannot yet be visually
-accepted. The empty-collage perch uses the same PNG artwork.
+Single-bird mode keeps its presentation and detection behavior while using the
+supplied PNG artwork and its BirdWeather fallback. Both display modes use the
+same transparent PNG catalogue at `assets/artwork/birds/` and
+`assets/artwork/perches/`. BirdWeather's translated common names provide each
+collage label, with the scientific name below it. The PNG files are not
+currently present in this checkout, so the illustrated layout cannot yet be
+visually accepted. The empty-collage perch uses the same PNG artwork.
 
 The Fugleramme derivatives are CC BY-SA 4.0. PNGs retain transparency and are
 resized to at most 1,200 pixels. Per-image source URLs are retained in the
 artwork catalog and shown through the artwork information page. See
 [artwork sources and reuse](docs/artwork.md) and the
-[Fugleramme attribution note](assets/fugleramme/ATTRIBUTION.md).
+[Fugleramme attribution ledger](https://github.com/arnegiacomo/fugleramme/blob/main/assets/artwork/classic/ATTRIBUTION.md).
 
 The source code is under the MIT License. This does not change the separate
 licences for the included artwork.
@@ -141,22 +139,22 @@ BirdWeather data.
 
 ## Local artwork preparation
 
-The collage WebP files and name data belong in the ignored
-`.temporary/asset/` directory and are not needed at runtime. When the supplied
-files are present, convert the collage illustrations and update their catalog
-with Swift on macOS:
+The collage WebP files belong in the ignored `.temporary/asset/artwork/`
+directory and are not needed at runtime. When the supplied files are present,
+convert the illustrations and update the catalog paths with Swift on macOS:
 
 ```bash
 swift scripts/prepare_collage_artwork.swift .temporary/asset/artwork assets/artwork
 ```
 
-The source directory must contain `manifest.json`, `birds/`, and `perches/`.
-Its parent must contain `birdnet_aliases.json` and `birdnet_labels_v2.4.txt`.
-The existing `assets/artwork/geometry.json` and `bird_sizes.csv` files are
-required and preserved. The script uses Apple's built-in Core Graphics and
-ImageIO frameworks; it does not add a runtime dependency to the website. In
-this checkout, `.temporary/asset/artwork/` is absent, so conversion has not
-been run and the collage illustration files are unavailable.
+The source directory must contain `birds/` and `perches/`. The committed
+`assets/artwork/catalog.json` is authoritative for image paths, names, source
+records, geometry and attribution; the converter changes its `.jpg` image
+paths to `.png` while preserving the other catalogue fields. The existing
+`geometry.json` and `bird_sizes.csv` files are preserved. The script uses
+Apple's built-in Core Graphics and ImageIO frameworks; it adds no website
+runtime dependency. In this checkout, `.temporary/asset/artwork/` is absent,
+so conversion has not been run and the illustration files are unavailable.
 
 ## Preview, verification, and known limitations
 
