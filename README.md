@@ -8,8 +8,9 @@ for a wall-mounted iPad.
 
 The latest-bird and today-collage views, station and nearby setup, artwork
 credits, and optional night schedule are implemented on the local integration
-branch. The project is not deployed. Collage artwork conversion and visual
-acceptance remain blocked because the supplied WebP source directory is absent.
+branch. The project is not deployed. The supplied artwork has been converted to
+transparent PNGs; the collage is being checked in a browser across the 1–32
+species range in portrait and landscape layouts.
 The physical iPad 2/iOS 9 acceptance pass has not been completed, so iOS 9
 compatibility is not yet confirmed.
 
@@ -103,12 +104,12 @@ Single-bird mode keeps its presentation and detection behavior while using the
 supplied PNG artwork and its BirdWeather fallback. Both display modes use the
 same transparent PNG catalogue at `assets/artwork/birds/` and
 `assets/artwork/perches/`. BirdWeather's translated common names provide each
-collage label, with the scientific name below it. The PNG files are not
-currently present in this checkout, so the illustrated layout cannot yet be
-visually accepted. The empty-collage perch uses the same PNG artwork.
+collage label, with the scientific name below it. The empty-collage perch uses
+the same PNG artwork.
 
 The Fugleramme derivatives are CC BY-SA 4.0. PNGs retain transparency and are
-resized to at most 1,200 pixels. Per-image source URLs are retained in the
+resized to at most 600 pixels to preserve the existing single-bird source size
+while keeping the static artwork download manageable. Per-image source URLs are retained in the
 artwork catalog and shown through the artwork information page. See
 [artwork sources and reuse](docs/artwork.md) and the
 [Fugleramme attribution ledger](https://github.com/arnegiacomo/fugleramme/blob/main/assets/artwork/classic/ATTRIBUTION.md).
@@ -139,22 +140,23 @@ BirdWeather data.
 
 ## Local artwork preparation
 
-The collage WebP files belong in the ignored `.temporary/asset/artwork/`
+The collage WebP files belong in the ignored `.temporary/assets/artwork/`
 directory and are not needed at runtime. When the supplied files are present,
 convert the illustrations and update the catalog paths with Swift on macOS:
 
 ```bash
-swift scripts/prepare_collage_artwork.swift .temporary/asset/artwork assets/artwork
+swift scripts/prepare_collage_artwork.swift .temporary/assets/artwork assets/artwork
 ```
 
 The source directory must contain `birds/` and `perches/`. The committed
 `assets/artwork/catalog.json` is authoritative for image paths, names, source
 records, geometry and attribution; the converter changes its `.jpg` image
-paths to `.png` while preserving the other catalogue fields. The existing
+paths to `.png` while preserving the other catalogue fields and caps each
+PNG's longest edge at 600 pixels. The existing
 `geometry.json` and `bird_sizes.csv` files are preserved. The script uses
 Apple's built-in Core Graphics and ImageIO frameworks; it adds no website
-runtime dependency. In this checkout, `.temporary/asset/artwork/` is absent,
-so conversion has not been run and the illustration files are unavailable.
+runtime dependency. The PNGs are part of `assets/artwork/`, so a fresh clone
+does not need the ignored source WebPs to run the app.
 
 ## Preview, verification, and known limitations
 
@@ -189,11 +191,9 @@ it for the domain.
 
 The previous station, setup, and artwork information flow was checked in
 Chrome 157 at mobile, tablet, 1024 × 768, and large desktop viewports in light
-and dark browser appearances. The changed collage and PNG rendering have not
-received a complete browser pass. The source WebPs are absent, so counts 1–32,
-silhouette overlap, crop, labels, and perch acceptance remain unverified.
-Safari automation and the physical iPad 2 were unavailable in this agent
-environment.
+and dark browser appearances. The new collage and PNG rendering are being
+checked in a controlled browser preview. The physical iPad 2 is unavailable,
+so its native Safari behavior remains unverified.
 
 The unrelated repository server-synchronization shell check is not required to
 run or host this static application.

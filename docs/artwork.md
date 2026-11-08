@@ -26,22 +26,22 @@ committed catalogue is authoritative for these source records and any image
 geometry. It may not identify the exact original work title or individual
 artist.
 
-The downloaded WebP inputs live in the ignored `.temporary/asset/artwork/`
+The downloaded WebP inputs live in the ignored `.temporary/assets/artwork/`
 directory and are not needed at runtime.
 
 ## Preparing artwork
 
-When the supplied files are available under `.temporary/asset/artwork/`, run:
+When the supplied files are available under `.temporary/assets/artwork/`, run:
 
 ```bash
-swift scripts/prepare_collage_artwork.swift .temporary/asset/artwork assets/artwork
+swift scripts/prepare_collage_artwork.swift .temporary/assets/artwork assets/artwork
 ```
 
 The source folder must include `birds/` and `perches/`. The script reads the
 committed catalogue and supporting data in `assets/artwork/`, converts the
-WebPs to PNGs, and changes only image path extensions in the catalogue. The
-source WebP folder is currently absent, so no PNGs can be generated or
-visually checked from this checkout.
+WebPs to transparent PNGs capped at a 600-pixel longest edge, and changes only
+image path extensions in the catalogue. The runtime PNGs are committed, so the
+ignored source WebPs are not needed by a fresh clone.
 
 ## BirdWeather fallback
 

@@ -2,7 +2,9 @@ import CoreGraphics
 import Foundation
 import ImageIO
 
-let maxImageEdge = 1200.0
+// Match the existing single-bird display's source resolution while keeping the
+// transparent PNG collection small enough for a static web application.
+let maxImageEdge = 600.0
 
 typealias JSONObject = [String: Any]
 

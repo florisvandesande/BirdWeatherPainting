@@ -23,7 +23,7 @@
             sourceLink: 'Open original source',
             license: 'Licence',
             edits: 'Changes',
-            fuglerammeEdits: 'Resized to a maximum edge of 1,200 pixels and converted from WebP to transparent PNG.',
+            fuglerammeEdits: 'Resized to a maximum edge of 600 pixels and converted from WebP to transparent PNG.',
             remoteEdits: 'Displayed as supplied by BirdWeather.'
         },
         nl: {
@@ -47,7 +47,7 @@
             sourceLink: 'Oorspronkelijke bron openen',
             license: 'Licentie',
             edits: 'Bewerkingen',
-            fuglerammeEdits: 'Verkleind tot maximaal 1.200 pixels en omgezet van WebP naar transparante PNG.',
+            fuglerammeEdits: 'Verkleind tot maximaal 600 pixels en omgezet van WebP naar transparante PNG.',
             remoteEdits: 'Weergegeven zoals aangeleverd door BirdWeather.'
         },
         fr: {
@@ -71,7 +71,7 @@
             sourceLink: 'Ouvrir la source originale',
             license: 'Licence',
             edits: 'Modifications',
-            fuglerammeEdits: 'Redimensionnée à 1 200 pixels maximum et convertie de WebP en PNG transparent.',
+            fuglerammeEdits: 'Redimensionnée à 600 pixels maximum et convertie de WebP en PNG transparent.',
             remoteEdits: 'Affichée telle que fournie par BirdWeather.'
         },
         de: {
@@ -95,7 +95,7 @@
             sourceLink: 'Originalquelle öffnen',
             license: 'Lizenz',
             edits: 'Änderungen',
-            fuglerammeEdits: 'Auf maximal 1.200 Pixel verkleinert und von WebP in transparentes PNG umgewandelt.',
+            fuglerammeEdits: 'Auf maximal 600 Pixel verkleinert und von WebP in transparentes PNG umgewandelt.',
             remoteEdits: 'Unverändert von BirdWeather übernommen.'
         },
         es: {
@@ -119,7 +119,7 @@
             sourceLink: 'Abrir la fuente original',
             license: 'Licencia',
             edits: 'Cambios',
-            fuglerammeEdits: 'Redimensionada a un máximo de 1.200 píxeles y convertida de WebP a PNG transparente.',
+            fuglerammeEdits: 'Redimensionada a un máximo de 600 píxeles y convertida de WebP a PNG transparente.',
             remoteEdits: 'Se muestra tal como la proporciona BirdWeather.'
         },
         it: {
@@ -143,7 +143,7 @@
             sourceLink: 'Apri la fonte originale',
             license: 'Licenza',
             edits: 'Modifiche',
-            fuglerammeEdits: 'Ridimensionata a un massimo di 1.200 pixel e convertita da WebP a PNG trasparente.',
+            fuglerammeEdits: 'Ridimensionata a un massimo di 600 pixel e convertita da WebP a PNG trasparente.',
             remoteEdits: 'Mostrata così come fornita da BirdWeather.'
         },
         'pt-BR': {
@@ -167,7 +167,7 @@
             sourceLink: 'Abrir a fonte original',
             license: 'Licença',
             edits: 'Alterações',
-            fuglerammeEdits: 'Redimensionada para no máximo 1.200 pixels e convertida de WebP para PNG transparente.',
+            fuglerammeEdits: 'Redimensionada para no máximo 600 pixels e convertida de WebP para PNG transparente.',
             remoteEdits: 'Exibida como fornecida pelo BirdWeather.'
         }
     };
