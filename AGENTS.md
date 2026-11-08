@@ -195,6 +195,8 @@ Before `ship` commits or merges, confirm that all delegated work is complete, re
 
 Use the `gh` CLI for issues and specs in `florisvandesande/BirdWeatherPainting`. See [issue tracker guidance](docs/agents/issue-tracker.md).
 
+When `gh` in the restricted workspace reports an invalid token or cannot reach `api.github.com`, retry it through the host-accessible authorized command context so it can use the macOS keyring session. If that context is authenticated, continue there instead of asking the user to reauthenticate or provide a token. Before the first write, verify the repository with `gh repo view`; never print or copy the token.
+
 ### Triage labels
 
 Use the five default labels `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, and `wontfix`. See [triage labels](docs/agents/triage-labels.md).
