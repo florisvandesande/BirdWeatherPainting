@@ -100,12 +100,9 @@
         setText(stationName, nearby ? say('nearbyHeading', { radius: config.radius }) : result.stationName);
         collageView.show(result, locale);
         if (!result.species.length) {
-            collageView.showEmpty();
             var state = nearby && !result.hasStations ? 'nearbyNoStations' : 'collageEmpty';
             detail.className = '';
-            setText(title, say('perch'));
-            title.removeAttribute('lang');
-            setText(detail, say('emptyBranch'));
+            collageView.showEmpty(say('perch'), say('emptyBranch'));
             detectionTime.hidden = true;
             observationNote.hidden = false;
             setText(observationNote, say(state));

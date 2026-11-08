@@ -9,8 +9,10 @@
     function create() {
         var painting = document.getElementById('painting');
         var latest = document.getElementById('latest-plate');
-        var latestArt = document.getElementById('latest-art');
+        var emptyState = document.getElementById('collage-empty-state');
         var emptyArt = document.getElementById('collage-empty-art');
+        var emptyTitle = document.getElementById('collage-empty-title');
+        var emptyDetail = document.getElementById('collage-empty-detail');
         var collage = document.getElementById('collage');
         var title = document.getElementById('collage-title');
         var board = document.getElementById('collage-board');
@@ -99,8 +101,9 @@
             building = false;
             board.textContent = '';
             board.classList.remove('collage-packed');
+            emptyState.hidden = true;
+            board.hidden = false;
             emptyArt.hidden = true;
-            latestArt.hidden = false;
             collage.hidden = true;
             latest.hidden = false;
             omitted.hidden = true;
@@ -113,10 +116,20 @@
                 if (contentKey) {
                     clear();
                 }
+                title.textContent = text.message(locale, 'displayViewToday');
+                omitted.hidden = true;
+                emptyState.hidden = false;
+                board.hidden = true;
+                collage.hidden = false;
+                latest.hidden = true;
+                painting.setAttribute('aria-labelledby', 'collage-title');
+                lastResult = result;
+                lastLocale = locale;
                 return;
             }
+            emptyState.hidden = true;
+            board.hidden = false;
             emptyArt.hidden = true;
-            latestArt.hidden = false;
             collage.hidden = false;
             latest.hidden = true;
             lastResult = result;
@@ -170,9 +183,16 @@
         window.addEventListener('resize', handleResize);
         window.addEventListener('orientationchange', handleResize);
 
-        function showEmpty() {
-            latestArt.hidden = true;
+        function showEmpty(titleText, detailText) {
+            emptyTitle.textContent = titleText;
+            emptyDetail.textContent = detailText;
+            collage.hidden = false;
+            latest.hidden = true;
+            emptyState.hidden = false;
+            board.hidden = true;
             emptyArt.hidden = false;
+            omitted.hidden = true;
+            painting.setAttribute('aria-labelledby', 'collage-empty-title');
         }
 
         function paintEmpty(complete) {

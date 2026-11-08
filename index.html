@@ -18,7 +18,6 @@
         </header>
         <section id="latest-plate" class="plate-content">
             <img id="latest-art" class="plate-art" src="assets/field-sprig.svg" alt="">
-            <img id="collage-empty-art" class="plate-art" alt="" hidden>
             <div class="plate-caption" aria-live="polite">
                 <h1 id="plate-title" dir="auto"></h1>
                 <p id="plate-detail" dir="auto"></p>
@@ -27,6 +26,11 @@
         </section>
         <section id="collage" class="collage" aria-labelledby="collage-title" hidden>
             <h1 id="collage-title"></h1>
+            <div id="collage-empty-state" class="collage-empty-state" hidden>
+                <img id="collage-empty-art" class="collage-empty-art" alt="">
+                <h2 id="collage-empty-title" dir="auto"></h2>
+                <p id="collage-empty-detail" dir="auto"></p>
+            </div>
             <div id="collage-board" class="collage-board"></div>
         </section>
         <footer class="plate-footer">
