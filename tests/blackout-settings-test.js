@@ -235,6 +235,6 @@
         }
     });
 
-    frame.src = '../index.html?source=station&station=1&view=latest&limit=12&night=1&nightStart=' +
+    frame.src = '../index.html?source=station&station=1&view=latest&limit=12&lang=auto&night=1&nightStart=' +
         encodeURIComponent(time(start)) + '&nightEnd=' + encodeURIComponent(time(end));
 }(window, document));

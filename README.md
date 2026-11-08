@@ -39,8 +39,8 @@ has not been completed, so iOS 9 compatibility is not yet confirmed.
   species description, Wikipedia and eBird links, and artwork source,
   collection, creator, and licence details. In the latest-bird view, the daily
   scan runs when the information page opens; the collage view reuses its
-  existing scan. A copyable list of species that need artwork stays on the same
-  device.
+  existing scan. Missing artwork uses the existing Perch or safe artwork
+  fallback and is not reported or copied by the app.
 - Choose English, Dutch, French, German, Spanish, Italian, or Brazilian
   Portuguese. The browser language is used unless the visitor selects a
   language in Settings.
@@ -89,24 +89,30 @@ catalog requests from local files.
 
 ## Settings and URLs
 
-The settings page writes shareable display choices to the URL. For example:
+The URL is the only application configuration. The bare URL always opens setup;
+it never restores a previous station or language from browser storage. Saving
+setup writes a canonical, shareable URL. For example:
 
 ```text
-?source=station&station=7368&view=today&limit=12
+?source=station&station=7368&view=today&limit=12&lang=nl&night=0
 ```
 
 The supported choices are:
 
-- `source=station` with a public numeric `station` ID, or `source=nearby` with a
-  `radius` of `2`, `5`, or `10` kilometres;
+- `source=station` with a public numeric `station` ID, or `source=nearby` with
+  `lat`, `lon`, and a `radius` of `2`, `5`, or `10` kilometres;
 - `view=latest` or `view=today`;
-- `limit=2` through `limit=32` for today's collage. The default is `12`.
+- `limit=2` through `limit=32` for today's collage;
+- `lang=auto`, `en`, `nl`, `fr`, `de`, `es`, `it`, or `pt-BR`;
+- `night=0`, or `night=1` with both `nightStart` and `nightEnd`.
 
-Nearby coordinates are saved in this browser's local storage and are not added
-to the URL. BirdWeather receives the nearby search area when the page queries
-stations and detections. On the same device, opening the base URL restores the
-saved settings. Browser storage can be cleared in the browser's website data
-settings; doing so also clears the saved settings and missing-artwork list.
+Nearby coordinates are rounded to five decimal places and included in the URL.
+BirdWeather receives the nearby search area when the page queries stations and
+detections. Because the URL is the source of truth, nearby coordinates can be
+recorded in browser history, bookmarks, server logs, and shared links. A partial
+or invalid URL opens setup, preserves valid fields for correction, and does not
+fall back to old browser values. Unknown parameters are ignored and duplicate
+supported parameters cannot override the explicit contract.
 
 Night settings use the iPad's local clock. For example, a configured URL may
 include `night=1`, `nightStart=22:00`, and `nightEnd=07:00`. Setup writes these
@@ -122,8 +128,8 @@ The app uses local Fugleramme Classic artwork first, with matching based on
 scientific names and the included BirdNET alias map. BirdWeather's translated
 common names provide the displayed species names. If no local image matches,
 the app may use one of its public-domain historical plates or a BirdWeather
-image whose returned credit and licence are accepted. Otherwise it shows a
-name plate and records the missing species on the device.
+image whose returned credit and licence are accepted. Otherwise it shows the
+existing Perch or field-sprig fallback; it does not record a missing species.
 
 The Fugleramme derivatives are CC BY-SA 4.0. The app resizes them to at most
 600 pixels, converts WebP to JPEG for older Safari, and flattens transparent
@@ -145,10 +151,9 @@ licences for the included artwork.
 The app has no project server and sends no app settings or missing-artwork list
 to the repository owner. It calls BirdWeather's public GraphQL API directly
 from the browser and needs internet access for new observations. In nearby
-mode, the selected search area is sent to BirdWeather. Precise coordinates and
-the missing-artwork list stay in browser storage on the device. A static host
-such as GitHub Pages may record visitor IP addresses for routine security and
-operations.
+mode, the selected search area and the coordinates in the shared URL are sent
+to BirdWeather. The URL may also be retained by browser history, bookmarks,
+shared-link recipients, or a static host such as GitHub Pages.
 
 ## Install on the iPad
 
@@ -241,6 +246,13 @@ names, localization, and page overflow using fixed data and local images. The
 blackout fixture passed its Settings, return-to-black, and scheduled-refresh
 checks. The live 8001 app was visually checked in single view, collage view,
 Settings, loading/empty-perch state, and expanded species details.
+
+The URL-only browser fixture is available at
+<http://127.0.0.1:8000/tests/url-settings-test.html>. It blocks application
+storage access, pre-seeds obsolete configuration keys, and checks the bare
+setup screen, canonical station and nearby URLs, five-decimal coordinate
+rounding, complete-link reloads, partial and invalid links, and removal of the
+missing-artwork report.
 
 The live BirdWeather flow and the redesigned app have not had a complete
 cross-browser pass. The physical iPad 2 at 1024 × 768 and iOS 9 Safari acceptance

@@ -32,6 +32,12 @@ Date: 2026-11-07.
 - The controlled blackout fixture passed its checks for opening Settings from
   the black screen, returning to black while the schedule is active, and
   refreshing the painting after the scheduled period ends.
+- The controlled URL-settings browser fixture passed 21 checks. It starts at
+  the bare URL with obsolete setup and language keys present while all storage
+  access is blocked, saves station and nearby setup to canonical URLs, rounds
+  nearby coordinates to five decimals, reloads complete station and nearby
+  links, preserves valid fields in a partial link, rejects invalid values, and
+  confirms that the missing-artwork report is absent.
 - The artwork converter processed 1,355 bird illustrations and nine perches.
   A catalogue check confirmed all 1,364 paired dark image paths exist; the dark
   set adds 83.7 MiB. Representative light and dark previews were inspected.
@@ -53,6 +59,9 @@ Date: 2026-11-07.
   until the physical acceptance pass succeeds.
 - Safari WebDriver was unavailable because Remote Automation was not enabled on
   the Mac. This check did not change the Mac's automation settings.
+- The URL-settings fixture was run in Chrome at 1024 × 768 on the local test
+  server. Safari, the required light/dark viewport matrix, and physical iPad
+  Safari remain unverified.
 
 ## Environment note
 

@@ -1,10 +1,7 @@
 (function (window, document) {
     'use strict';
 
-    var storagePrefix = 'birdweather-missing-artwork:';
     var sprig = 'assets/field-sprig.svg';
-    var missingInSession = Object.create(null);
-    var storageUnavailable = false;
     var catalogPath = 'assets/artwork/catalog.json?v=3';
     var catalogState = 'idle';
     var catalog = null;
@@ -133,17 +130,6 @@
             licenseUrl: licenseUrl,
             edits: 'remoteEdits'
         };
-    }
-
-    function speciesRecord(species) {
-        if (!species || typeof species.id !== 'string' || !/^[1-9][0-9]{0,17}$/.test(species.id) ||
-                typeof species.commonName !== 'string' || species.commonName.length > 160 ||
-                typeof species.scientificName !== 'string' || species.scientificName.length > 160) {
-            return null;
-        }
-        var commonName = species.commonName.replace(/[\x00-\x1f\x7f]/g, ' ').trim();
-        var scientificName = species.scientificName.replace(/[\x00-\x1f\x7f]/g, ' ').trim();
-        return commonName && scientificName ? { id: species.id, commonName: commonName, scientificName: scientificName } : null;
     }
 
     function normalizeName(value) {
@@ -367,73 +353,10 @@
         return selectedPerchPath;
     }
 
-    function readMissing() {
-        if (storageUnavailable) {
-            return missingInSession;
-        }
-        try {
-            var storage = window.localStorage;
-            var records = Object.create(null);
-            for (var index = 0; index < storage.length; index += 1) {
-                var key = storage.key(index);
-                if (key && key.indexOf(storagePrefix) === 0) {
-                    var entry = readMissingEntry(storage.getItem(key));
-                    if (entry && key === storagePrefix + entry.id) {
-                        records[entry.id] = entry;
-                    }
-                }
-            }
-            missingInSession = records;
-        } catch (error) {
-            storageUnavailable = true;
-        }
-        return missingInSession;
-    }
-
-    function readMissingEntry(value) {
-        try {
-            return speciesRecord(JSON.parse(value));
-        } catch (error) {
-            // A damaged entry is ignored so the other species remain copyable.
-            return null;
-        }
-    }
-
     function entries(records) {
         return Object.keys(records).map(function (id) {
             return records[id];
         });
-    }
-
-    function setMissing(species, missing) {
-        var entry = speciesRecord(species);
-        if (!entry) {
-            return;
-        }
-        if (missing) {
-            missingInSession[entry.id] = entry;
-        } else {
-            delete missingInSession[entry.id];
-        }
-        if (storageUnavailable) {
-            return;
-        }
-        // One key per species avoids replacing entries recorded in another tab.
-        try {
-            var storage = window.localStorage;
-            var key = storagePrefix + entry.id;
-            if (missing) {
-                var value = JSON.stringify(entry);
-                if (storage.getItem(key) !== value) {
-                    storage.setItem(key, value);
-                }
-            } else {
-                storage.removeItem(key);
-            }
-        } catch (error) {
-            // Keep unsaved changes available for the rest of this page session.
-            storageUnavailable = true;
-        }
     }
 
     function paint(image, species, onCreditChange) {
@@ -478,9 +401,6 @@
                         fallbackPath = fallbackPath.replace(/\.jpg$/, '-dark.jpg');
                     }
                     image.setAttribute('src', fallbackPath);
-                    if (species) {
-                        setMissing(species, true);
-                    }
                     onCreditChange(null);
                     return;
                 }
@@ -488,9 +408,6 @@
                     credit.darkImage : credit.image;
                 if (image.getAttribute('src') === imagePath && image.complete && image.naturalWidth) {
                     image.classList.remove('artwork-loading');
-                    if (species) {
-                        setMissing(species, false);
-                    }
                     if (credit.kind === 'perch') {
                         selectedPerchPath = credit.image;
                     }
@@ -503,9 +420,6 @@
                         return;
                     }
                     image.classList.remove('artwork-loading');
-                    if (species) {
-                        setMissing(species, false);
-                    }
                     if (credit.kind === 'perch') {
                         selectedPerchPath = credit.image;
                     }
@@ -539,8 +453,6 @@
         appearanceQuery.addListener(repaintForAppearance);
     }
 
-    readMissing();
-
     window.BirdWeatherArtwork = {
         paint: paint,
         resetPerch: function () {
@@ -551,9 +463,6 @@
         },
         localCredits: function () {
             return entries(plates);
-        },
-        missingSpecies: function () {
-            return entries(readMissing());
         }
     };
 }(window, document));
