@@ -213,8 +213,10 @@
             }
             var placed = false;
             for (var candidate = 0; candidate < candidates.length; candidate += 1) {
-                var x = candidates[candidate][0];
-                var y = candidates[candidate][1];
+                // Collision cells are anchored to the board origin, so render
+                // each figure from the same cell-aligned origin they use.
+                var x = Math.round(candidates[candidate][0] / cellSize) * cellSize;
+                var y = Math.round(candidates[candidate][1] / cellSize) * cellSize;
                 if (occupiedAt(entry.mask, x, y, width, height, occupancy, labels)) {
                     continue;
                 }
@@ -224,7 +226,8 @@
                 var rows = Math.ceil(entry.height / cellSize);
                 var labelRows = Math.ceil((entry.labelHeight + gap) / cellSize);
                 var labelColumns = Math.ceil(entry.labelWidth / cellSize);
-                var labelLeft = Math.round((x + (entry.width - entry.labelWidth) / 2) / cellSize);
+                var captionOffset = Math.round((entry.width - entry.labelWidth) / 2);
+                var labelLeft = Math.round((x + captionOffset) / cellSize);
                 if (top + rows + labelRows > Math.ceil(height / cellSize) || labelLeft < 0 ||
                         labelLeft + labelColumns > columns) {
                     continue;
@@ -260,6 +263,7 @@
                 entry.figure.style.top = Math.round(y) + 'px';
                 entry.figure.style.width = entry.width + 'px';
                 entry.figure.style.height = (entry.height + entry.labelHeight + gap) + 'px';
+                entry.caption.style.left = (labelLeft * cellSize - x) + 'px';
                 entry.caption.style.visibility = 'visible';
                 entry.caption.style.position = 'relative';
                 entry.caption.style.top = 'auto';
