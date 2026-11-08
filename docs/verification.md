@@ -11,9 +11,8 @@ Date: 2026-11-08.
   defaults, source-specific fields, language, and night schedule. Nearby
   coordinates were rounded to five decimal places.
 - Language preview changed immediately and cancel restored the language from
-  the current URL. The artwork information page retained artwork credits and
-  no longer includes missing-artwork reporting. Setup loaded while a fixture
-  made `localStorage` access throw.
+  the current URL. Setup loaded while a fixture made `localStorage` access
+  throw.
 - Chrome screenshots were visually inspected for the welcome/setup screen at
   mobile and large desktop sizes, including dark appearance. Safari was not
   exercised in this pass.
@@ -22,6 +21,17 @@ Date: 2026-11-08.
   ignored and restores the prior values on unload.
 
 ## Completed checks
+
+- The artwork information list was exercised in Chrome with a mocked BirdWeather
+  response containing 65 unique species. Station and nearby daily queries
+  returned all 65 for artwork-info; normal collage loading requested only its
+  configured 32. Species details were fetched in batches of 32 in newest-first
+  order. Local bird and perch PNGs, localized names and summaries, missing or
+  unsafe links, accordion behavior, empty-day, and API-error states passed.
+- The artwork information page was visually checked in Chrome at 390 × 844
+  and 1440 × 900 in light and dark appearances. Both viewports had no horizontal
+  overflow; mobile links remained within their rows. The expanded summary and
+  bottom attribution block were also inspected.
 
 - The painting chrome changes were visually inspected in Chrome 157 at 390 ×
   844 and 1440 × 900. Single mode keeps the full artwork and both controls in
@@ -38,8 +48,8 @@ Date: 2026-11-08.
   dark controls use the matching dark fill. Safari was not exercised in this
   visual pass.
 
-- The station search, setup/save/restore, latest-bird display, artwork
-  information page, and earlier artwork flow were exercised in
+- The station search, setup/save/restore, latest-bird display, and earlier
+  artwork flow were exercised in
   Chrome 157 at 390 × 844, 820 × 1180, 1024 × 768, 1440 × 900, and 2560 ×
   1440 in light and dark browser appearances. No viewport overflow was found
   in those earlier flows.
@@ -50,13 +60,13 @@ Date: 2026-11-08.
   zone names and aliases.
 - The local artwork converter processed 1,355 bird illustrations and nine
   perches. Representative converted images were inspected at their prepared
-  size. The full app has not yet been exercised with the new Fugleramme
-  collection in a browser.
+  size. The full application has not been checked against the live BirdWeather
+  API with the new artwork-info page.
 
 ## Still unverified
 
-- The complete collage and new Fugleramme flows have not received a full
-  browser pass at the supported viewport sizes.
+- The existing collage has not received a fresh full browser pass at all
+  supported viewport sizes during this artwork-info change.
 - The app has not been checked in Safari on a physical iPad 2 at 1024 × 768.
   No physical iPad was available to this session, so the device's iOS and Safari
   versions and all touch, installation, and Auto-Lock behavior remain

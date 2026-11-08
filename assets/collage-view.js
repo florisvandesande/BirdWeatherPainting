@@ -2,7 +2,6 @@
     'use strict';
 
     var artwork = window.BirdWeatherArtwork;
-    var artworkInfo = window.BirdWeatherArtworkInfo;
     var text = window.BirdWeatherText;
     var layout = window.BirdWeatherCollageLayout;
 
@@ -21,10 +20,6 @@
         var resizeTimer = null;
         var lastResult = null;
         var lastLocale = null;
-
-        function publishCredits(plates) {
-            artworkInfo.setDisplayed(plates.map(function (plate) { return plate.credit; }));
-        }
 
         function labelPaintingAsCollage(locale) {
             painting.removeAttribute('aria-labelledby');
@@ -61,14 +56,13 @@
             figure.appendChild(image);
             figure.appendChild(caption);
             layer.appendChild(figure);
-            var plate = { figure: figure, image: image, caption: caption, name: name, species: species, credit: null, ready: false };
+            var plate = { figure: figure, image: image, caption: caption, name: name, species: species, ready: false };
             plates.push(plate);
-            artwork.paintCollage(image, species, function (credit, ready) {
+            artwork.paintCollage(image, species, function (ignoredCredit, ready) {
                 if (createdAt !== generation || plate.ready || !ready) {
                     return;
                 }
-                figure.classList.toggle('collage-name-plate', !credit);
-                plate.credit = credit;
+                figure.classList.toggle('collage-name-plate', !ignoredCredit);
                 plate.ready = true;
                 onReady();
             });
@@ -112,7 +106,6 @@
                     activePlates = [];
                 }
                 contentKey = '';
-                publishCredits([]);
                 omitted.hidden = true;
                 emptyState.hidden = false;
                 emptyState.setAttribute('role', 'img');
@@ -187,7 +180,6 @@
                         activeLayer = staging;
                         activePlates = plates;
                         contentKey = key;
-                        publishCredits(activePlates);
                         if (previous) {
                             previous.remove();
                         }
@@ -218,7 +210,6 @@
             omitted.hidden = true;
             painting.removeAttribute('aria-label');
             painting.setAttribute('aria-labelledby', 'plate-title');
-            publishCredits([]);
         }
 
         function handleResize() {
@@ -246,7 +237,6 @@
             contentKey = '';
             lastResult = null;
             lastLocale = locale;
-            publishCredits([]);
             collage.hidden = false;
             latest.hidden = true;
             emptyState.hidden = false;
@@ -262,7 +252,7 @@
             var createdAt = generation;
             artwork.paintCollage(emptyArt, null, function (credit, ready) {
                 if (ready && createdAt === generation) {
-                    complete(credit);
+                    complete();
                 }
             });
         }

@@ -18,10 +18,9 @@
     var nearby = config && config.source === 'nearby';
     var schedule = preferences.readNight();
     var display = preferences.readDisplay();
-    var collageSource = config && display.view === 'today' && window.BirdWeatherCollageData.create(config, display.limit);
+    var dailySpeciesSource = config && window.BirdWeatherCollageData.create(config, display.limit);
+    var collageSource = display.view === 'today' ? dailySpeciesSource : null;
     var collageView = collageSource && window.BirdWeatherCollageView.create();
-    var emptyArtworkDate = null;
-    var emptyArtworkCredit = null;
     var lastResult = null;
     var connectionState = null;
 
@@ -84,8 +83,16 @@
             complete('notFound');
             return null;
         }
-        return collageSource ? collageSource.load(complete) : api.latestForSource(config, complete);
+        return collageSource ? collageSource.load(complete, locale) : api.latestForSource(config, complete);
     }
+
+    artworkInfo.setSpeciesLoader(function (complete, requestedLocale) {
+        if (!sourceActive || !dailySpeciesSource) {
+            complete('unavailable');
+            return null;
+        }
+        return dailySpeciesSource.loadAll(complete, requestedLocale || locale);
+    });
 
     function showCollage(result) {
         collageView.show(result, locale);
@@ -105,7 +112,7 @@
         detail.className = '';
         setText(detail, '');
         setText(title, say('loading'));
-        artwork.paint(image, null, setPlateCredit);
+        artwork.paint(image, null, function () {});
     }
 
     function checkDay(now) {
@@ -113,8 +120,6 @@
             return false;
         }
         lastResult = null;
-        emptyArtworkDate = null;
-        emptyArtworkCredit = null;
         collageView.clear();
         showLoading();
         setConnectionStatus('refreshing');
@@ -130,23 +135,8 @@
         }
     }
 
-    function setPlateCredit(credit) {
-        artworkInfo.setDisplayed(credit ? [credit] : []);
-    }
-
-    function paintEmptyCollage(date) {
-        if (emptyArtworkDate === date) {
-            setPlateCredit(emptyArtworkCredit);
-            return;
-        }
-        emptyArtworkDate = date;
-        emptyArtworkCredit = null;
-        collageView.paintEmpty(function (credit) {
-            if (emptyArtworkDate === date) {
-                emptyArtworkCredit = credit;
-                setPlateCredit(credit);
-            }
-        });
+    function paintEmptyCollage() {
+        collageView.paintEmpty(function () {});
     }
 
     function renderResult(error, result) {
@@ -161,11 +151,11 @@
             if (collageView) {
                 showCollage(result);
                 if (!result.species.length) {
-                    paintEmptyCollage(result.date);
+                    paintEmptyCollage();
                 }
             } else {
                 showLatest(result);
-                artwork.paint(image, result.observation && result.observation.species, setPlateCredit);
+                artwork.paint(image, result.observation && result.observation.species, function () {});
             }
         } else if (!lastResult) {
             showConnectionProblem(error);

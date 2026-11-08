@@ -1,0 +1,334 @@
+<!doctype html>
+<html lang="nl">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <base href="../">
+    <title>Artwork information list preview</title>
+    <link rel="stylesheet" href="assets/painting.css">
+    <link rel="stylesheet" href="assets/artwork.css">
+    <style>
+        html, body { width: 100%; height: 100%; margin: 0; }
+        #painting { width: 100%; min-height: 100%; height: 100%; }
+        #fixture-status { position: fixed; right: 0; bottom: 0; z-index: 10; box-sizing: border-box; max-width: 100%; padding: 0.3rem; background: #fff; color: #111; font: 12px/1.2 monospace; white-space: normal; }
+    </style>
+</head>
+<body>
+    <p id="fixture-status" role="status">Running artwork-info checks…</p>
+    <main id="painting" class="painting">
+        <button type="button" id="artwork-button" class="artwork-button" aria-controls="artwork-info" aria-expanded="false">i</button>
+        <section id="artwork-info" class="artwork-info" role="dialog" aria-modal="true" aria-labelledby="artwork-title" hidden>
+            <div class="artwork-sheet">
+                <button type="button" id="artwork-close" data-artwork-text="back"></button>
+                <h2 id="artwork-title" data-artwork-text="title"></h2>
+                <p id="artwork-status" role="status" hidden></p>
+                <button type="button" id="artwork-retry" hidden></button>
+                <ul id="artwork-birds" class="artwork-birds"></ul>
+                <footer class="artwork-attribution">
+                    <span data-artwork-text="imageAttribution"></span>
+                    <a href="https://github.com/arnegiacomo/fugleramme/blob/main/assets/artwork/classic/ATTRIBUTION.md" data-artwork-text="imageSource"></a>
+                    <span data-artwork-text="licenseAttribution"></span>
+                    <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>
+                </footer>
+            </div>
+        </section>
+    </main>
+    <script src="assets/text.js"></script>
+    <script src="assets/artwork-text.js"></script>
+    <script>
+        (function () {
+            'use strict';
+            var NativeXMLHttpRequest = window.XMLHttpRequest;
+            var batchSizes = [];
+
+            function FixtureXMLHttpRequest() {
+                this.nativeRequest = new NativeXMLHttpRequest();
+                this.method = '';
+                this.url = '';
+                this.isGraphql = false;
+                this.readyState = 0;
+                this.status = 0;
+                this.responseText = '';
+                this.onreadystatechange = null;
+                this.onload = null;
+                this.onerror = null;
+                this.ontimeout = null;
+                this.aborted = false;
+            }
+
+            FixtureXMLHttpRequest.prototype.open = function (method, url, async) {
+                this.method = method;
+                this.url = url;
+                this.isGraphql = method === 'POST' && /graphql$/.test(url);
+                if (!this.isGraphql) {
+                    var self = this;
+                    this.nativeRequest.open(method, url, async);
+                    this.nativeRequest.onreadystatechange = function () {
+                        self.readyState = self.nativeRequest.readyState;
+                        self.status = self.nativeRequest.status;
+                        self.responseText = self.nativeRequest.responseText;
+                        if (self.onreadystatechange) { self.onreadystatechange(); }
+                    };
+                    this.nativeRequest.onerror = function () { if (self.onerror) { self.onerror(); } };
+                }
+            };
+
+            FixtureXMLHttpRequest.prototype.setRequestHeader = function (name, value) {
+                if (!this.isGraphql) { this.nativeRequest.setRequestHeader(name, value); }
+            };
+
+            FixtureXMLHttpRequest.prototype.send = function (body) {
+                var self = this;
+                if (!this.isGraphql) {
+                    this.nativeRequest.send(body);
+                    return;
+                }
+                var request = JSON.parse(body);
+                var ids = request.variables.ids;
+                batchSizes.push(ids.length);
+                window.setTimeout(function () {
+                    if (self.aborted) { return; }
+                    self.status = 200;
+                    self.readyState = 4;
+                    self.responseText = JSON.stringify({ data: { allSpecies: { nodes: ids.map(function (id) {
+                        var index = Number(id);
+                        var scientificName = index === 1 ? 'Erithacus rubecula' : 'Fixture species ' + index;
+                        var localizedTranslation = index === 60 ? [] : [{
+                            wikipediaSummary: 'Nederlandse omschrijving ' + index,
+                            wikipediaUrl: index === 63 ? null : 'https://nl.wikipedia.org/wiki/Vogel_' + index
+                        }];
+                        return {
+                            id: id,
+                            commonName: index === 1 ? 'European Robin' : 'Fixture bird ' + index,
+                            scientificName: scientificName,
+                            translations: [{ locale: 'nl', commonName: index === 1 ? 'Roodborst' : 'Vogel ' + index }],
+                            localizedTranslation: localizedTranslation,
+                            wikipediaSummary: index === 60 ? '' : 'English summary ' + index,
+                            wikipediaUrl: index === 63 ? null : 'https://en.wikipedia.org/wiki/Vogel_' + index,
+                            ebirdUrl: index === 64 ? '' : (index === 62 ? 'https://outside.example/species' : 'https://ebird.org/species/species' + index)
+                        };
+                    }) } } });
+                    if (self.onload) { self.onload(); }
+                    if (self.onreadystatechange) { self.onreadystatechange(); }
+                }, 0);
+            };
+
+            FixtureXMLHttpRequest.prototype.abort = function () {
+                this.aborted = true;
+                this.nativeRequest.abort();
+            };
+            window.XMLHttpRequest = FixtureXMLHttpRequest;
+            window.fixtureBatchSizes = batchSizes;
+        }());
+    </script>
+    <script src="assets/birdweather.js"></script>
+    <script src="assets/artwork.js"></script>
+    <script src="assets/collage-zone-data.js"></script>
+    <script src="assets/collage-day.js"></script>
+    <script src="assets/collage-data.js"></script>
+    <script src="assets/artwork-info.js"></script>
+    <script>
+        (function () {
+            'use strict';
+            var ids = [];
+            for (var index = 65; index >= 1; index -= 1) { ids.push(String(index)); }
+            var fixtureStatus = document.getElementById('fixture-status');
+            var info = window.BirdWeatherArtworkInfo;
+
+            function check(condition, description) {
+                if (!condition) { throw new Error(description); }
+            }
+
+            function waitFor(test, complete, attempts) {
+                if (test()) { complete(); return; }
+                if (attempts < 1) { throw new Error('Timed out waiting for artwork-info response.'); }
+                window.setTimeout(function () { waitFor(test, complete, attempts - 1); }, 20);
+            }
+
+            function startArtworkList() {
+                info.setLocale('nl');
+                info.setSpeciesLoader(function (complete, locale) {
+                    return window.BirdWeatherApi.speciesForIds(ids, function (error, birds) {
+                        complete(error, { allSpecies: birds });
+                    }, locale);
+                });
+                document.getElementById('artwork-button').click();
+            }
+
+            function checkDailyData() {
+                var api = window.BirdWeatherApi;
+                var originalQuery = api.query;
+                var originalStation = api.collageStation;
+                var originalNearby = api.nearbyStationIds;
+                var originalNow = Date.now;
+                Date.now = function () { return Date.UTC(2026, 5, 10, 12); };
+                api.collageStation = function (stationId, complete) {
+                    window.setTimeout(function () {
+                        complete(null, { id: stationId, name: 'Fixture station', timezone: 'UTC' });
+                    }, 0);
+                    return { abort: function () {} };
+                };
+                api.nearbyStationIds = function (coordinates, radius, complete) {
+                    window.setTimeout(function () { complete(null, ['123']); }, 0);
+                    return { abort: function () {} };
+                };
+                api.query = function (operation, variables, complete) {
+                    var now = Date.now();
+                    var nodes = ids.slice().reverse().map(function (id, index) {
+                        return { id: String(10000 + index), speciesId: id,
+                            timestamp: new Date(now - index * 1000).toISOString() };
+                    });
+                    window.setTimeout(function () {
+                        complete(null, { detections: { nodes: nodes, pageInfo: { hasNextPage: false, endCursor: null } } });
+                    }, 0);
+                    return { abort: function () {} };
+                };
+                function restoreApi() {
+                    api.query = originalQuery;
+                    api.collageStation = originalStation;
+                    api.nearbyStationIds = originalNearby;
+                    Date.now = originalNow;
+                }
+
+                function failData(error) {
+                    restoreApi();
+                    fixtureStatus.textContent = 'FAIL: ' + error.message;
+                    fixtureStatus.style.color = '#a32620';
+                }
+
+                function checkNearbyData() {
+                    window.BirdWeatherCollageData.create({ source: 'nearby',
+                        coordinates: { lat: 52, lon: 5 }, radius: '2' }, 32)
+                        .loadAll(function (error, result) {
+                            try {
+                                check(!error && result.allSpecies.length === 65, 'nearby source returns the full daily list');
+                                check(result.species.length === 32 && result.omitted === 33,
+                                    'nearby collage keeps the configured visible limit');
+                                check(window.fixtureBatchSizes.slice(4, 7).join(',') === '32,32,1',
+                                    'nearby API species are fetched in 32-item batches');
+                            } catch (error) {
+                                failData(error);
+                                return;
+                            }
+                            restoreApi();
+                            startArtworkList();
+                        }, 'nl');
+                }
+
+                var stationSource = window.BirdWeatherCollageData.create({ source: 'station', station: '123' }, 32);
+                stationSource.loadAll(function (error, result) {
+                        try {
+                            check(!error && result.allSpecies.length === 65, 'all observed species survive the collage display limit');
+                            check(result.species.length === 32 && result.omitted === 33, 'collage keeps its 32-species display limit');
+                            check(result.allSpecies[0].id === '1' && result.allSpecies[64].id === '65',
+                                'daily species are ranked by newest detection first');
+                            check(window.fixtureBatchSizes.slice(0, 3).join(',') === '32,32,1',
+                                'daily API species are fetched in 32-item batches');
+                        } catch (error) {
+                            failData(error);
+                            return;
+                        }
+                        stationSource.load(function (collageError, collageResult) {
+                            try {
+                                check(!collageError && collageResult.species.length === 32 &&
+                                    collageResult.allSpecies === null && collageResult.omitted === 33,
+                                    'ordinary collage loading fetches only the configured visible species');
+                                check(window.fixtureBatchSizes[3] === 32,
+                                    'ordinary collage loading does not request species above its limit');
+                            } catch (error) {
+                                failData(error);
+                                return;
+                            }
+                            checkNearbyData();
+                        }, 'nl');
+                    }, 'nl');
+            }
+
+            checkDailyData();
+
+            waitFor(function () {
+                var firstImage = document.querySelector('.artwork-bird-image');
+                var knownBirdImage = document.querySelectorAll('.artwork-bird-image')[64];
+                return document.querySelectorAll('.artwork-bird').length === 65 && firstImage &&
+                    /^assets\/artwork\/perches\//.test(firstImage.getAttribute('src') || '') &&
+                    firstImage.complete && firstImage.naturalWidth > 0 && knownBirdImage &&
+                    /^assets\/artwork\/birds\/erithacus-rubecula/.test(knownBirdImage.getAttribute('src') || '') &&
+                    knownBirdImage.complete && knownBirdImage.naturalWidth > 0;
+            }, function () {
+                try {
+                    check(document.getElementById('artwork-title').textContent === 'Vandaag waargenomen vogels', 'Dutch page title');
+                    check(document.querySelector('.artwork-attribution [data-artwork-text="imageAttribution"]').textContent.indexOf('Fugleramme') !== -1 &&
+                        document.querySelector('.artwork-attribution [data-artwork-text="imageSource"]').textContent === 'Bron en naamsvermelding' &&
+                        document.querySelector('.artwork-attribution [data-artwork-text="licenseAttribution"]').textContent === 'Uitgebracht onder',
+                        'localized artwork attribution is populated');
+                    check(window.fixtureBatchSizes.join(',') === '32,32,1,32,32,32,1,32,32,1',
+                        'species detail batch sequence: ' + window.fixtureBatchSizes.join(','));
+                    check(document.querySelector('.artwork-bird-common').textContent === 'Vogel 65', 'newest species is listed first in requested order');
+                    check(document.querySelector('.artwork-bird-image').getAttribute('src').indexOf('assets/artwork/perches/') === 0,
+                        'missing local bird artwork uses a perch');
+                    var knownBirdImage = document.querySelectorAll('.artwork-bird-image')[64];
+                    check(knownBirdImage.getAttribute('src').indexOf('assets/artwork/birds/erithacus-rubecula') === 0,
+                        'known Fugleramme species uses its local bird PNG');
+                    check(document.querySelectorAll('.artwork-bird-links a').length === 127,
+                        'missing and untrusted external URLs are omitted');
+                    check(document.querySelector('.artwork-bird-links a').getAttribute('aria-label').indexOf('Vogel 65') !== -1,
+                        'external links have localized accessible names');
+                    var firstNameBounds = document.querySelector('.artwork-bird-names').getBoundingClientRect();
+                    var firstLinkBounds = document.querySelector('.artwork-bird-links a').getBoundingClientRect();
+                    fixtureStatus.setAttribute('data-layout', JSON.stringify({
+                        viewport: window.innerWidth,
+                        names: [firstNameBounds.left, firstNameBounds.right],
+                        links: [firstLinkBounds.left, firstLinkBounds.right, firstLinkBounds.width, firstLinkBounds.height],
+                        color: window.getComputedStyle(document.querySelector('.artwork-bird-links a')).color
+                    }));
+                    check(firstLinkBounds.right <= window.innerWidth && firstLinkBounds.left >= firstNameBounds.right - 1,
+                        'external link buttons remain visible to the right of species names on mobile');
+
+                    var rows = document.querySelectorAll('.artwork-bird-toggle');
+                    rows[0].click();
+                    check(rows[0].getAttribute('aria-expanded') === 'true', 'row expands on tap');
+                    check(document.querySelector('#artwork-description-0').textContent === 'Nederlandse omschrijving 65',
+                        'localized BirdWeather summary is displayed');
+                    rows[1].click();
+                    check(rows[0].getAttribute('aria-expanded') === 'false' && rows[1].getAttribute('aria-expanded') === 'true',
+                        'opening another row closes the previous row');
+                    rows[1].click();
+                    check(rows[1].getAttribute('aria-expanded') === 'false', 'tapping the open row closes it');
+                    rows[5].click();
+                    check(document.querySelector('#artwork-description-5').textContent === 'Er is geen omschrijving beschikbaar.',
+                        'missing localized summary shows the localized fallback message');
+
+                    info.close();
+                    info.setSpeciesLoader(function (complete) { complete('unavailable'); return null; });
+                    document.getElementById('artwork-button').click();
+                    check(document.getElementById('artwork-status').textContent.indexOf('De vogellijst kon niet worden geladen') === 0,
+                        'API failure has an actionable message');
+                    check(!document.getElementById('artwork-retry').hidden, 'API failure offers retry');
+                    info.setSpeciesLoader(function (complete) { complete(null, { allSpecies: [] }); return null; });
+                    document.getElementById('artwork-retry').click();
+                    check(document.getElementById('artwork-status').textContent === 'Vandaag zijn er geen vogels waargenomen.',
+                        'empty day has a localized message');
+                    info.close();
+                    info.setSpeciesLoader(function (complete, locale) {
+                        return window.BirdWeatherApi.speciesForIds(ids, function (error, birds) {
+                            complete(error, { allSpecies: birds });
+                        }, locale);
+                    });
+                    document.getElementById('artwork-button').click();
+                    waitFor(function () {
+                        var firstImage = document.querySelector('.artwork-bird-image');
+                        return document.querySelectorAll('.artwork-bird').length === 65 && firstImage &&
+                            firstImage.complete && firstImage.naturalWidth > 0;
+                    }, function () {
+                        fixtureStatus.textContent = 'PASS: 65 species, API batching, translations, links, perch fallback, accordion, empty and error states';
+                        fixtureStatus.style.color = '#176b36';
+                    }, 500);
+                } catch (error) {
+                    fixtureStatus.textContent = 'FAIL: ' + error.message;
+                    fixtureStatus.style.color = '#a32620';
+                }
+            }, 500);
+        }());
+    </script>
+</body>
+</html>

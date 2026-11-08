@@ -208,9 +208,10 @@
                 frame.onload = null;
                 var doc = frame.contentDocument;
                 doc.getElementById('artwork-button').click();
-                showResult('artwork credits remain; missing-artwork list removed',
-                    !doc.getElementById('artwork-missing') && !!doc.getElementById('artwork-displayed') &&
-                    !!doc.getElementById('artwork-local') && visible(doc, 'artwork-info'));
+                showResult('daily bird list and Fugleramme attribution are present',
+                    !!doc.getElementById('artwork-birds') && !!doc.getElementById('artwork-status') &&
+                    !!doc.querySelector('.artwork-attribution a[href*="github.com/arnegiacomo/fugleramme"]') &&
+                    visible(doc, 'artwork-info'));
             };
             frame.src = '../index.html?source=station&station=7368&view=latest&limit=12&lang=auto&night=0&nightStart=22%3A00&nightEnd=07%3A00';
         }

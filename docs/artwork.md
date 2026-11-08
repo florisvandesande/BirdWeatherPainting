@@ -1,7 +1,9 @@
 # Artwork sources and reuse
 
-Open the **i** button at the lower right of the painting for the displayed
-artwork's credit and other available local artwork.
+Open the **i** button at the lower right of the painting for a list of all
+species observed today. Rows include the local illustration, the user's
+language name, the scientific name, and any eBird and Wikipedia links supplied
+by BirdWeather. Tap a row to expand its BirdWeather-provided Wikipedia summary.
 
 ## Fugleramme Classic collection
 
@@ -23,11 +25,11 @@ source metadata removed. The adapted artwork is available under CC BY-SA 4.0.
 Collage mode also uses body masses from `bird_sizes.csv` and visible-image
 bounds from `geometry.json` when sizing and packing birds. Its labels use the
 selected-language common name plus the scientific name. The artwork information
-page credits the collection preparer and shows each image's source tag, direct
-source URL, Fugleramme attribution ledger, and CC BY-SA 4.0 licence. The
-committed catalogue is authoritative for these source records and any image
-geometry. It may not identify the exact original work title or individual
-artist.
+list includes every unique species heard today, independently of the collage
+display limit, and sorts them by their most recent detection. Missing local
+bird images use a perch. The bottom of the page links to the Fugleramme
+attribution ledger and the collection's CC BY-SA 4.0 licence. The committed
+catalogue is authoritative for image paths, source records, and geometry.
 
 The downloaded WebP inputs live in the ignored `.temporary/assets/artwork/`
 directory and are not needed at runtime.

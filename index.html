@@ -41,10 +41,17 @@
             <div class="artwork-sheet">
                 <button type="button" id="artwork-close" data-artwork-text="back"></button>
                 <h2 id="artwork-title" data-artwork-text="title"></h2>
-                <h3 data-artwork-text="displayed"></h3>
-                <div id="artwork-displayed"></div>
-                <h3 data-artwork-text="local"></h3>
-                <div id="artwork-local"></div>
+                <p id="artwork-status" role="status" hidden></p>
+                <button type="button" id="artwork-retry" hidden></button>
+                <ul id="artwork-birds" class="artwork-birds"></ul>
+                <footer class="artwork-attribution">
+                    <span data-artwork-text="imageAttribution"></span>
+                    <a href="https://github.com/arnegiacomo/fugleramme/blob/main/assets/artwork/classic/ATTRIBUTION.md"
+                        target="_blank" rel="noopener noreferrer" data-artwork-text="imageSource"></a>
+                    <span data-artwork-text="licenseAttribution"></span>
+                    <a href="https://creativecommons.org/licenses/by-sa/4.0/" target="_blank"
+                        rel="noopener noreferrer">CC BY-SA 4.0</a>
+                </footer>
             </div>
         </section>
     </main>
