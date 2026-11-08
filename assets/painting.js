@@ -184,19 +184,28 @@
         }
     }
 
-    artworkInfo.setDailyLoader(dailySource ? function (complete) {
-        return dailySource.load(function (error, result) {
-            if (!error) {
-                artworkInfo.setDailySpecies(result.dailySpecies);
-            }
-            complete(error, result);
-        });
-    } : null, !collageSource);
-    artworkInfo.setLocale(locale);
-    document.addEventListener('birdweather-language', renderLocale);
-    renderLocale();
-    if (sourceActive && schedule) {
-        window.BirdWeatherDisplayRefresh.start(schedule, load, renderResult, setConnectionStatus, collageSource ? checkDay : null);
-        painting.hidden = false;
+    function start() {
+        artworkInfo.setDailyLoader(dailySource ? function (complete) {
+            return dailySource.load(function (error, result) {
+                if (!error) {
+                    artworkInfo.setDailySpecies(result.dailySpecies);
+                }
+                complete(error, result);
+            });
+        } : null, !collageSource);
+        artworkInfo.setLocale(locale);
+        document.addEventListener('birdweather-language', renderLocale);
+        renderLocale();
+        if (sourceActive && schedule) {
+            window.BirdWeatherDisplayRefresh.start(schedule, load, renderResult, setConnectionStatus, collageSource ? checkDay : null);
+            painting.hidden = false;
+        }
+    }
+
+    if (/(?:^|[?&])fixture=url-settings(?:&|$)/.test(window.location.search)) {
+        // Browser fixtures install their deterministic API before allowing the first load.
+        window.BirdWeatherFixture = { start: start };
+    } else {
+        start();
     }
 }(window, document));

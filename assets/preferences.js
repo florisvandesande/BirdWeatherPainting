@@ -265,10 +265,19 @@
             return '';
         }
         if (state.source === 'nearby') {
+            var missingCoordinate = !state.latitude.present || !state.longitude.present;
             var invalidCoordinate = (state.latitude.present && !state.latitudeValue.valid) ||
-                (state.longitude.present && !state.longitudeValue.valid) ||
-                (state.radius.present && !state.radiusValid);
-            return invalidCoordinate ? 'coordinateInvalid' : 'locationRequired';
+                (state.longitude.present && !state.longitudeValue.valid);
+            if (missingCoordinate) {
+                return 'locationRequired';
+            }
+            if (invalidCoordinate) {
+                return 'coordinateInvalid';
+            }
+            if (!state.radiusValid) {
+                return 'radiusInvalid';
+            }
+            return state.issues.length ? 'urlInvalid' : '';
         }
         if (state.source === 'station' && !state.stationValid) {
             return 'stationAddressInvalid';
