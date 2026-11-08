@@ -22,6 +22,20 @@
     overflow: hidden;
 }
 
+.collage-layer {
+    position: absolute;
+    inset: 0;
+}
+
+.collage-layer-staging {
+    visibility: hidden;
+    pointer-events: none;
+}
+
+.collage-layer-active {
+    visibility: visible;
+}
+
 .collage-empty-state {
     position: absolute;
     top: 2.25rem;
@@ -76,15 +90,9 @@
 .collage-specimen img {
     display: block;
     box-sizing: border-box;
-    width: 100%;
+    max-width: none;
+    max-height: none;
     min-height: 0;
-    object-fit: contain;
-}
-
-.collage-art-window {
-    position: absolute;
-    display: block;
-    overflow: hidden;
 }
 
 .collage-specimen figcaption {

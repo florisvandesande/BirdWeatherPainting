@@ -1,254 +1,431 @@
 (function (window) {
     'use strict';
-    var geometry = null, masses = null, waiters = [], loadState = 'idle', medianMass = 180;
-    var STEP = 6, ALPHA = 24, EROSION = 2, MAX_SHARE = 0.7, ATTEMPTS = 20;
+
+    var masses = null;
+    var waiters = [];
+    var loadState = 'idle';
+    var medianMass = 180;
+    var STEP = 10;
+    var MAX_SHARE = 0.7;
+    var ATTEMPTS = 12;
+    var ALPHA_THRESHOLD = 0;
 
     function finishLoad() {
-        if (!geometry || !masses) { return; }
         loadState = 'ready';
-        var waiting = waiters; waiters = [];
-        waiting.forEach(function (callback) { callback(geometry, masses); });
-    }
-    function load(callback) {
-        if (loadState === 'ready') { callback(geometry, masses); return; }
-        waiters.push(callback);
-        if (loadState === 'loading') { return; }
-        loadState = 'loading';
-        function request(path, complete) {
-            var xhr = new XMLHttpRequest(), completed = false;
-            function finish(body) { if (!completed) { completed = true; complete(body); } }
-            xhr.timeout = 12000;
-            try {
-                xhr.open('GET', path, true);
-                xhr.onreadystatechange = function () {
-                    if (xhr.readyState !== 4) { return; }
-                    try { finish(xhr.status >= 200 && xhr.status < 300 ? xhr.responseText : null); }
-                    catch (error) { finish(null); }
-                };
-                xhr.onerror = xhr.ontimeout = function () { finish(null); };
-                xhr.send(null);
-            } catch (error) { finish(null); }
-        }
-        var remaining = 2;
-        function done() { remaining -= 1; if (!remaining) { finishLoad(); } }
-        request('assets/artwork/geometry.json', function (body) {
-            if (body && body.length < 20000000) { try { geometry = JSON.parse(body); } catch (error) { geometry = {}; } }
-            geometry = geometry || {}; done();
+        var waiting = waiters;
+        waiters = [];
+        waiting.forEach(function (callback) {
+            callback(masses || Object.create(null));
         });
-        request('assets/artwork/bird_sizes.csv', function (body) {
-            masses = Object.create(null);
+    }
+
+    function load(callback) {
+        if (loadState === 'ready') {
+            callback(masses);
+            return;
+        }
+        waiters.push(callback);
+        if (loadState === 'loading') {
+            return;
+        }
+        loadState = 'loading';
+        masses = Object.create(null);
+        var xhr = new XMLHttpRequest();
+        var completed = false;
+        xhr.timeout = 12000;
+
+        function finish(body) {
+            if (completed) {
+                return;
+            }
+            completed = true;
             if (body && body.length < 1000000) {
                 body.split(/\r?\n/).slice(1).forEach(function (line) {
-                    var values = line.split(','), mass = Number(values[1]);
+                    var values = line.split(',');
+                    var mass = Number(values[1]);
                     if (values.length === 2 && values[0] && isFinite(mass) && mass > 0 && mass < 200000) {
                         masses[values[0].toLowerCase()] = mass;
                     }
                 });
             }
-            var knownMasses = Object.keys(masses).map(function (name) { return masses[name]; }).sort(function (a, b) { return a - b; });
-            if (knownMasses.length) { medianMass = knownMasses[Math.floor(knownMasses.length / 2)]; }
-            done();
-        });
+            var knownMasses = Object.keys(masses).map(function (name) {
+                return masses[name];
+            }).sort(function (first, second) {
+                return first - second;
+            });
+            if (knownMasses.length) {
+                medianMass = knownMasses[Math.floor(knownMasses.length / 2)];
+            }
+            finishLoad();
+        }
+
+        try {
+            xhr.open('GET', 'assets/artwork/bird_sizes.csv', true);
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    finish(xhr.status >= 200 && xhr.status < 300 ? xhr.responseText : null);
+                }
+            };
+            xhr.onerror = xhr.ontimeout = function () {
+                finish(null);
+            };
+            xhr.send(null);
+        } catch (error) {
+            finish(null);
+        }
     }
+
     function hash(value) {
         var result = 2166136261;
-        for (var i = 0; i < value.length; i += 1) {
-            result = Math.imul ? Math.imul(result ^ value.charCodeAt(i), 16777619) : (result ^ value.charCodeAt(i)) * 16777619;
+        for (var index = 0; index < value.length; index += 1) {
+            result = Math.imul ? Math.imul(result ^ value.charCodeAt(index), 16777619) :
+                (result ^ value.charCodeAt(index)) * 16777619;
         }
         return result >>> 0;
     }
-    function imageGeometry(image) {
-        var path = image.getAttribute('src') || '', filename = path.split('/').pop();
-        var name = filename.replace(/\.png(?:\?.*)?$/i, '.webp'), data = geometry['birds/' + name];
-        return data && data.box && data.box.length === 4 ? data.box : [0, 0, 1, 1];
-    }
-    function silhouette(image, width, height, crop, mirrored, erosion) {
+
+    function silhouette(image, width, height, mirrored) {
         var canvas = document.createElement('canvas');
-        canvas.width = width; canvas.height = height;
-        var context = canvas.getContext('2d'), source = new Uint8Array(width * height);
+        canvas.width = width;
+        canvas.height = height;
+        var context = canvas.getContext('2d');
+        var mask = new Uint8Array(width * height);
         if (!context || !image.naturalWidth || !image.naturalHeight) {
-            for (var fallback = 0; fallback < source.length; fallback += 1) { source[fallback] = 1; }
-            return source;
-        }
-        try {
-            context.drawImage(image, crop.x, crop.y, crop.width, crop.height, 0, 0, width, height);
-            var pixels = context.getImageData(0, 0, width, height).data;
-            for (var y = 0; y < height; y += 1) {
-                for (var x = 0; x < width; x += 1) {
-                    var sx = mirrored ? width - x - 1 : x;
-                    source[y * width + x] = pixels[(y * width + sx) * 4 + 3] > ALPHA ? 1 : 0;
-                }
+            for (var fallback = 0; fallback < mask.length; fallback += 1) {
+                mask[fallback] = 1;
             }
-            var eroded = new Uint8Array(source.length), any = false;
-            for (y = erosion; y < height - erosion; y += 1) {
-                for (x = erosion; x < width - erosion; x += 1) {
-                    var keep = 1;
-                    for (var dy = -erosion; dy <= erosion && keep; dy += 1) {
-                        for (var dx = -erosion; dx <= erosion; dx += 1) {
-                            if (!source[(y + dy) * width + x + dx]) { keep = 0; break; }
+            return mask;
+        }
+
+        try {
+            if (mirrored) {
+                context.translate(width, 0);
+                context.scale(-1, 1);
+            }
+            context.drawImage(image, 0, 0, width, height);
+            var pixels = context.getImageData(0, 0, width, height).data;
+            for (var index = 0; index < mask.length; index += 1) {
+                mask[index] = pixels[index * 4 + 3] > ALPHA_THRESHOLD ? 1 : 0;
+            }
+        } catch (error) {
+            for (var safeFallback = 0; safeFallback < mask.length; safeFallback += 1) {
+                mask[safeFallback] = 1;
+            }
+        }
+        // Browser image resampling can give edge pixels alpha at fractional CSS positions.
+        // A one-pixel safety rim keeps those rendered fringes from touching after scaling.
+        var safeMask = new Uint8Array(mask.length);
+        for (var y = 0; y < height; y += 1) {
+            for (var x = 0; x < width; x += 1) {
+                if (!mask[y * width + x]) {
+                    continue;
+                }
+                for (var dy = -1; dy <= 1; dy += 1) {
+                    for (var dx = -1; dx <= 1; dx += 1) {
+                        var safeX = x + dx;
+                        var safeY = y + dy;
+                        if (safeX >= 0 && safeY >= 0 && safeX < width && safeY < height) {
+                            safeMask[safeY * width + safeX] = 1;
                         }
                     }
-                    if (keep) { eroded[y * width + x] = 1; any = true; }
                 }
             }
-            return any ? eroded : source;
-        } catch (error) {
-            for (var fallbackIndex = 0; fallbackIndex < source.length; fallbackIndex += 1) { source[fallbackIndex] = 1; }
-            return source;
         }
+        return safeMask;
     }
+
     function prepare(entry, weight, scale, boardWidth, boardHeight, base) {
-        var box = entry.box, nw = entry.image.naturalWidth || 1, nh = entry.image.naturalHeight || 1;
-        var crop = {
-            x: Math.max(0, Math.floor(box[0] * nw)),
-            y: Math.max(0, Math.floor(box[1] * nh)),
-            right: Math.min(nw, Math.ceil(box[2] * nw)),
-            bottom: Math.min(nh, Math.ceil(box[3] * nh))
-        };
-        crop.width = Math.max(1, crop.right - crop.x);
-        crop.height = Math.max(1, crop.bottom - crop.y);
-        var imageScale = Math.max(12, Math.round(base * scale * weight)) / Math.max(crop.width, crop.height);
-        var artWidth = Math.max(1, Math.round(crop.width * imageScale));
-        var artHeight = Math.max(1, Math.round(crop.height * imageScale));
-        var shortSide = Math.min(boardWidth, boardHeight), fontSize = Math.max(7, Math.round(shortSide * 0.032 * scale));
-        var erosion = Math.max(1, Math.round(EROSION * shortSide / 1200));
+        var naturalWidth = entry.image.naturalWidth || 1;
+        var naturalHeight = entry.image.naturalHeight || 1;
+        var targetSize = Math.max(12, Math.round(base * scale * weight));
+        var imageScale = targetSize / Math.max(naturalWidth, naturalHeight);
+        var artWidth = Math.max(1, Math.round(naturalWidth * imageScale));
+        var artHeight = Math.max(1, Math.round(naturalHeight * imageScale));
+        var shortSide = Math.min(boardWidth, boardHeight);
+        var fontSize = Math.max(7, Math.round(shortSide * 0.032 * scale));
         var caption = entry.caption;
-        caption.style.display = 'block'; caption.style.visibility = 'hidden'; caption.style.position = 'absolute';
-        caption.style.fontSize = fontSize + 'px'; caption.style.lineHeight = '1.08';
-        var maxLabelWidth = Math.max(artWidth, Math.floor(boardWidth * 0.4));
-        caption.style.width = 'auto';
-        caption.style.height = 'auto'; caption.style.left = '0'; caption.style.top = '0';
+        caption.style.display = 'block';
+        caption.style.visibility = 'hidden';
+        caption.style.position = 'absolute';
+        caption.style.fontSize = fontSize + 'px';
+        caption.style.lineHeight = '1.08';
+        caption.style.height = 'auto';
+        caption.style.left = '0';
+        caption.style.top = '0';
+
         var measureCanvas = document.createElement('canvas');
         var measureContext = measureCanvas.getContext('2d');
         var commonName = entry.name.textContent;
         var scientificName = caption.lastChild.textContent;
-        if (measureContext) { measureContext.font = fontSize + 'px ' + window.getComputedStyle(caption).fontFamily; }
-        var textWidth = measureContext ? Math.max(measureContext.measureText(commonName).width,
-            measureContext.measureText(scientificName).width) : 0;
+        if (measureContext) {
+            measureContext.font = fontSize + 'px ' + window.getComputedStyle(caption).fontFamily;
+        }
+        var textWidth = measureContext ? Math.max(
+            measureContext.measureText(commonName).width,
+            measureContext.measureText(scientificName).width
+        ) : 0;
+        var maxLabelWidth = Math.max(artWidth, Math.floor(boardWidth * 0.4));
         var labelWidth = Math.min(maxLabelWidth, Math.max(artWidth, Math.ceil(textWidth)));
         caption.style.width = labelWidth + 'px';
         var labelHeight = Math.max(fontSize * 2, Math.ceil(caption.scrollHeight));
-        var mask = silhouette(entry.image, artWidth, artHeight, crop, entry.mirrored, erosion);
-        var columnTotal = 0, columnCount = 0;
+        var mask = silhouette(entry.image, artWidth, artHeight, entry.mirrored);
+
+        var columnTotal = 0;
+        var columnCount = 0;
         for (var py = 0; py < artHeight; py += 1) {
             for (var px = 0; px < artWidth; px += 1) {
-                if (mask[py * artWidth + px]) { columnTotal += px; columnCount += 1; }
+                if (mask[py * artWidth + px]) {
+                    columnTotal += px;
+                    columnCount += 1;
+                }
             }
         }
         var center = columnCount ? Math.round(columnTotal / columnCount) : Math.round(artWidth / 2);
-        var offset = Math.round(center - labelWidth / 2), figureLeft = Math.min(0, offset);
-        var imageLeft = -figureLeft, labelLeft = offset - figureLeft;
-        var underLeft = Math.max(0, labelLeft - imageLeft), underRight = Math.min(artWidth, labelLeft - imageLeft + labelWidth);
+        var offset = Math.round(center - labelWidth / 2);
+        var figureLeft = Math.min(0, offset);
+        var imageLeft = -figureLeft;
+        var labelLeft = offset - figureLeft;
+        var underLeft = Math.max(0, labelLeft - imageLeft);
+        var underRight = Math.min(artWidth, labelLeft - imageLeft + labelWidth);
         var lower = -1;
         for (var y = artHeight - 1; y >= 0 && lower < 0; y -= 1) {
-            for (var x = underLeft; x < underRight; x += 1) { if (mask[y * artWidth + x]) { lower = y; break; } }
-        }
-        var labelTop = Math.max(0, lower + 1 + Math.round(fontSize * 0.35));
-        entry.artWidth = artWidth; entry.artHeight = artHeight; entry.mask = mask;
-        entry.labelWidth = labelWidth; entry.labelHeight = labelHeight; entry.imageLeft = imageLeft;
-        entry.labelLeft = labelLeft; entry.labelTop = labelTop; entry.figureLeft = figureLeft;
-        entry.figureWidth = Math.max(artWidth, labelLeft + labelWidth) - figureLeft;
-        entry.figureHeight = Math.max(artHeight, labelTop + labelHeight);
-        caption.style.left = labelLeft + 'px'; caption.style.top = labelTop + 'px';
-        caption.style.width = labelWidth + 'px'; caption.style.height = labelHeight + 'px';
-        entry.figure.style.width = entry.figureWidth + 'px'; entry.figure.style.height = entry.figureHeight + 'px';
-        entry.artWindow.style.left = imageLeft + 'px'; entry.artWindow.style.top = '0';
-        entry.artWindow.style.width = artWidth + 'px'; entry.artWindow.style.height = artHeight + 'px';
-        entry.image.style.position = 'absolute';
-        entry.image.style.left = -(entry.mirrored ? nw - crop.right : crop.x) * imageScale + 'px';
-        entry.image.style.top = -crop.y * imageScale + 'px';
-        entry.image.style.width = (nw * imageScale) + 'px'; entry.image.style.height = (nh * imageScale) + 'px';
-        entry.image.style.transform = entry.mirrored ? 'scaleX(-1)' : '';
-        caption.style.visibility = 'visible';
-    }
-    function collides(entry, x, y, occupied, width, height) {
-        if (x < 0 || y < 0 || x + entry.figureWidth > width || y + entry.figureHeight > height) { return true; }
-        for (var py = 0; py < entry.artHeight; py += 1) {
-            var maskOffset = py * entry.artWidth, boardOffset = (y + py) * width + x + entry.imageLeft;
-            for (var px = 0; px < entry.artWidth; px += 1) {
-                if (entry.mask[maskOffset + px] && occupied[boardOffset + px]) { return true; }
+            for (var x = underLeft; x < underRight; x += 1) {
+                if (mask[y * artWidth + x]) {
+                    lower = y;
+                    break;
+                }
             }
         }
-        var lx = x + entry.labelLeft, ly = y + entry.labelTop;
-        for (var row = ly; row < ly + entry.labelHeight; row += 1) {
-            for (var col = lx; col < lx + entry.labelWidth; col += 1) { if (occupied[row * width + col]) { return true; } }
+        var labelTop = Math.max(0, lower + 1 + Math.round(fontSize * 0.35));
+        entry.artWidth = artWidth;
+        entry.artHeight = artHeight;
+        entry.mask = mask;
+        entry.labelWidth = labelWidth;
+        entry.labelHeight = labelHeight;
+        entry.imageLeft = imageLeft;
+        entry.labelLeft = labelLeft;
+        entry.labelTop = labelTop;
+        entry.figureLeft = figureLeft;
+        entry.figureWidth = Math.max(artWidth, labelLeft + labelWidth) - figureLeft;
+        entry.figureHeight = Math.max(artHeight, labelTop + labelHeight);
+
+        caption.style.left = labelLeft + 'px';
+        caption.style.top = labelTop + 'px';
+        caption.style.width = labelWidth + 'px';
+        caption.style.height = labelHeight + 'px';
+        entry.figure.style.width = entry.figureWidth + 'px';
+        entry.figure.style.height = entry.figureHeight + 'px';
+        entry.image.style.position = 'absolute';
+        entry.image.style.left = imageLeft + 'px';
+        entry.image.style.top = '0';
+        entry.image.style.width = artWidth + 'px';
+        entry.image.style.height = artHeight + 'px';
+        entry.image.style.transform = entry.mirrored ? 'scaleX(-1)' : '';
+        caption.style.visibility = '';
+    }
+
+    function collides(entry, x, y, occupied, width, height) {
+        if (x < 0 || y < 0 || x + entry.figureWidth > width || y + entry.figureHeight > height) {
+            return true;
+        }
+        for (var py = 0; py < entry.artHeight; py += 1) {
+            var maskOffset = py * entry.artWidth;
+            var boardOffset = (y + py) * width + x + entry.imageLeft;
+            for (var px = 0; px < entry.artWidth; px += 1) {
+                if (entry.mask[maskOffset + px] && occupied[boardOffset + px]) {
+                    return true;
+                }
+            }
+        }
+        var left = x + entry.labelLeft;
+        var top = y + entry.labelTop;
+        for (var row = top; row < top + entry.labelHeight; row += 1) {
+            for (var col = left; col < left + entry.labelWidth; col += 1) {
+                if (occupied[row * width + col]) {
+                    return true;
+                }
+            }
         }
         return false;
     }
+
     function placeMask(entry, x, y, occupied, width) {
         for (var py = 0; py < entry.artHeight; py += 1) {
-            var maskOffset = py * entry.artWidth, boardOffset = (y + py) * width + x + entry.imageLeft;
+            var maskOffset = py * entry.artWidth;
+            var boardOffset = (y + py) * width + x + entry.imageLeft;
             for (var px = 0; px < entry.artWidth; px += 1) {
-                if (entry.mask[maskOffset + px]) { occupied[boardOffset + px] = 1; }
+                if (entry.mask[maskOffset + px]) {
+                    occupied[boardOffset + px] = 1;
+                }
             }
         }
-        var lx = x + entry.labelLeft, ly = y + entry.labelTop;
-        for (var row = ly; row < ly + entry.labelHeight; row += 1) {
-            for (var col = lx; col < lx + entry.labelWidth; col += 1) { occupied[row * width + col] = 1; }
+        var left = x + entry.labelLeft;
+        var top = y + entry.labelTop;
+        for (var row = top; row < top + entry.labelHeight; row += 1) {
+            for (var col = left; col < left + entry.labelWidth; col += 1) {
+                occupied[row * width + col] = 1;
+            }
         }
     }
-    function spiral(entry, occupied, width, height) {
-        var cx = width / 2, cy = height / 2, maxR = Math.sqrt(width * width + height * height);
-        function candidate(px, py) {
-            var x = Math.floor(px - entry.figureWidth / 2), y = Math.floor(py - entry.figureHeight / 2);
+
+    function spiral(entry, occupied, width, height, seed) {
+        var centerX = width / 2;
+        var centerY = height / 2;
+        var maxRadius = Math.sqrt(width * width + height * height);
+        var phase = (hash(seed + '|' + entry.species.id) % 360) * Math.PI / 180;
+
+        function candidate(pointX, pointY) {
+            var x = Math.floor(pointX - entry.figureWidth / 2);
+            var y = Math.floor(pointY - entry.figureHeight / 2);
             return collides(entry, x, y, occupied, width, height) ? null : [x, y];
         }
-        var result = candidate(cx, cy); if (result) { return result; }
-        for (var r = STEP; r <= maxR; r += STEP) {
-            var count = Math.max(8, Math.floor(2 * Math.PI * r / STEP));
-            for (var i = 0; i < count; i += 1) {
-                var a = 2 * Math.PI * i / count;
-                result = candidate(cx + r * Math.cos(a), cy + r * Math.sin(a));
-                if (result) { return result; }
+
+        var result = candidate(centerX, centerY);
+        if (result) {
+            return result;
+        }
+        for (var radius = STEP; radius <= maxRadius; radius += STEP) {
+            var count = Math.max(8, Math.floor(2 * Math.PI * radius / STEP));
+            for (var index = 0; index < count; index += 1) {
+                var angle = phase + 2 * Math.PI * index / count;
+                result = candidate(centerX + radius * Math.cos(angle), centerY + radius * Math.sin(angle));
+                if (result) {
+                    return result;
+                }
             }
         }
         return null;
     }
-    function pack(entries, board, scale, weights, base) {
-        var width = Math.max(1, Math.floor(board.clientWidth)), height = Math.max(1, Math.floor(board.clientHeight));
-        var occupied = new Uint8Array(width * height), placements = [];
-        entries.forEach(function (entry) { prepare(entry, weights[entry.layoutIndex], scale, width, height, base); });
-        for (var i = 0; i < entries.length; i += 1) {
-            var entry = entries[i], spot = spiral(entry, occupied, width, height);
-            if (!spot) { return false; }
+
+    function centerPlacements(placements, width, height) {
+        var minX = Math.min.apply(Math, placements.map(function (placement) { return placement.x; }));
+        var minY = Math.min.apply(Math, placements.map(function (placement) { return placement.y; }));
+        var maxX = Math.max.apply(Math, placements.map(function (placement) {
+            return placement.x + placement.entry.figureWidth;
+        }));
+        var maxY = Math.max.apply(Math, placements.map(function (placement) {
+            return placement.y + placement.entry.figureHeight;
+        }));
+        var offsetX = Math.floor((width - (maxX - minX)) / 2) - minX;
+        var offsetY = Math.floor((height - (maxY - minY)) / 2) - minY;
+        placements.forEach(function (placement) {
+            placement.entry.figure.style.left = (placement.x + offsetX) + 'px';
+            placement.entry.figure.style.top = (placement.y + offsetY) + 'px';
+        });
+    }
+
+    function pack(entries, width, height, scale, weights, base, seed) {
+        var occupied = new Uint8Array(width * height);
+        var placements = [];
+        entries.forEach(function (entry) {
+            prepare(entry, weights[entry.layoutIndex], scale, width, height, base);
+        });
+        for (var index = 0; index < entries.length; index += 1) {
+            var entry = entries[index];
+            var spot = spiral(entry, occupied, width, height, seed);
+            if (!spot) {
+                return false;
+            }
             placeMask(entry, spot[0], spot[1], occupied, width);
             placements.push({ entry: entry, x: spot[0], y: spot[1] });
         }
-        var minX = Math.min.apply(Math, placements.map(function (p) { return p.x; }));
-        var minY = Math.min.apply(Math, placements.map(function (p) { return p.y; }));
-        var maxX = Math.max.apply(Math, placements.map(function (p) { return p.x + p.entry.figureWidth; }));
-        var maxY = Math.max.apply(Math, placements.map(function (p) { return p.y + p.entry.figureHeight; }));
-        var dx = Math.floor((width - (maxX - minX)) / 2) - minX;
-        var dy = Math.floor((height - (maxY - minY)) / 2) - minY;
-        placements.forEach(function (p) { p.entry.figure.style.left = (p.x + dx) + 'px'; p.entry.figure.style.top = (p.y + dy) + 'px'; });
+        centerPlacements(placements, width, height);
         return true;
     }
+
+    function gridColumns(count, width, height) {
+        var choices = [];
+        for (var columns = 1; columns <= count; columns += 1) {
+            var rows = Math.ceil(count / columns);
+            var cellWidth = width / columns;
+            var cellHeight = height / rows;
+            choices.push({ columns: columns, rows: rows, score: Math.abs(Math.log(cellWidth / cellHeight)) });
+        }
+        choices.sort(function (first, second) {
+            return first.score - second.score || first.columns - second.columns;
+        });
+        return choices;
+    }
+
+    function gridFallback(entries, width, height, weights, base) {
+        var choices = gridColumns(entries.length, width, height);
+        for (var choiceIndex = 0; choiceIndex < choices.length; choiceIndex += 1) {
+            var choice = choices[choiceIndex];
+            var cellWidth = width / choice.columns;
+            var cellHeight = height / choice.rows;
+            for (var attempt = 0; attempt < 32; attempt += 1) {
+                var scale = Math.pow(0.85, attempt);
+                entries.forEach(function (entry) {
+                    prepare(entry, weights[entry.layoutIndex], scale, width, height, base);
+                });
+                var fits = entries.every(function (entry) {
+                    return entry.figureWidth <= cellWidth && entry.figureHeight <= cellHeight;
+                });
+                if (!fits) {
+                    continue;
+                }
+                for (var index = 0; index < entries.length; index += 1) {
+                    var row = Math.floor(index / choice.columns);
+                    var column = index % choice.columns;
+                    var rowCount = Math.min(choice.columns, entries.length - row * choice.columns);
+                    var rowOffset = Math.floor((width - rowCount * cellWidth) / 2);
+                    var x = rowOffset + column * cellWidth + (cellWidth - entries[index].figureWidth) / 2;
+                    var y = row * cellHeight + (cellHeight - entries[index].figureHeight) / 2;
+                    entries[index].figure.style.left = Math.floor(x) + 'px';
+                    entries[index].figure.style.top = Math.floor(y) + 'px';
+                }
+                return true;
+            }
+        }
+        return false;
+    }
+
     function arrange(entries, board, callback) {
-        if (!entries || entries.length < 1 || entries.length > 32) { callback(false); return; }
-        load(function (geometryData, massData) {
-            var logMass = 0;
+        if (!entries || entries.length < 1 || entries.length > 32) {
+            callback(false);
+            return;
+        }
+        load(function (massData) {
+            var totalLogMass = 0;
             entries.forEach(function (entry) {
                 entry.mirrored = (hash(entry.species.scientificName) & 1) === 1;
                 entry.mass = massData[entry.species.scientificName.toLowerCase()] || medianMass;
-                logMass += Math.log(entry.mass); entry.box = imageGeometry(entry.image);
+                totalLogMass += Math.log(entry.mass);
             });
-            var geoMean = Math.exp(logMass / entries.length);
+            var geometricMeanMass = Math.exp(totalLogMass / entries.length);
             var weights = entries.map(function (entry) {
-                var nw = entry.image.naturalWidth || 1, nh = entry.image.naturalHeight || 1, b = entry.box;
-                var span = Math.max((b[2] - b[0]) * nw, (b[3] - b[1]) * nh);
-                var ratio = span > 0 ? Math.max(nw, nh) / span : 1;
-                return Math.pow(entry.mass / geoMean, 0.14) * ratio;
+                return Math.pow(entry.mass / geometricMeanMass, 0.14);
             });
-            entries.forEach(function (entry, index) { entry.layoutIndex = index; });
-            entries.sort(function (a, b) { return weights[b.layoutIndex] - weights[a.layoutIndex] || (a.species.scientificName < b.species.scientificName ? -1 : 1); });
-            var width = Math.max(1, Math.floor(board.clientWidth)), height = Math.max(1, Math.floor(board.clientHeight));
-            var short = Math.min(width, height), squares = weights.reduce(function (sum, w) { return sum + w * w; }, 0);
-            var base = Math.min(Math.sqrt(width * height * 1.5 / squares), short * MAX_SHARE / Math.max.apply(Math, weights));
+            entries.forEach(function (entry, index) {
+                entry.layoutIndex = index;
+            });
+            entries.sort(function (first, second) {
+                return weights[second.layoutIndex] - weights[first.layoutIndex] ||
+                    (first.species.scientificName < second.species.scientificName ? -1 : 1);
+            });
+
+            var width = Math.max(1, Math.floor(board.clientWidth));
+            var height = Math.max(1, Math.floor(board.clientHeight));
+            var shortSide = Math.min(width, height);
+            var squares = weights.reduce(function (sum, weight) {
+                return sum + weight * weight;
+            }, 0);
+            var largestWeight = Math.max.apply(Math, weights);
+            var base = Math.min(
+                Math.sqrt(width * height * 1.5 / squares),
+                shortSide * MAX_SHARE / largestWeight
+            );
+            var seed = entries.map(function (entry) { return entry.species.id; }).sort().join('|');
+
             for (var attempt = 0; attempt < ATTEMPTS; attempt += 1) {
-                if (pack(entries, board, Math.pow(0.9, attempt), weights, base)) { callback(true); return; }
+                if (pack(entries, width, height, Math.pow(0.9, attempt), weights, base, seed)) {
+                    callback(true);
+                    return;
+                }
             }
-            callback(false);
+            callback(gridFallback(entries, width, height, weights, base));
         });
     }
+
     window.BirdWeatherCollageLayout = { arrange: arrange };
 }(window));

@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BirdWeather collage preview</title>
+    <link rel="stylesheet" href="../assets/collage.css">
+    <style>
+        html, body { margin: 0; height: 100%; font: 14px system-ui, sans-serif; }
+        body { display: flex; flex-direction: column; }
+        #controls { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; }
+        .preview { position: relative; flex: 1; min-height: 0; background: #f0ece6; }
+        #collage-board { top: 0; bottom: 0; }
+        #status { padding: 0.4rem 0.6rem; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+    <div id="controls">
+        <label>Birds <input id="count" type="number" min="1" max="32" value="12"></label>
+        <button id="show">Compose</button>
+        <button id="all">Check 1–32</button>
+        <button id="portrait">Portrait</button>
+        <button id="landscape">Landscape</button>
+        <button id="transition">Check replacement</button>
+    </div>
+    <div id="status">Loading artwork catalog…</div>
+    <main id="collage" class="preview"><h1 id="collage-title" hidden></h1><div id="collage-board" class="collage-board"></div>
+        <div id="collage-omitted" hidden></div><div id="collage-empty-state" hidden>
+            <img id="collage-empty-art" hidden><h2 id="collage-empty-title"></h2><p id="collage-empty-detail"></p>
+        </div>
+    </main>
+    <div id="painting" hidden></div><div id="latest-plate" hidden></div>
+    <script src="../assets/collage-layout.js"></script>
+    <script>
+        window.fixtureSpeciesByName = Object.create(null);
+        window.fixtureImageDelay = 0;
+        window.BirdWeatherArtwork = {
+            paintCollage: function (image, bird, callback) {
+                var record = window.fixtureSpeciesByName[bird.scientificName.toLowerCase()];
+                if (!record || !record.path) { callback(null, true); return; }
+                window.setTimeout(function () {
+                    image.onload = function () { callback({ image: record.path }, true); };
+                    image.onerror = function () { callback(null, true); };
+                    image.src = record.path;
+                }, window.fixtureImageDelay);
+            }
+        };
+        window.BirdWeatherArtworkInfo = { setDisplayed: function () {} };
+        window.BirdWeatherText = {
+            speciesName: function (locale, bird) { return { name: bird.commonName, language: 'en' }; },
+            message: function (locale, key) { return key; }
+        };
+    </script>
+    <script src="../assets/collage-view.js"></script>
+    <script>
+    (function () {
+        'use strict';
+        var board = document.getElementById('collage-board');
+        var status = document.getElementById('status');
+        var speciesList = [];
+        var orientationName = 'current size';
+
+        function species(name, index) {
+            var file = name.images && name.images[0] && name.images[0].path;
+            return file ? { id: String(index + 1), commonName: name.commonName, scientificName: name.scientificName,
+                path: '../assets/artwork/' + file } : null;
+        }
+
+        function compose(count, report) {
+            var entries = speciesList.slice(0, count).map(function (item, index) {
+                var figure = document.createElement('figure');
+                figure.className = 'collage-specimen';
+                figure.style.visibility = 'hidden';
+                var img = document.createElement('img');
+                var caption = document.createElement('figcaption');
+                var common = document.createElement('span');
+                common.className = 'collage-common-name';
+                common.textContent = item.commonName;
+                var latin = document.createElement('i');
+                latin.className = 'collage-scientific-name';
+                latin.textContent = item.scientificName;
+                caption.append(common, latin);
+                figure.append(img, caption);
+                board.appendChild(figure);
+                var entry = { figure: figure, image: img, caption: caption, name: common,
+                    species: { id: item.id + '-' + index, scientificName: item.scientificName } };
+                img.onload = function () {
+                    entry.ready = true;
+                    if (entries.every(function (candidate) { return candidate.ready; })) {
+                        layout(entries, count, report);
+                    }
+                };
+                img.onerror = function () { entry.failed = true; status.textContent = 'Image failed: ' + item.path; };
+                img.src = item.path;
+                return entry;
+            });
+            function layout(values, number, done) {
+                window.BirdWeatherCollageLayout.arrange(values, board, function (ok) {
+                    if (!ok) {
+                        status.textContent = number + ' birds: placement failed';
+                        if (done) done(false, status.textContent);
+                        return;
+                    }
+                    values.forEach(function (entry) { entry.figure.style.visibility = 'visible'; });
+                    var check = inspect(values);
+                    status.textContent = number + ' birds — ' + check;
+                    if (done) done(check === 'PASS', status.textContent);
+                });
+            }
+        }
+
+        function inspect(entries) {
+            var bounds = board.getBoundingClientRect();
+            var occupied = new Set();
+            for (var index = 0; index < entries.length; index += 1) {
+                var entry = entries[index];
+                var image = entry.image;
+                var rect = image.getBoundingClientRect();
+                if (rect.left < bounds.left - 1 || rect.top < bounds.top - 1 ||
+                    rect.right > bounds.right + 1 || rect.bottom > bounds.bottom + 1) return 'FAIL: clipped bounds';
+                if (Math.abs(rect.width / rect.height - image.naturalWidth / image.naturalHeight) > 0.025) return 'FAIL: aspect ratio';
+                var canvas = document.createElement('canvas');
+                canvas.width = Math.max(1, Math.ceil(rect.width));
+                canvas.height = Math.max(1, Math.ceil(rect.height));
+                var context = canvas.getContext('2d', { willReadFrequently: true });
+                if (window.getComputedStyle(image).transform.indexOf('matrix(-1') === 0) {
+                    context.translate(canvas.width, 0);
+                    context.scale(-1, 1);
+                }
+                context.drawImage(image, 0, 0, canvas.width, canvas.height);
+                var rgba = context.getImageData(0, 0, canvas.width, canvas.height).data;
+                var pixels = new Set();
+                for (var pixel = 0; pixel < rgba.length; pixel += 4) {
+                    if (rgba[pixel + 3] > 0) {
+                        var px = Math.floor(pixel / 4) % canvas.width + Math.round(rect.left - bounds.left);
+                        var py = Math.floor(pixel / 4 / canvas.width) + Math.round(rect.top - bounds.top);
+                        pixels.add(px + ',' + py);
+                    }
+                }
+                var overlap = null;
+                pixels.forEach(function (point) { if (!overlap && occupied.has(point)) overlap = point; });
+                if (overlap) return 'FAIL: visible pixels overlap at ' + overlap;
+                pixels.forEach(function (point) { occupied.add(point); });
+            }
+            return 'PASS';
+        }
+
+        function runCount(count, done) {
+            board.textContent = '';
+            compose(count, done);
+        }
+
+        fetch('../assets/artwork/catalog.json').then(function (response) { return response.json(); }).then(function (catalog) {
+            speciesList = Object.keys(catalog.birds).map(function (key) { return catalog.birds[key]; })
+                .map(species).filter(Boolean).slice(0, 32);
+            speciesList.forEach(function (bird) { window.fixtureSpeciesByName[bird.scientificName.toLowerCase()] = bird; });
+            var collageView = window.BirdWeatherCollageView.create();
+            document.getElementById('show').onclick = function () {
+                runCount(Math.max(1, Math.min(32, Number(document.getElementById('count').value) || 1)));
+            };
+            document.getElementById('all').onclick = function () {
+                var n = 1;
+                var failures = [];
+                function next() {
+                    if (n > 32) { status.textContent = failures.length ? failures.join('\n') : 'PASS: ' + orientationName + ' 1–32'; return; }
+                    runCount(n, function (ok, message) { if (!ok) failures.push(message); n += 1; next(); });
+                }
+                next();
+            };
+            function setBoardSize(width, height) {
+                var preview = document.getElementById('collage');
+                preview.style.flex = 'none';
+                preview.style.width = width + 'px';
+                preview.style.height = height + 'px';
+            }
+            document.getElementById('portrait').onclick = function () { orientationName = 'portrait'; setBoardSize(390, 844); };
+            document.getElementById('landscape').onclick = function () { orientationName = 'landscape'; setBoardSize(1024, 768); };
+            document.getElementById('transition').onclick = function () {
+                setBoardSize(900, 520);
+                var first = speciesList.slice(0, 12).map(function (bird) {
+                    return { id: bird.id, commonName: bird.commonName, scientificName: bird.scientificName };
+                });
+                var second = speciesList.slice(0, 16).map(function (bird) {
+                    return { id: bird.id, commonName: bird.commonName, scientificName: bird.scientificName };
+                });
+                collageView.show({ species: first, omitted: 0 }, 'en');
+                function waitForInitial() {
+                    if (!document.querySelector('.collage-layer-active')) { window.setTimeout(waitForInitial, 100); return; }
+                    window.fixtureImageDelay = 900;
+                    collageView.show({ species: second, omitted: 0 }, 'en');
+                    window.setTimeout(function () {
+                        var oldCount = document.querySelectorAll('.collage-layer-active .collage-specimen').length;
+                        var staging = document.querySelector('.collage-layer-staging');
+                        var stagingHidden = staging && getComputedStyle(staging).visibility === 'hidden' &&
+                            Array.prototype.every.call(staging.querySelectorAll('figcaption'), function (caption) {
+                                return getComputedStyle(caption).visibility === 'hidden';
+                            });
+                        window.setTimeout(function () {
+                            var activeCount = document.querySelectorAll('.collage-layer-active .collage-specimen').length;
+                            var stagingCount = document.querySelectorAll('.collage-layer-staging').length;
+                            status.textContent = oldCount === 12 && stagingHidden && activeCount === 16 && stagingCount === 0 ?
+                                'PASS: previous composition held until replacement completed' :
+                                'FAIL: transition state old=' + oldCount + ', new=' + activeCount + ', staging=' + stagingCount;
+                        }, 20000);
+                    }, 250);
+                }
+                waitForInitial();
+            };
+            status.textContent = speciesList.length + ' artwork files ready';
+            var params = new URLSearchParams(window.location.search);
+            if (params.get('orientation') === 'portrait') { orientationName = 'portrait'; setBoardSize(390, 844); }
+            if (params.get('orientation') === 'landscape') { orientationName = 'landscape'; setBoardSize(1024, 768); }
+            if (params.get('transition') === '1') {
+                document.getElementById('transition').click();
+                return;
+            }
+            if (params.get('all') === '1') {
+                var n = 1;
+                var failures = [];
+                function next() {
+                    if (n > 32) { status.textContent = failures.length ? failures.join('\n') : 'PASS: ' + params.get('orientation') + ' 1–32'; return; }
+                    runCount(n, function (ok, message) { if (!ok) failures.push(message); n += 1; next(); });
+                }
+                next();
+                return;
+            }
+            runCount(Math.max(1, Math.min(32, Number(params.get('count')) || 12)));
+        }).catch(function (error) { status.textContent = 'Catalog error: ' + (error.stack || error.message); });
+    }());
+    </script>
+</body>
+</html>

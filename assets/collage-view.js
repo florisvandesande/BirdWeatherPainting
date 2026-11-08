@@ -17,93 +17,196 @@
         var title = document.getElementById('collage-title');
         var board = document.getElementById('collage-board');
         var omitted = document.getElementById('collage-omitted');
-        var plates = [];
+        var activeLayer = null;
+        var activePlates = [];
         var contentKey = '';
         var generation = 0;
         var resizeTimer = null;
-        var arranged = false;
-        var arrangementFailed = false;
         var lastResult = null;
         var lastLocale = null;
-        var building = false;
 
-        function publishCredits() {
+        function publishCredits(plates) {
             artworkInfo.setDisplayed(plates.map(function (plate) { return plate.credit; }));
         }
 
-        function makePlate(species) {
+        function createLayer(staging) {
+            var layer = document.createElement('div');
+            layer.className = staging ? 'collage-layer collage-layer-staging' : 'collage-layer collage-layer-active';
+            layer.setAttribute('aria-hidden', 'true');
+            board.appendChild(layer);
+            return layer;
+        }
+
+        function makePlate(layer, species, locale, plates, createdAt, onReady) {
             var figure = document.createElement('figure');
             figure.className = 'collage-specimen';
-            var artWindow = document.createElement('span');
-            artWindow.className = 'collage-art-window';
             var image = document.createElement('img');
             image.alt = '';
-            artWindow.appendChild(image);
+            image.draggable = false;
             var caption = document.createElement('figcaption');
             caption.dir = 'auto';
             var name = document.createElement('span');
             name.className = 'collage-common-name';
+            var common = text.speciesName(locale, species);
+            name.textContent = common.name;
+            name.setAttribute('lang', common.language);
+            name.title = common.name;
             caption.appendChild(name);
             var scientific = document.createElement('i');
             scientific.className = 'collage-scientific-name';
             scientific.textContent = species.scientificName;
             caption.appendChild(scientific);
-            figure.appendChild(artWindow);
+            figure.appendChild(image);
             figure.appendChild(caption);
-            board.appendChild(figure);
-            var plate = {
-                figure: figure,
-                artWindow: artWindow,
-                image: image,
-                caption: caption,
-                name: name,
-                species: species,
-                credit: null,
-                ready: false
-            };
+            layer.appendChild(figure);
+            var plate = { figure: figure, image: image, caption: caption, name: name, species: species, credit: null, ready: false };
             plates.push(plate);
-            var createdAt = generation;
             artwork.paintCollage(image, species, function (credit, ready) {
-                if (createdAt !== generation) {
+                if (createdAt !== generation || plate.ready || !ready) {
                     return;
                 }
-                if (ready) {
-                    figure.classList.toggle('collage-name-plate', !credit);
-                    plate.credit = credit;
-                    plate.ready = true;
-                    publishCredits();
-                    arrangeIfReady();
-                }
+                figure.classList.toggle('collage-name-plate', !credit);
+                plate.credit = credit;
+                plate.ready = true;
+                onReady();
             });
         }
 
-        function arrangeIfReady() {
-            if (building || arranged || arrangementFailed || !plates.length ||
-                    !plates.every(function (plate) { return plate.ready; })) {
+        function cancelPending() {
+            generation += 1;
+            var pending = board.querySelector('.collage-layer-staging');
+            if (pending) {
+                pending.querySelectorAll('img').forEach(function (image) {
+                    image.onload = image.onerror = null;
+                });
+                pending.remove();
+            }
+            return generation;
+        }
+
+        function scaleActiveToBoard(width, height) {
+            if (!activeLayer || !activeLayer.dataset.layoutWidth || !activeLayer.dataset.layoutHeight) {
                 return;
             }
-            var currentGeneration = generation;
-            layout.arrange(plates, board, function (packed) {
-                if (currentGeneration !== generation) {
+            var oldWidth = Number(activeLayer.dataset.layoutWidth);
+            var oldHeight = Number(activeLayer.dataset.layoutHeight);
+            var scale = Math.min(1, width / oldWidth, height / oldHeight);
+            var x = Math.floor((width - oldWidth * scale) / 2);
+            var y = Math.floor((height - oldHeight * scale) / 2);
+            activeLayer.style.transformOrigin = 'top left';
+            activeLayer.style.transform = 'translate(' + x + 'px, ' + y + 'px) scale(' + scale + ')';
+            activeLayer.style.width = oldWidth + 'px';
+            activeLayer.style.height = oldHeight + 'px';
+        }
+
+        function show(result, locale) {
+            lastResult = result;
+            lastLocale = locale;
+            if (!result.species.length) {
+                cancelPending();
+                if (activeLayer) {
+                    activeLayer.remove();
+                    activeLayer = null;
+                    activePlates = [];
+                }
+                contentKey = '';
+                publishCredits([]);
+                title.textContent = text.message(locale, 'displayViewToday');
+                omitted.hidden = true;
+                emptyState.hidden = false;
+                board.hidden = true;
+                collage.hidden = false;
+                latest.hidden = true;
+                painting.setAttribute('aria-labelledby', 'collage-title');
+                return;
+            }
+
+            emptyState.hidden = true;
+            board.hidden = false;
+            emptyArt.hidden = true;
+            collage.hidden = false;
+            latest.hidden = true;
+            title.textContent = text.message(locale, 'displayViewToday');
+            omitted.textContent = result.omitted ? text.message(locale,
+                result.omitted === 1 ? 'collageOneOmitted' : 'collageOmitted', { count: result.omitted }) : '';
+            omitted.hidden = !result.omitted;
+            painting.setAttribute('aria-labelledby', 'collage-title');
+
+            var rect = board.getBoundingClientRect();
+            var width = Math.max(1, Math.floor(rect.width));
+            var height = Math.max(1, Math.floor(rect.height));
+            var keyParts = result.species.map(function (bird) {
+                var common = text.speciesName(locale, bird);
+                return [bird.id, bird.scientificName, common.name, common.language].join('|');
+            });
+            var key = JSON.stringify(keyParts) + ':' + locale + ':' + width + 'x' + height;
+            if (key === contentKey) {
+                return;
+            }
+
+            var currentGeneration = cancelPending();
+            if (activeLayer) {
+                scaleActiveToBoard(width, height);
+            }
+            var staging = createLayer(true);
+            var plates = [];
+            var remaining = result.species.length;
+            var completed = false;
+            function ready() {
+                if (completed || currentGeneration !== generation || remaining < 1) {
                     return;
                 }
-                arranged = packed;
-                arrangementFailed = !packed;
-                board.classList.toggle('collage-packed', packed);
+                remaining -= 1;
+                if (remaining) {
+                    return;
+                }
+                layout.arrange(plates, board, function (packed) {
+                    if (completed || currentGeneration !== generation) {
+                        return;
+                    }
+                    completed = true;
+                    if (!packed) {
+                        staging.remove();
+                        return;
+                    }
+                    window.requestAnimationFrame(function () {
+                        if (currentGeneration !== generation) {
+                            staging.remove();
+                            return;
+                        }
+                        var previous = activeLayer;
+                        staging.className = 'collage-layer collage-layer-active';
+                        staging.dataset.layoutWidth = String(width);
+                        staging.dataset.layoutHeight = String(height);
+                        staging.style.width = '';
+                        staging.style.height = '';
+                        staging.style.transform = '';
+                        staging.style.transformOrigin = '';
+                        activeLayer = staging;
+                        activePlates = plates;
+                        contentKey = key;
+                        publishCredits(activePlates);
+                        if (previous) {
+                            previous.remove();
+                        }
+                    });
+                });
+            }
+            result.species.forEach(function (species) {
+                makePlate(staging, species, locale, plates, currentGeneration, ready);
             });
         }
 
         function clear() {
-            generation += 1;
-            plates.forEach(function (plate) {
-                plate.image.onload = plate.image.onerror = null;
-            });
-            plates = [];
+            cancelPending();
+            if (activeLayer) {
+                activeLayer.remove();
+                activeLayer = null;
+            }
+            activePlates = [];
             contentKey = '';
-            arranged = false;
-            arrangementFailed = false;
-            building = false;
-            board.textContent = '';
+            lastResult = null;
+            lastLocale = null;
             board.classList.remove('collage-packed');
             emptyState.hidden = true;
             board.hidden = false;
@@ -112,62 +215,7 @@
             latest.hidden = false;
             omitted.hidden = true;
             painting.setAttribute('aria-labelledby', 'plate-title');
-            publishCredits();
-        }
-
-        function show(result, locale) {
-            if (!result.species.length) {
-                if (contentKey) {
-                    clear();
-                }
-                title.textContent = text.message(locale, 'displayViewToday');
-                omitted.hidden = true;
-                emptyState.hidden = false;
-                board.hidden = true;
-                collage.hidden = false;
-                latest.hidden = true;
-                painting.setAttribute('aria-labelledby', 'collage-title');
-                lastResult = result;
-                lastLocale = locale;
-                return;
-            }
-            emptyState.hidden = true;
-            board.hidden = false;
-            emptyArt.hidden = true;
-            collage.hidden = false;
-            latest.hidden = true;
-            lastResult = result;
-            lastLocale = locale;
-            var rect = board.getBoundingClientRect();
-            var retainedIds = result.species.map(function (bird) { return bird.id; }).sort();
-            var key = JSON.stringify(retainedIds) + ':' + locale + ':' +
-                Math.round(rect.width) + 'x' + Math.round(rect.height);
-            if (key !== contentKey) {
-                clear();
-                contentKey = key;
-                collage.hidden = false;
-                latest.hidden = true;
-                building = true;
-                result.species.forEach(makePlate);
-                building = false;
-            }
-            plates.forEach(function (plate) {
-                var common = text.speciesName(locale, plate.species);
-                if (plate.name.textContent !== common.name) {
-                    plate.name.textContent = common.name;
-                    plate.name.setAttribute('lang', common.language);
-                    plate.name.title = common.name;
-                }
-            });
-            title.textContent = text.message(locale, 'displayViewToday');
-            omitted.textContent = result.omitted ? text.message(locale,
-                result.omitted === 1 ? 'collageOneOmitted' : 'collageOmitted',
-                { count: result.omitted }) : '';
-            omitted.hidden = !result.omitted;
-            collage.hidden = false;
-            latest.hidden = true;
-            painting.setAttribute('aria-labelledby', 'collage-title');
-            arrangeIfReady();
+            publishCredits([]);
         }
 
         function handleResize() {
@@ -176,10 +224,8 @@
             }
             resizeTimer = window.setTimeout(function () {
                 resizeTimer = null;
-                if (contentKey && plates.length) {
-                    if (lastResult) {
-                        show(lastResult, lastLocale);
-                    }
+                if (lastResult && lastResult.species.length) {
+                    show(lastResult, lastLocale);
                 }
             }, 120);
         }
@@ -188,6 +234,16 @@
         window.addEventListener('orientationchange', handleResize);
 
         function showEmpty(titleText, detailText) {
+            cancelPending();
+            if (activeLayer) {
+                activeLayer.remove();
+                activeLayer = null;
+            }
+            activePlates = [];
+            contentKey = '';
+            lastResult = null;
+            lastLocale = null;
+            publishCredits([]);
             emptyTitle.textContent = titleText;
             emptyDetail.textContent = detailText;
             collage.hidden = false;
