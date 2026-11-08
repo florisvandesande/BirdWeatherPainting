@@ -68,11 +68,16 @@
         if (!validStationId(id) || !scientificName) {
             return null;
         }
+        var localized = Array.isArray(node.localizedTranslation) ? node.localizedTranslation[0] : null;
         return {
             id: id,
             scientificName: scientificName,
             commonName: safeName(node.commonName, 160) || scientificName,
             translations: Array.isArray(node.translations) ? node.translations : [],
+            ebirdUrl: safeName(node.ebirdUrl, 512),
+            wikipediaUrl: safeName(localized && localized.wikipediaUrl, 512) || safeName(node.wikipediaUrl, 512),
+            wikipediaSummary: safeName(localized && localized.wikipediaSummary, 20000) ||
+                safeName(node.wikipediaSummary, 20000),
             imageUrl: safeName(node.imageUrl, 512),
             imageCredit: safeName(node.imageCredit, 1024),
             imageLicense: safeName(node.imageLicense, 80),
@@ -123,26 +128,55 @@
         });
     }
 
-    function speciesForIds(ids, complete) {
-        var operation = 'query CollageSpecies($ids: [ID!]!) { allSpecies(first: 32, ids: $ids) { nodes { ' +
-            speciesFields + ' } } }';
-        return query(operation, { ids: ids }, function (error, data) {
-            var nodes = !error && data.allSpecies && data.allSpecies.nodes;
-            if (!Array.isArray(nodes) || nodes.length !== ids.length) {
-                complete('unavailable');
+    function speciesForIds(ids, complete, locale) {
+        var operation = 'query CollageSpecies($ids: [ID!]!, $locale: String) { allSpecies(first: 32, ids: $ids) { nodes { ' +
+            speciesFields + ' ebirdUrl wikipediaSummary wikipediaUrl localizedTranslation: translations(locale: $locale) { wikipediaSummary wikipediaUrl } } } }';
+        var speciesById = Object.create(null);
+        var offset = 0;
+        var aborted = false;
+        var finished = false;
+        var request = null;
+
+        function finish(error, result) {
+            if (!aborted && !finished) {
+                finished = true;
+                complete(error, result);
+            }
+        }
+
+        function fetchBatch() {
+            if (aborted) {
                 return;
             }
-            var speciesById = Object.create(null);
-            for (var index = 0; index < nodes.length; index += 1) {
-                var species = readSpecies(nodes[index]);
-                if (!species || ids.indexOf(species.id) === -1 || speciesById[species.id]) {
-                    complete('unavailable');
+            var batch = ids.slice(offset, offset + 32);
+            if (!batch.length) {
+                finish(null, ids.map(function (id) { return speciesById[id]; }));
+                return;
+            }
+            offset += batch.length;
+            request = query(operation, { ids: batch, locale: locale || 'en' }, function (error, data) {
+                if (aborted || finished) {
                     return;
                 }
-                speciesById[species.id] = species;
-            }
-            complete(null, ids.map(function (id) { return speciesById[id]; }));
-        });
+                var nodes = !error && data.allSpecies && data.allSpecies.nodes;
+                if (!Array.isArray(nodes) || nodes.length !== batch.length) {
+                    finish('unavailable');
+                    return;
+                }
+                for (var index = 0; index < nodes.length; index += 1) {
+                    var species = readSpecies(nodes[index]);
+                    if (!species || batch.indexOf(species.id) === -1 || speciesById[species.id]) {
+                        finish('unavailable');
+                        return;
+                    }
+                    speciesById[species.id] = species;
+                }
+                fetchBatch();
+            });
+        }
+
+        fetchBatch();
+        return { abort: function () { aborted = true; if (request) { request.abort(); } } };
     }
 
     function readStationLatest(station, stationId) {

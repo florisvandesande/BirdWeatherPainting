@@ -33,7 +33,7 @@
             return changed;
         }
 
-        function load(complete) {
+        function load(complete, locale, includeAllSpecies) {
             var now = Date.now();
             scanDate = null;
             var request;
@@ -55,8 +55,10 @@
                     return;
                 }
                 scanDate = date;
-                var result = { date: date, stationName: stationName, hasStations: !!ids.length, species: [], omitted: 0 };
+                var result = { date: date, stationName: stationName, hasStations: !!ids.length,
+                    species: [], allSpecies: null, omitted: 0 };
                 if (!ids.length) {
+                    result.allSpecies = [];
                     finish(null, result);
                     return;
                 }
@@ -92,14 +94,16 @@
                         return;
                     }
                     ranked.sort(byRecency);
-                    var retained = ranked.slice(0, limit).map(function (entry) { return entry.id; });
-                    result.omitted = ranked.length - retained.length;
-                    request = api.speciesForIds(retained, function (error, species) {
+                    var allSpeciesIds = ranked.map(function (entry) { return entry.id; });
+                    var requestedIds = includeAllSpecies ? allSpeciesIds : allSpeciesIds.slice(0, limit);
+                    result.omitted = Math.max(0, allSpeciesIds.length - limit);
+                    request = api.speciesForIds(requestedIds, function (error, species) {
                         if (!error) {
-                            result.species = species;
+                            result.species = species.slice(0, limit);
+                            result.allSpecies = includeAllSpecies ? species : null;
                         }
                         finish(error, result);
-                    });
+                    }, locale);
                 }
 
                 function fetchPage(after) {
@@ -160,7 +164,11 @@
             return { abort: function () { aborted = true; request.abort(); } };
         }
 
-        return { load: load, checkDay: checkDay };
+        return {
+            load: function (complete, locale) { return load(complete, locale, false); },
+            loadAll: function (complete, locale) { return load(complete, locale, true); },
+            checkDay: checkDay
+        };
     }
 
     window.BirdWeatherCollageData = { create: create };

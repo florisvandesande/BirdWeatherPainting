@@ -3,8 +3,19 @@
 
     var messages = {
         en: {
-            title: 'Artwork information',
+            title: 'Today’s observed birds',
+            openInfo: 'Open bird list',
             back: 'Back to the painting',
+            loadingSpecies: 'Loading today’s birds…',
+            speciesUnavailable: 'Could not load today’s birds. Check your connection and try again.',
+            noSpeciesToday: 'No birds have been observed today.',
+            retry: 'Try again',
+            noDescription: 'No description is available.',
+            ebirdLinkLabel: 'Open {name} on eBird',
+            wikipediaLinkLabel: 'Open {name} on Wikipedia',
+            imageAttribution: 'Illustrations: Fugleramme Classic, by Fugleramme contributors.',
+            imageSource: 'Source and attribution',
+            licenseAttribution: 'Licensed under',
             displayed: 'On display',
             noDisplayed: 'There is no credited image on display.',
             local: 'Other available artwork',
@@ -22,8 +33,19 @@
             fuglerammeEdits: 'Resized to a maximum edge of 600 pixels and converted from WebP to transparent PNG.'
         },
         nl: {
-            title: 'Informatie over de afbeeldingen',
+            title: 'Vandaag waargenomen vogels',
+            openInfo: 'Open vogellijst',
             back: 'Terug naar het schilderij',
+            loadingSpecies: 'Vogels van vandaag laden…',
+            speciesUnavailable: 'De vogellijst kon niet worden geladen. Controleer je verbinding en probeer het opnieuw.',
+            noSpeciesToday: 'Vandaag zijn er geen vogels waargenomen.',
+            retry: 'Opnieuw proberen',
+            noDescription: 'Er is geen omschrijving beschikbaar.',
+            ebirdLinkLabel: 'Bekijk {name} op eBird',
+            wikipediaLinkLabel: 'Bekijk {name} op Wikipedia',
+            imageAttribution: 'Illustraties: Fugleramme Classic, door Fugleramme-bijdragers.',
+            imageSource: 'Bron en naamsvermelding',
+            licenseAttribution: 'Uitgebracht onder',
             displayed: 'Op het scherm',
             noDisplayed: 'Op het scherm staat geen afbeelding met een bronvermelding.',
             local: 'Overige beschikbare afbeeldingen',
@@ -41,8 +63,19 @@
             fuglerammeEdits: 'Verkleind tot maximaal 600 pixels en omgezet van WebP naar transparante PNG.'
         },
         fr: {
-            title: 'Informations sur les illustrations',
+            title: 'Oiseaux observés aujourd’hui',
+            openInfo: 'Ouvrir la liste des oiseaux',
             back: 'Retour au tableau',
+            loadingSpecies: 'Chargement des oiseaux du jour…',
+            speciesUnavailable: 'Impossible de charger les oiseaux du jour. Vérifiez votre connexion et réessayez.',
+            noSpeciesToday: 'Aucun oiseau observé aujourd’hui.',
+            retry: 'Réessayer',
+            noDescription: 'Aucune description disponible.',
+            ebirdLinkLabel: 'Voir {name} sur eBird',
+            wikipediaLinkLabel: 'Voir {name} sur Wikipédia',
+            imageAttribution: 'Illustrations : Fugleramme Classic, par les contributeurs de Fugleramme.',
+            imageSource: 'Source et attribution',
+            licenseAttribution: 'Sous licence',
             displayed: 'À l’écran',
             noDisplayed: 'Aucune image avec un crédit n’est affichée.',
             local: 'Autres illustrations disponibles',
@@ -60,8 +93,19 @@
             fuglerammeEdits: 'Redimensionnée à 600 pixels maximum et convertie de WebP en PNG transparent.'
         },
         de: {
-            title: 'Informationen zu den Abbildungen',
+            title: 'Heute beobachtete Vögel',
+            openInfo: 'Vogelliste öffnen',
             back: 'Zurück zum Gemälde',
+            loadingSpecies: 'Heutige Vögel werden geladen…',
+            speciesUnavailable: 'Die heutige Vogelliste konnte nicht geladen werden. Prüfe die Verbindung und versuche es erneut.',
+            noSpeciesToday: 'Heute wurden keine Vögel beobachtet.',
+            retry: 'Erneut versuchen',
+            noDescription: 'Keine Beschreibung verfügbar.',
+            ebirdLinkLabel: '{name} auf eBird öffnen',
+            wikipediaLinkLabel: '{name} auf Wikipedia öffnen',
+            imageAttribution: 'Illustrationen: Fugleramme Classic, von Fugleramme-Mitwirkenden.',
+            imageSource: 'Quelle und Namensnennung',
+            licenseAttribution: 'Lizenziert unter',
             displayed: 'Aktuell angezeigt',
             noDisplayed: 'Es wird kein Bild mit Quellenangabe angezeigt.',
             local: 'Weitere verfügbare Abbildungen',
@@ -79,8 +123,19 @@
             fuglerammeEdits: 'Auf maximal 600 Pixel verkleinert und von WebP in transparentes PNG umgewandelt.'
         },
         es: {
-            title: 'Información sobre las ilustraciones',
+            title: 'Aves observadas hoy',
+            openInfo: 'Abrir lista de aves',
             back: 'Volver al cuadro',
+            loadingSpecies: 'Cargando las aves de hoy…',
+            speciesUnavailable: 'No se pudieron cargar las aves de hoy. Comprueba la conexión e inténtalo de nuevo.',
+            noSpeciesToday: 'Hoy no se han observado aves.',
+            retry: 'Reintentar',
+            noDescription: 'No hay una descripción disponible.',
+            ebirdLinkLabel: 'Ver {name} en eBird',
+            wikipediaLinkLabel: 'Ver {name} en Wikipedia',
+            imageAttribution: 'Ilustraciones: Fugleramme Classic, por colaboradores de Fugleramme.',
+            imageSource: 'Fuente y atribución',
+            licenseAttribution: 'Con licencia',
             displayed: 'En pantalla',
             noDisplayed: 'No se muestra ninguna imagen con atribución.',
             local: 'Otras ilustraciones disponibles',
@@ -98,8 +153,19 @@
             fuglerammeEdits: 'Redimensionada a un máximo de 600 píxeles y convertida de WebP a PNG transparente.'
         },
         it: {
-            title: 'Informazioni sulle illustrazioni',
+            title: 'Uccelli osservati oggi',
+            openInfo: 'Apri l’elenco degli uccelli',
             back: 'Torna al quadro',
+            loadingSpecies: 'Caricamento degli uccelli di oggi…',
+            speciesUnavailable: 'Impossibile caricare gli uccelli di oggi. Controlla la connessione e riprova.',
+            noSpeciesToday: 'Oggi non sono stati osservati uccelli.',
+            retry: 'Riprova',
+            noDescription: 'Descrizione non disponibile.',
+            ebirdLinkLabel: 'Apri {name} su eBird',
+            wikipediaLinkLabel: 'Apri {name} su Wikipedia',
+            imageAttribution: 'Illustrazioni: Fugleramme Classic, dai collaboratori di Fugleramme.',
+            imageSource: 'Fonte e attribuzione',
+            licenseAttribution: 'Con licenza',
             displayed: 'In mostra',
             noDisplayed: 'Non è visualizzata alcuna immagine con attribuzione.',
             local: 'Altre illustrazioni disponibili',
@@ -117,8 +183,19 @@
             fuglerammeEdits: 'Ridimensionata a un massimo di 600 pixel e convertita da WebP a PNG trasparente.'
         },
         'pt-BR': {
-            title: 'Informações sobre as ilustrações',
+            title: 'Aves observadas hoje',
+            openInfo: 'Abrir lista de aves',
             back: 'Voltar ao quadro',
+            loadingSpecies: 'Carregando as aves de hoje…',
+            speciesUnavailable: 'Não foi possível carregar as aves de hoje. Verifique a conexão e tente novamente.',
+            noSpeciesToday: 'Nenhuma ave foi observada hoje.',
+            retry: 'Tentar novamente',
+            noDescription: 'Não há descrição disponível.',
+            ebirdLinkLabel: 'Abrir {name} no eBird',
+            wikipediaLinkLabel: 'Abrir {name} na Wikipédia',
+            imageAttribution: 'Ilustrações: Fugleramme Classic, por colaboradores do Fugleramme.',
+            imageSource: 'Fonte e atribuição',
+            licenseAttribution: 'Licenciado sob',
             displayed: 'Em exibição',
             noDisplayed: 'Nenhuma imagem com créditos está em exibição.',
             local: 'Outras ilustrações disponíveis',
@@ -138,8 +215,17 @@
     };
 
     window.BirdWeatherArtworkText = {
-        message: function (locale, key) {
-            return window.BirdWeatherText.resolveMessage(messages, locale, key);
+        message: function (locale, key, fields) {
+            var value = window.BirdWeatherText.resolveMessage(messages, locale, key);
+            if (typeof value !== 'string') {
+                value = window.BirdWeatherText.resolveMessage(messages, 'en', key) || key;
+                if (window.console && window.console.error) {
+                    window.console.error('Missing artwork translation:', locale, key);
+                }
+            }
+            return value.replace(/\{(\w+)\}/g, function (placeholder, name) {
+                return fields && Object.prototype.hasOwnProperty.call(fields, name) ? fields[name] : placeholder;
+            });
         }
     };
 }(window));

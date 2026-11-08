@@ -35,7 +35,8 @@
     left: 0;
     overflow: auto;
     -webkit-overflow-scrolling: touch;
-    background: #f5ead2;
+    background: #f0ece6;
+    color: #38281c;
     color-scheme: light;
     text-align: left;
 }
@@ -45,9 +46,9 @@
 }
 
 .artwork-sheet {
-    max-width: 44em;
+    max-width: 50em;
     margin: 0 auto;
-    padding: 1.5rem 1.25rem 3rem;
+    padding: 1.25rem 1rem 2rem;
 }
 
 .artwork-sheet h2 {
@@ -56,56 +57,158 @@
     line-height: 1.2;
 }
 
-.artwork-sheet h3 {
-    margin: 1.1em 0 0.55em;
-    font-size: 1.35rem;
-    line-height: 1.25;
+.artwork-birds {
+    margin: 0;
+    padding: 0;
+    list-style: none;
 }
 
-.artwork-sheet h4 {
-    margin: 1.2em 0 0.35em;
-    color: #62482e;
-    font-size: 1.1rem;
+.artwork-bird {
+    border-bottom: 1px solid #b5a99b;
+}
+
+.artwork-bird-row {
+    display: flex;
+    align-items: center;
+    min-height: 76px;
+    padding: 0.5rem 0;
+}
+
+.artwork-bird-toggle {
+    display: flex;
+    flex: 1 1 auto;
+    align-items: center;
+    min-width: 0;
+    min-height: 60px;
+    padding: 0;
+    border: 0;
+    background: transparent !important;
+    color: inherit !important;
+    text-align: left;
+    cursor: pointer;
+}
+
+.artwork-bird-image {
+    flex: 0 0 68px;
+    width: 68px;
+    height: 60px;
+    margin-right: 0.8rem;
+    object-fit: contain;
+}
+
+.artwork-bird-names {
+    display: flex;
+    flex: 1 1 auto;
+    flex-direction: column;
+    min-width: 0;
+    overflow-wrap: anywhere;
+}
+
+.artwork-bird-common {
+    font-weight: 600;
+}
+
+.artwork-bird-scientific {
+    font-size: 0.92em;
     font-style: italic;
-    font-weight: normal;
 }
 
-.artwork-sheet dl {
-    margin: 0 0 1.1em;
-    padding-bottom: 1em;
-    border-bottom: 1px solid #a4855a;
+.artwork-bird-links {
+    display: flex;
+    flex: 0 0 auto;
+    margin-left: 0.2rem;
 }
 
-.artwork-sheet dt {
-    font-weight: bold;
+.artwork-bird-links a {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 44px;
+    margin-right: 0.35rem;
+    padding: 0.4rem 0.55rem;
+    background: #f0ece6;
+    color: #38281c;
+    text-decoration: none;
 }
 
-.artwork-sheet dd {
-    margin: 0 0 0.5em;
+.artwork-bird-links a:focus-visible,
+.artwork-bird-toggle:focus-visible {
+    outline: 2px solid #683611;
+    outline-offset: 2px;
 }
 
-.artwork-sheet a {
+.artwork-bird-description {
+    margin: 0 0 0.85rem 84px;
+    max-width: 60em;
+    line-height: 1.5;
+}
+
+.artwork-attribution {
+    display: flex;
+    flex-wrap: wrap;
+    margin-top: 1.5rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid #b5a99b;
+    font-size: 0.9rem;
+}
+
+.artwork-attribution > * {
+    margin: 0 0.45rem 0.25rem 0;
+}
+
+.artwork-attribution a {
     color: #684521;
 }
 
-.artwork-sheet textarea {
-    display: block;
-    box-sizing: border-box;
-    width: 100%;
-    min-height: 7em;
-    margin: 0 0 0.7em;
-    padding: 0.6em;
-    border: 1px solid #82633d;
-    border-radius: 3px;
-    background: #fbf4df;
-    color: #38281c;
-    font: inherit;
+#artwork-status {
+    margin: 0.5rem 0;
+}
+
+#artwork-retry {
+    margin: 0.25rem 0 0.75rem;
 }
 
 .artwork-button:focus,
 .artwork-sheet :focus {
     outline: 2px solid #683611;
     outline-offset: 3px;
+}
+
+@media (max-width: 520px) {
+    .artwork-sheet {
+        padding: 1.1rem 0.85rem 2rem;
+    }
+
+    .artwork-sheet h2 {
+        font-size: 1.5rem;
+        overflow-wrap: anywhere;
+    }
+
+    .artwork-bird-row {
+        align-items: center;
+    }
+
+    .artwork-bird-image {
+        flex-basis: 54px;
+        width: 54px;
+        height: 54px;
+        margin-right: 0.45rem;
+    }
+
+    .artwork-bird-links {
+        flex-direction: column;
+    }
+
+    .artwork-bird-links a {
+        min-height: 38px;
+        margin: 0 0 0.2rem;
+        padding: 0.25rem 0.4rem;
+        font-size: 0.85rem;
+    }
+
+    .artwork-bird-description {
+        margin-left: 60px;
+    }
 }
 
 @media (prefers-color-scheme: dark) {
@@ -122,26 +225,27 @@
         color-scheme: dark;
     }
 
-    .artwork-sheet h4 {
-        color: #e3c38e;
-    }
-
-    .artwork-sheet dl {
+    .artwork-bird {
         border-color: #8c775d;
     }
 
-    .artwork-sheet a {
-        color: #f0c97f;
-    }
-
-    .artwork-sheet textarea {
-        border-color: #b59a70;
-        background: #2c241d;
+    .artwork-bird-links a {
+        background: #31271e;
         color: #f8eddb;
     }
 
+    .artwork-bird-links a:focus-visible,
+    .artwork-bird-toggle:focus-visible,
     .artwork-button:focus,
     .artwork-sheet :focus {
-        outline-color: #f0c27a;
+        outline-color: #e6bd7d;
+    }
+
+    .artwork-attribution {
+        border-color: #8c775d;
+    }
+
+    .artwork-attribution a {
+        color: #e6c68f;
     }
 }

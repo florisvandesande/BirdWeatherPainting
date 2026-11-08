@@ -122,8 +122,10 @@ common names provide each collage label, with the scientific name below it.
 
 The Fugleramme derivatives are CC BY-SA 4.0. PNGs retain transparency and are
 resized to at most 600 pixels to preserve the existing single-bird source size
-while keeping the static artwork download manageable. Per-image source URLs are retained in the
-artwork catalog and shown through the artwork information page. See
+while keeping the static artwork download manageable. The artwork information
+page shows all unique species heard today, with local PNGs, BirdWeather names,
+scientific names, available eBird and Wikipedia links, and expandable Wikipedia
+summaries. The page links to the Fugleramme attribution ledger. See
 [artwork sources and reuse](docs/artwork.md) and the
 [Fugleramme attribution ledger](https://github.com/arnegiacomo/fugleramme/blob/main/assets/artwork/classic/ATTRIBUTION.md).
 
