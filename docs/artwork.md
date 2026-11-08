@@ -14,7 +14,7 @@ the credited BirdWeather fallback remains available.
 When the selected station or nearby area has no detections, the painting uses a
 random local perch. The heading reads “Perch” and the caption explains that it
 is an empty branch. The PNGs keep transparent backgrounds, are resized to a
-maximum edge of 1,200 pixels, and have embedded source metadata removed. The
+maximum edge of 600 pixels, and have embedded source metadata removed. The
 adapted artwork is available under CC BY-SA 4.0.
 
 Collage mode also uses body masses from `bird_sizes.csv` and visible-image
