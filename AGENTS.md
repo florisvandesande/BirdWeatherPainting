@@ -24,7 +24,7 @@ Do not claim that work is complete when required files, documentation, tests, co
 
 ## 2. Language and writing conventions
 
-All source code, identifiers, code comments, developer-facing messages, commit messages, Pull Request text, and primary documentation must be written in English. User-facing text must follow the [localization requirements](docs/agents/localization.md).
+All source code, identifiers, code comments, developer-facing messages, commit messages, Pull Request text, and primary documentation must be written in English. Keep user-facing text localized in every supported locale in `assets/text.js`.
 
 Write comments to explain intent, constraints, or non-obvious decisions. Do not comment on syntax that is already clear from the code.
 
@@ -32,12 +32,12 @@ Use Markdown for repository documentation. Keep headings descriptive, examples c
 
 ## 3. Repository structure
 
-Follow [repository structure and hygiene](docs/agents/repository.md) when creating directories, adding tooling, handling generated files, or changing `.gitignore`.
+Follow the repository structure and hygiene rules in Section 7 when creating directories, adding tooling, handling generated files, or changing `.gitignore`.
 
 Keep `.temporary/` protected even when the repository uses an intentional different layout.
 
 **IMPORTANT:**
-Always work in the repository's existing project folder so there is one place where the project files live. Keep branch work in that same folder. Do not create, move, or use Git worktrees (separate project folders) unless the user explicitly and clearly asks for one. When the user does, read [worktree location and cleanup](docs/agents/repository.md#git-worktrees) first.
+Always work in the repository's existing project folder so there is one place where the project files live. Keep branch work in that same folder. Do not create, move, or use Git worktrees (separate project folders) unless the user explicitly and clearly asks for one.
 
 _If you do not follow these rules, do not start work, because it will be thrown away if you did._
 
@@ -108,19 +108,11 @@ Every user interface must support both light and dark appearance.
 
 For macOS-hosted verification, use [.agents/scripts/macos-appearance.sh](.agents/scripts/macos-appearance.sh) to choose the test appearance. The agent may choose the order, but must test both `light` and `dark`, restart affected applications after switching, and restore the original macOS appearance before reporting completion. Use the script's `run` command for command-driven checks because it restores automatically; after a manual session started with `set`, run `restore` and then `status`.
 
-### Conditional references
+### Conditional guidance
 
-Read the referenced guidance before working in the matching area. These documents contain detailed rules and examples that do not belong in the always-loaded contract.
-
-- Before creating or updating `README.md`, read [README requirements](docs/agents/readme.md).
-- Before creating directories, adding tooling, or changing `.gitignore`, read [repository structure and hygiene](docs/agents/repository.md).
-- Before creating, moving, or removing a Git worktree, read [worktree location and cleanup](docs/agents/repository.md#git-worktrees).
-- Before adding or changing user-facing text, read [localization requirements](docs/agents/localization.md).
-- When `web/` exists or the task concerns a PHP web application, read [web project requirements](docs/agents/web.md) before editing, testing, or deploying web code.
-- When `ios/`, `watchos/`, or `macos/` exists, read [Apple platform requirements](docs/agents/apple.md) before editing, testing, signing, distributing, or deploying Apple code.
+- Keep every supported locale in sync when changing user-facing text.
 - When a task matches an installed skill, read and follow that skill. Keep repeatable operational procedures in skills instead of duplicating them here.
-- When the task concerns GitHub issues or labels, read the relevant documents in [docs/agents](docs/agents/).
-- When the task introduces or changes domain terminology, read [domain guidance](docs/agents/domain.md).
+- Use established domain terms; when changing them, document the change in the README or the relevant module documentation.
 
 ## 5. Internet access
 
