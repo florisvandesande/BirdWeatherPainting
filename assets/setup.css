@@ -123,6 +123,11 @@
     cursor: pointer;
 }
 
+.painting-settings {
+    background: #f0ece6;
+    color: #38281c;
+}
+
 .setup button:disabled {
     opacity: 0.65;
     cursor: default;
@@ -181,12 +186,51 @@
     display: flex;
 }
 
-.search-row input {
+.station-query-control {
+    position: relative;
     flex: 1 1 auto;
     min-width: 0;
     margin-right: 0.5rem;
+}
+
+.station-query-control input {
+    width: 100%;
+    padding-right: 2.8rem;
     -webkit-appearance: none;
     appearance: none;
+}
+
+.station-search-confirmation {
+    position: absolute;
+    top: 50%;
+    right: 0.65rem;
+    width: 1.45rem;
+    height: 1.45rem;
+    transform: translateY(-50%);
+    pointer-events: none;
+}
+
+.station-search-confirmation[hidden] {
+    display: none;
+}
+
+.station-search-confirmation svg {
+    display: block;
+    width: 100%;
+    height: 100%;
+}
+
+.station-search-confirmation circle {
+    fill: #39854b;
+}
+
+.station-search-confirmation path {
+    fill: none;
+    stroke: #fff;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 2.5;
+    opacity: 0.78;
 }
 
 .search-row button {
@@ -207,10 +251,6 @@
 
 .setup-status:not(:empty) {
     color: #74401f;
-}
-
-.selected-station {
-    font-weight: 600;
 }
 
 .setup-section > label + select {
@@ -365,6 +405,11 @@
 
     .setup-choice-buttons button[aria-pressed="true"],
     .setup-actions button {
+        background: #f0ece6;
+        color: #38281c;
+    }
+
+    .painting-settings {
         background: #f0ece6;
         color: #38281c;
     }

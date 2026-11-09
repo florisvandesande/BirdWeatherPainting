@@ -4,6 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="apple-mobile-web-app-capable" content="yes">
+    <link rel="icon" type="image/svg+xml" href="assets/app-icon.svg">
+    <link rel="apple-touch-icon" sizes="180x180" href="assets/apple-touch-icon.png">
     <title>BirdWeather Painting</title>
     <link rel="stylesheet" href="assets/painting.css">
     <link rel="stylesheet" href="assets/collage.css">
@@ -98,15 +100,23 @@
                         <form id="station-search" role="search" aria-labelledby="station-query-label">
                             <label id="station-query-label" for="station-query" data-text="stationSearchLabel"></label>
                             <div class="search-row">
-                                <input id="station-query" type="search" inputmode="numeric" pattern="[0-9]*"
-                                    maxlength="18" dir="ltr" autocomplete="off"
-                                    aria-describedby="station-search-hint">
+                                <div class="station-query-control">
+                                    <input id="station-query" type="search" inputmode="numeric" pattern="[0-9]*"
+                                        maxlength="18" dir="ltr" autocomplete="off"
+                                        aria-describedby="station-search-hint">
+                                    <span id="station-search-confirmation" class="station-search-confirmation" hidden aria-hidden="true">
+                                        <svg viewBox="0 0 24 24" focusable="false">
+                                            <circle cx="12" cy="12" r="10" />
+                                            <path d="m7.5 12.2 3 3 6-6.3" />
+                                        </svg>
+                                    </span>
+                                </div>
                                 <button type="submit" data-text="search"></button>
                             </div>
                             <p id="station-search-hint" class="setup-hint" data-text="stationSearchHint"></p>
                         </form>
                         <p id="station-search-status" class="setup-status" role="status"></p>
-                        <p id="selected-station" class="selected-station" role="status"></p>
+                        <p id="selected-station" class="visually-hidden" role="status" aria-live="polite"></p>
                     </div>
                 </section>
                 <section class="setup-section" aria-labelledby="view-heading">

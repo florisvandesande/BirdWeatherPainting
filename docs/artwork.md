@@ -22,6 +22,12 @@ loads, a random perch appears in the painting area. The PNGs keep transparent
 backgrounds, are resized to a maximum edge of 600 pixels, and have embedded
 source metadata removed. The adapted artwork is available under CC BY-SA 4.0.
 
+The iPad home-screen icon reuses the local robin illustration in a paper-toned
+botanical medallion. `assets/app-icon.svg` is the editable source and
+`assets/apple-touch-icon.png` is its 180 × 180 iOS home-screen image. The bird
+remains covered by the Fugleramme attribution and licence links shown in the
+artwork information page.
+
 Collage mode also uses body masses from `bird_sizes.csv` and visible-image
 bounds from `geometry.json` when sizing and packing birds. Its labels use the
 selected-language common name plus the scientific name. The artwork information

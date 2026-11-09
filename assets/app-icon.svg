@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+    width="512" height="512" viewBox="0 0 512 512">
+  <defs>
+    <linearGradient id="paper" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#f5f1eb"/>
+      <stop offset="1" stop-color="#e9e2d7"/>
+    </linearGradient>
+    <clipPath id="medallion">
+      <circle cx="256" cy="256" r="224"/>
+    </clipPath>
+  </defs>
+  <rect width="512" height="512" fill="#f0ece6"/>
+  <circle cx="256" cy="256" r="239" fill="url(#paper)" stroke="#6c5535" stroke-width="3"/>
+  <circle cx="256" cy="256" r="228" fill="none" stroke="#bda275" stroke-width="1.5"/>
+  <g fill="none" stroke="#bda275" stroke-width="2" stroke-linecap="round">
+    <path d="M256 23v12m0 442v12M23 256h12m442 0h12M91 91l9 9m312 312 9 9m0-330-9 9M100 412l-9 9"/>
+  </g>
+  <g clip-path="url(#medallion)">
+    <path d="M57 416c86-90 175-113 280-82 55 16 101 11 145-19" fill="none" stroke="#725a39" stroke-width="8" stroke-linecap="round"/>
+    <path d="M110 383c-34-5-57-26-68-61 34 5 56 24 68 61Zm36-29c-4-38 10-67 43-88 2 38-12 67-43 88Zm81-35c-28-23-38-53-28-91 27 24 37 54 28 91Zm72 8c11-35 35-56 73-62-12 36-36 57-73 62Zm91 9c23-28 54-37 92-26-24 27-55 36-92 26Z" fill="#a7a27d" stroke="#6c5535" stroke-width="2" stroke-linejoin="round"/>
+    <g fill="none" stroke="#738064" stroke-width="2" opacity=".65">
+      <path d="M105 376c-18-18-31-34-48-50m87 21c7-25 21-45 42-63m42 26c-7-28-10-48-8-75m67 96c20-23 43-39 71-49m20 57c32 1 56-1 81-12"/>
+    </g>
+    <image x="56" y="108" width="400" height="292" preserveAspectRatio="xMidYMid meet"
+      href="artwork/birds/erithacus-rubecula.png" xlink:href="artwork/birds/erithacus-rubecula.png"/>
+  </g>
+  <circle cx="256" cy="256" r="224" fill="none" stroke="#6c5535" stroke-width="1.5"/>
+</svg>

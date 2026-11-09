@@ -48,6 +48,7 @@
     var statusKey = '';
     var currentView = urlDraft.view;
     var locale = preferences.locale();
+    var stationConfirmation = document.getElementById('station-search-confirmation');
 
     function say(key, fields) {
         return text.message(locale, key, fields);
@@ -62,6 +63,7 @@
         locationButton.setAttribute('aria-pressed', String(isNearby));
         stationModeButton.setAttribute('aria-pressed', String(isStation));
         saveButton.disabled = !isNearby && (!isStation || !stationSelected || !api.validStationId(station));
+        stationConfirmation.hidden = !stationSelected;
         if (stationSelected && selectedName) {
             selectionSummary.textContent = say('stationChoice', { name: selectedName, id: station });
         } else if (stationSelected) {

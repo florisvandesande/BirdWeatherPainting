@@ -69,6 +69,8 @@
                     getComputedStyle(doc.querySelector('.setup-controls')).flexDirection === 'column' &&
                     getComputedStyle(doc.querySelector('.setup')).backgroundColor ===
                         getComputedStyle(doc.getElementById('artwork-info')).backgroundColor &&
+                    getComputedStyle(doc.getElementById('open-settings')).backgroundColor ===
+                        getComputedStyle(doc.getElementById('painting')).backgroundColor &&
                     doc.getElementById('url-config-status').textContent === '';
             } },
             valid: { query: '?source=station&station=7368&view=today&limit=12&lang=nl&night=0&nightStart=22%3A00&nightEnd=07%3A00&utm_source=fixture', check: function (doc) {
@@ -97,6 +99,7 @@
                 return visible(doc, 'setup') && doc.getElementById('station-mode-button').getAttribute('aria-pressed') === 'true' &&
                     doc.getElementById('station-query').value === '' &&
                     doc.getElementById('selected-station').textContent === '' &&
+                    doc.getElementById('station-search-confirmation').hidden &&
                     doc.getElementById('station-search-status').textContent.length > 0 &&
                     doc.getElementById('save-settings').disabled;
             } },
@@ -254,9 +257,16 @@
                 doc.getElementById('station-query').dispatchEvent(input);
                 doc.getElementById('station-search').dispatchEvent(new Event('submit', { bubbles: true, cancelable: true }));
                 window.setTimeout(function () {
-                    showResult('station ID auto-selects an exact match',
-                        doc.getElementById('selected-station').textContent.indexOf('Fixture station') >= 0 &&
-                        doc.getElementById('save-settings').disabled === false);
+                    var found = doc.getElementById('selected-station').textContent.indexOf('Fixture station') >= 0 &&
+                        !doc.getElementById('station-search-confirmation').hidden &&
+                        doc.getElementById('save-settings').disabled === false;
+                    doc.getElementById('station-query').value = '123456';
+                    var edited = doc.createEvent('Event');
+                    edited.initEvent('input', true, false);
+                    doc.getElementById('station-query').dispatchEvent(edited);
+                    showResult('station confirmation appears on match and clears after editing',
+                        found && doc.getElementById('station-search-confirmation').hidden &&
+                        doc.getElementById('save-settings').disabled === true);
                 }, 10);
             };
             frame.src = '../index.html?source=station&station=0&view=today&limit=12&lang=en&night=0&nightStart=22%3A00&nightEnd=07%3A00';
