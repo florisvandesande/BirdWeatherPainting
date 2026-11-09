@@ -1,0 +1,77 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light dark">
+    <title>Latest bird widget example</title>
+    <style>
+        :root {
+            color-scheme: light dark;
+            font-family: Georgia, "Times New Roman", serif;
+            background: #f0ece6;
+            color: #392719;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                background: #211d19;
+                color: #f0ece6;
+            }
+        }
+
+        body {
+            box-sizing: border-box;
+            min-height: 100vh;
+            margin: 0;
+            padding: clamp(24px, 7vw, 80px);
+            display: grid;
+            place-items: center;
+        }
+
+        main {
+            width: min(100%, 540px);
+            text-align: center;
+        }
+
+        h1 {
+            font-size: clamp(1.5rem, 5vw, 2.25rem);
+            font-weight: 500;
+        }
+
+        .bird {
+            width: min(100%, 440px);
+            margin: 32px auto 0;
+        }
+
+        .bird-image {
+            display: block;
+            width: 100%;
+            height: min(58vh, 480px);
+            object-fit: contain;
+        }
+
+        .bird-name {
+            margin: 16px 0 0;
+            font-size: 1.35rem;
+            font-style: italic;
+        }
+
+        .bird-credit {
+            margin-top: 24px;
+            font: 0.8rem/1.5 system-ui, sans-serif;
+        }
+
+        a {
+            color: inherit;
+        }
+    </style>
+</head>
+<body>
+    <main>
+        <h1>Latest bird at station 8089</h1>
+        <div id="bird" aria-live="polite"></div>
+    </main>
+    <script src="assets/bird-widget.js" defer></script>
+</body>
+</html>

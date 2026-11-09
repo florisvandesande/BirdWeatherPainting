@@ -42,6 +42,19 @@ if [[ ! -d "$artwork_root/birds" || ! -d "$artwork_root/perches" ]]; then
     echo "The Pages source must contain the bird and perch PNG directories." >&2
     exit 2
 fi
+widget_source="$source_root/.temporary/bird-widget/bird-widget.js"
+if [[ ! -f "$widget_source" ]]; then
+    echo "The standalone bird widget source is missing from .temporary/bird-widget/." >&2
+    exit 2
+fi
+cp "$widget_source" "$output_root/assets/bird-widget.js"
+if ! command -v python3 >/dev/null 2>&1; then
+    echo "Python 3 is required to prepare the lightweight bird widget index." >&2
+    exit 2
+fi
+
+python3 "$source_root/scripts/build-bird-widget-index.py" \
+    "$artwork_root/catalog.json" "$artwork_root"
 
 original_bytes=0
 published_bytes=0
