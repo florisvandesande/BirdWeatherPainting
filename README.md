@@ -78,6 +78,14 @@ Saving settings writes the complete canonical URL. A partial or invalid link ope
 
 Open its URL in Safari on the iPad, tap **Share**, then choose **Add to Home Screen**. In the iPad's Settings app, open **General → Auto-Lock** and choose **Never**; keep the iPad connected to power while it displays the painting.
 
+## GitHub Pages deployment
+
+The Pages workflow publishes the static app from `main`. It prepares a smaller
+site artifact by compressing the artwork as indexed PNG while preserving
+transparency; this keeps compatibility with older iPads, including iPad 2. The
+original PNGs in the repository are left unchanged. In the repository's Pages
+settings, select **GitHub Actions** as the build and deployment source.
+
 
 ## Set as macOS desktop background
 
