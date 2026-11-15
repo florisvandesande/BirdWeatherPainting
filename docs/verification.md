@@ -129,3 +129,54 @@ Date: 2026-11-15.
   That tool is required by `scripts/build-pages.sh` to prepare the
   iPad-compatible PNG artwork. The GitHub Pages workflow builds and deploys
   the merged `main` branch online.
+
+## Nearby collage startup
+
+Date: 2026-11-15.
+
+- The supplied nearby URL was reproduced in Chrome. The deployed version took
+  about 14.7–16 seconds to show its first collage. Its nearby request scanned
+  roughly 9,040 detections from the previous UTC midnight; the first 100
+  already contained 17 unique species. The exact local-day period contained
+  roughly 2,760 detections and 69 species.
+- Nearby collage requests now start at local midnight, explicitly sort by
+  timestamp, and stop paging once the newest-first results contain enough
+  unique species for the collage. The supported GraphQL `speciesCount` field
+  supplies the omitted count. If the count is inconsistent or timestamps are
+  not newest-first, the complete scan remains in use.
+- A direct query to BirdWeather with `sortBy: "timestamp"` returned detections
+  in descending timestamp order for the supplied nearby area. A local Chrome
+  run using the same query displayed the latest 12 unique species; the collage
+  arrangement itself remains optimized for the available board area.
+- The data preview passed checks for the local-day bounds, a one-page fast
+  path, the 12 most recent unique species, the omitted count, and a full-scan
+  fallback when pages are not newest-first.
+- The collage uses the 71,220-byte compact artwork index instead of first
+  loading the 849,669-byte catalogue. If the compact index is unavailable, it
+  falls back to the catalogue.
+- The collage preview passed with a delayed image load: the local perch stayed
+  visible above the staging layer until the new composition was ready. The
+  replacement layout remained in the same board area. The artwork fallback
+  and 65-species information-list previews also passed in Chrome.
+- The same nearby URL loaded the 12 most recent unique species and reported
+  57 more in one local Chrome run. A later request showed 58 more as the live
+  species count changed from 69 to 70.
+
+To repeat the browser checks from the repository root, start the static
+server:
+
+```sh
+python3 -m http.server 8000
+```
+
+Open these pages in Chrome, then stop the server with Control-C:
+
+- `http://127.0.0.1:8000/tests/collage-data-preview.html`
+- `http://127.0.0.1:8000/tests/collage-preview.html?branch=1`
+
+## Still unverified for nearby collage startup
+
+- No physical iPad 2 was available. The startup speed, memory use, and touch
+  behavior on its Safari version remain unverified.
+- GitHub Pages was not updated in this change, so the deployed URL still serves
+  the previous version until the change is shipped.

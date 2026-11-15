@@ -35,7 +35,8 @@ Alternatively you can pick a station from [birdweather.com](https://app.birdweat
   button uses the cached list when it is ready; its bird thumbnails load when
   the list opens.
 - Choose one public station by numeric ID, or search stations near a location within a 2, 5, or 10 km radius.
-- Show between 1 and 32 species in a collage. The default is 12. A newly heard species replaces the oldest species when the collage reaches its limit.
+- Show up to 32 unique species from today's detections, ranked by each species' most recent timestamp; the default is 12. Their positions are arranged to fit the collage, not by time order.
+- Keep the local perch visible while the first collage is being prepared; retain the existing collage until a replacement is ready.
 - Keep the collage composition stable while its species list stays the same. When the list changes, the birds are composed again, with larger birds near the centre and compact, irregular spacing.
 - Show complete bird illustrations without cropping. Birds may overlap only where their image pixels are transparent.
 - Use locally stored bird illustrations and perches. A missing bird illustration, an empty day, or a loading state uses a local perch.
@@ -100,7 +101,7 @@ Using an app like [Plash](https://sindresorhus.com/plash) you can set the site a
 
 The bird and perch illustrations come from Fugleramme. The adapted PNG images are available under CC BY-SA 4.0. The artwork information page links to the Fugleramme attribution ledger and licence. See [artwork sources and reuse](docs/artwork.md) and the [Fugleramme attribution ledger](https://github.com/arnegiacomo/fugleramme/blob/main/assets/artwork/classic/ATTRIBUTION.md).
 
-Latest-bird mode uses the compact `assets/artwork/widget-index.json` lookup so it does not need to load the full artwork catalogue before choosing one illustration. The Pages build regenerates its copy from `catalog.json`. After changing the artwork catalogue for local use, refresh the committed lookup with:
+Latest-bird and collage views use the compact `assets/artwork/widget-index.json` lookup before loading the full artwork catalogue. The collage falls back to the full catalogue if the compact index is unavailable. The Pages build regenerates its copy from `catalog.json`. After changing the artwork catalogue for local use, refresh the committed lookup with:
 
 ```sh
 python3 scripts/build-bird-widget-index.py assets/artwork/catalog.json assets/artwork

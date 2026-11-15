@@ -22,9 +22,8 @@
 
     function nearbyPeriod(now) {
         var local = new Date(now);
-        // Include the whole local day even if a time-zone transition skipped or repeated midnight.
-        var earliest = new Date(Date.UTC(local.getFullYear(), local.getMonth(), local.getDate() - 1));
-        return { from: earliest.toISOString(), to: local.toISOString(), timezone: 'Etc/UTC' };
+        local.setHours(0, 0, 0, 0);
+        return { from: local.toISOString(), to: new Date(now).toISOString(), timezone: 'Etc/UTC' };
     }
 
     window.BirdWeatherCollageDay = { stationDate: stationDate, deviceDate: deviceDate, nearbyPeriod: nearbyPeriod };

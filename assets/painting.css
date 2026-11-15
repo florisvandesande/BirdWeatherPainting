@@ -75,6 +75,16 @@ html.night-display,
     min-height: 0;
 }
 
+.painting.collage-preparing > #latest-plate {
+    position: absolute;
+    z-index: 1;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    width: auto;
+}
+
 .plate-art {
     display: block;
     width: 74%;

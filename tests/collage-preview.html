@@ -5,11 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <base href="../">
     <title>BirdWeather collage preview</title>
+    <link rel="stylesheet" href="../assets/painting.css">
     <link rel="stylesheet" href="../assets/collage.css">
     <style>
         html, body { margin: 0; height: 100%; font: 14px system-ui, sans-serif; }
         body { display: flex; flex-direction: column; }
         #controls { display: flex; align-items: center; gap: 0.75rem; padding: 0.5rem; }
+        #painting { min-height: 250px; height: auto; flex: 1 1 auto; }
+        #latest-art { max-width: 180px; }
+        #plate-title { font-size: 1.1rem; }
         .preview { position: relative; flex: 1; min-height: 0; background: #f0ece6; }
         #collage-board { top: 0; bottom: 0; }
         #status { padding: 0.4rem 0.6rem; white-space: pre-wrap; }
@@ -24,16 +28,22 @@
         <button id="portrait">Portrait</button>
         <button id="landscape">Landscape</button>
         <button id="transition">Check replacement</button>
+        <button id="branch">Check initial branch</button>
         <button id="empty">Empty day</button>
         <button id="missing">Missing bird image</button>
     </div>
     <div id="status">Loading artwork catalog…</div>
-    <main id="collage" class="collage preview"><div id="collage-board" class="collage-board"></div>
-        <div id="collage-omitted" class="visually-hidden" hidden></div><div id="collage-empty-state" hidden>
-            <img id="collage-empty-art" hidden>
-        </div>
+    <main id="painting" class="painting">
+        <section id="latest-plate" class="plate-content">
+            <img id="latest-art" class="plate-art" src="../assets/field-sprig.svg" alt="">
+            <div class="plate-caption"><h1 id="plate-title">Listening for birds</h1></div>
+        </section>
+        <section id="collage" class="collage preview" hidden>
+            <div id="collage-board" class="collage-board"></div>
+            <div id="collage-omitted" class="visually-hidden" hidden></div>
+            <div id="collage-empty-state" hidden><img id="collage-empty-art" hidden></div>
+        </section>
     </main>
-    <div id="painting" hidden></div><div id="latest-plate" hidden></div>
     <script src="../assets/collage-layout.js"></script>
     <script>
         window.fixtureSpeciesByName = Object.create(null);
@@ -217,6 +227,38 @@
                 }
                 waitForInitial();
             };
+            document.getElementById('branch').onclick = function () {
+                board.textContent = '';
+                collageView.clear();
+                window.fixtureImageDelay = 1000;
+                var first = speciesList.slice(0, 12).map(function (bird) {
+                    return { id: bird.id, commonName: bird.commonName, scientificName: bird.scientificName };
+                });
+                collageView.show({ species: first, omitted: 0 }, 'en');
+                window.setTimeout(function () {
+                    var latest = document.getElementById('latest-plate');
+                    var preparing = document.getElementById('painting').classList.contains('collage-preparing');
+                    var branchVisible = !latest.hidden && getComputedStyle(latest).display !== 'none' &&
+                        document.getElementById('latest-art').naturalWidth > 0;
+                    var overlayKeepsBoardSize = getComputedStyle(latest).position === 'absolute' &&
+                        document.querySelector('.collage-layer-staging');
+                    if (!preparing || !branchVisible || !overlayKeepsBoardSize) {
+                        window.fixtureImageDelay = 0;
+                        status.textContent = 'FAIL: branch was not visible over the staging collage';
+                        return;
+                    }
+                    function verifyFinished() {
+                        var activeCount = document.querySelectorAll('.collage-layer-active .collage-specimen').length;
+                        if (activeCount !== 12) { window.setTimeout(verifyFinished, 50); return; }
+                        var finished = latest.hidden &&
+                            !document.getElementById('painting').classList.contains('collage-preparing');
+                        window.fixtureImageDelay = 0;
+                        status.textContent = finished ? 'PASS: branch stays visible until the collage is ready' :
+                            'FAIL: branch did not switch off with the finished collage';
+                    }
+                    verifyFinished();
+                }, 150);
+            };
             document.getElementById('empty').onclick = function () {
                 collageView.showEmpty('en');
                 collageView.paintEmpty(function (credit) {
@@ -255,6 +297,10 @@
             if (params.get('orientation') === 'landscape') { orientationName = 'landscape'; setBoardSize(1024, 768); }
             if (params.get('transition') === '1') {
                 document.getElementById('transition').click();
+                return;
+            }
+            if (params.get('branch') === '1') {
+                document.getElementById('branch').click();
                 return;
             }
             if (params.get('empty') === '1') {
