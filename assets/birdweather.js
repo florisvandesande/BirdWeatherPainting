@@ -4,8 +4,9 @@
     var endpoint = 'https://app.birdweather.com/graphql';
     var speciesFields = 'id commonName scientificName translations { locale commonName } ' +
         'imageUrl imageCredit imageLicense imageLicenseUrl';
+    var latestSpeciesFields = 'id commonName scientificName translations { locale commonName }';
     var latestStationFields = 'id name detections(first: 1) { nodes { timestamp species { ' +
-        speciesFields + ' } } }';
+        latestSpeciesFields + ' } } }';
     var earthRadiusKm = 6371.0088;
     var radiansPerDegree = Math.PI / 180;
 

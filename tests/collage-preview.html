@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <base href="../">
     <title>BirdWeather collage preview</title>
     <link rel="stylesheet" href="../assets/collage.css">
     <style>
@@ -58,7 +59,7 @@
             message: function (locale, key) { return key; }
         };
     </script>
-    <script src="../assets/collage-view.js"></script>
+    <script src="../assets/collage-view.js?empty-perch-credit=1"></script>
     <script>
     (function () {
         'use strict';
@@ -225,7 +226,9 @@
                         image.naturalWidth > 0 && emptyState.children.length === 1 &&
                         !document.querySelector('#collage h1, #collage-empty-state h2, #collage-empty-state p');
                     status.textContent = passed ? 'PASS: empty collage shows only a random perch' :
-                        'FAIL: empty collage contains text or no perch';
+                        'FAIL: empty collage contains text or no perch (credit=' +
+                        (credit && credit.kind || 'missing') + ', width=' + image.naturalWidth +
+                        ', children=' + emptyState.children.length + ')';
                 });
             };
             document.getElementById('missing').onclick = function () {

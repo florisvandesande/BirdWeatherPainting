@@ -4,15 +4,21 @@
     var sprig = 'assets/field-sprig.svg';
     var catalogPath = 'assets/artwork/catalog.json';
     var collageCatalogPath = 'assets/artwork/catalog.json';
+    var latestIndexPath = 'assets/artwork/widget-index.json';
+    var defaultPerchPath = 'perches/birch-twig.png';
     var catalogState = 'idle';
     var catalog = null;
     var catalogWaiters = [];
+    var latestIndexState = 'idle';
+    var latestIndex = null;
+    var latestIndexWaiters = [];
     var collageCatalogState = 'idle';
     var collageCatalog = null;
     var collageCatalogWaiters = [];
     var selectedBirdImages = Object.create(null);
     var failedImages = Object.create(null);
     var selectedSpeciesPerches = Object.create(null);
+    var selectedLatestSpeciesPerches = Object.create(null);
     var perchOrder = null;
     var selectedPerchPath = null;
     var fuglerammeLicense = 'CC BY-SA 4.0';
@@ -118,6 +124,171 @@
         } catch (error) {
             finish(null);
         }
+    }
+
+    function objectValue(value) {
+        return Object.prototype.toString.call(value) === '[object Object]';
+    }
+
+    function validLatestIndex(value) {
+        if (!value || value.version !== 1 || value.license !== fuglerammeLicense ||
+                value.licenseUrl !== fuglerammeLicenseUrl || value.attributionUrl !== fuglerammeAttribution ||
+                value.creator !== 'Fugleramme contributors' || value.creatorUrl !== fuglerammeCreator ||
+                !objectValue(value.birds) || !objectValue(value.aliases) || !Array.isArray(value.perches) ||
+                !value.perches.length) {
+            return false;
+        }
+        var validPerches = value.perches.every(function (path) {
+            return typeof path === 'string' && /^perches\/[a-z0-9_-]+\.png$/.test(path);
+        });
+        var validBirds = Object.keys(value.birds).every(function (name) {
+            var paths = value.birds[name];
+            return typeof name === 'string' && name.length <= 160 && Array.isArray(paths) && paths.length > 0 &&
+                paths.every(function (path) {
+                    return typeof path === 'string' && /^birds\/[a-z0-9_-]+\.png$/.test(path);
+                });
+        });
+        var validAliases = Object.keys(value.aliases).every(function (name) {
+            return typeof name === 'string' && name.length <= 160 &&
+                typeof value.aliases[name] === 'string' && value.aliases[name].length <= 160;
+        });
+        return validPerches && validBirds && validAliases;
+    }
+
+    function loadLatestIndex(complete) {
+        if (latestIndexState === 'ready' || latestIndexState === 'failed') {
+            complete(latestIndex);
+            return;
+        }
+        latestIndexWaiters.push(complete);
+        if (latestIndexState === 'loading') {
+            return;
+        }
+        latestIndexState = 'loading';
+
+        var request;
+        var finished = false;
+        function finish(value) {
+            if (finished) {
+                return;
+            }
+            finished = true;
+            latestIndex = validLatestIndex(value) ? value : null;
+            latestIndexState = latestIndex ? 'ready' : 'failed';
+            var waiters = latestIndexWaiters;
+            latestIndexWaiters = [];
+            waiters.forEach(function (waiter) { waiter(latestIndex); });
+        }
+
+        try {
+            request = new XMLHttpRequest();
+            request.timeout = 12000;
+            request.open('GET', latestIndexPath, true);
+            request.onreadystatechange = function () {
+                if (request.readyState !== 4) {
+                    return;
+                }
+                var response = null;
+                try {
+                    response = request.status >= 200 && request.status < 300 && request.responseText.length <= 256000 ?
+                        JSON.parse(request.responseText) : null;
+                } catch (error) {
+                    response = null;
+                }
+                finish(response);
+            };
+            request.onerror = request.ontimeout = function () { finish(null); };
+            request.send(null);
+        } catch (error) {
+            finish(null);
+        }
+    }
+
+    function latestBirdPaths(species, source) {
+        if (!source || !species) {
+            return [];
+        }
+        var normalized = normalizeName(species.scientificName);
+        var candidates = [normalized];
+        var words = normalized.split(' ');
+        if (words.length > 2) {
+            candidates.push(words.slice(0, 2).join(' '));
+        }
+        var paths = [];
+        candidates.some(function (candidate) {
+            var canonical = source.aliases[candidate] || candidate;
+            paths = source.birds[canonical] || source.birds[candidate] || [];
+            return paths.length > 0;
+        });
+        if (!paths.length) {
+            Object.keys(source.aliases).some(function (alias) {
+                if (candidates.indexOf(source.aliases[alias]) !== -1 && source.birds[alias]) {
+                    paths = source.birds[alias];
+                    return true;
+                }
+                return false;
+            });
+        }
+        return paths.filter(function (path) {
+            return typeof path === 'string' && /^birds\/[a-z0-9_-]+\.png$/.test(path) &&
+                !failedImages['assets/artwork/' + path];
+        });
+    }
+
+    function latestImageCredit(path, kind, species) {
+        return {
+            kind: kind,
+            image: 'assets/artwork/' + path,
+            workSubject: species && typeof species.scientificName === 'string' ? species.scientificName : ''
+        };
+    }
+
+    function latestBirdCredits(species, source) {
+        var paths = latestBirdPaths(species, source);
+        var name = normalizeName(species.scientificName);
+        var selected = selectedBirdImages[name];
+        if (selected) {
+            paths.sort(function (first, second) {
+                var firstImage = 'assets/artwork/' + first;
+                var secondImage = 'assets/artwork/' + second;
+                return firstImage === selected ? -1 : secondImage === selected ? 1 : 0;
+            });
+        } else if (paths.length > 1) {
+            var selectedIndex = Math.floor(Math.random() * paths.length);
+            paths.unshift(paths.splice(selectedIndex, 1)[0]);
+            selectedBirdImages[name] = 'assets/artwork/' + paths[0];
+        } else if (paths.length) {
+            selectedBirdImages[name] = 'assets/artwork/' + paths[0];
+        }
+        return paths.map(function (path) { return latestImageCredit(path, 'bird', species); });
+    }
+
+    function latestPerchCredits(source, speciesKey) {
+        var paths = source && Array.isArray(source.perches) ? source.perches.slice(0) : [];
+        var selected = speciesKey ? selectedLatestSpeciesPerches[speciesKey] : selectedPerchPath;
+        if (!selected && paths.length) {
+            selected = paths[Math.floor(Math.random() * paths.length)];
+            if (speciesKey) {
+                selectedLatestSpeciesPerches[speciesKey] = selected;
+            } else {
+                selectedPerchPath = 'assets/artwork/' + selected;
+            }
+        }
+        if (selected) {
+            paths.sort(function (first, second) {
+                var selectedPath = selected.indexOf('assets/artwork/') === 0 ?
+                    selected.slice('assets/artwork/'.length) : selected;
+                return first === selectedPath ? -1 : second === selectedPath ? 1 : 0;
+            });
+        }
+        paths = paths.filter(function (path) {
+            return typeof path === 'string' && /^perches\/[a-z0-9_-]+\.png$/.test(path) &&
+                !failedImages['assets/artwork/' + path];
+        });
+        if (!paths.length && !failedImages['assets/artwork/' + defaultPerchPath]) {
+            paths.push(defaultPerchPath);
+        }
+        return paths.map(function (path) { return latestImageCredit(path, 'perch', null); });
     }
 
     function safeWorkSubject(value) {
@@ -262,14 +433,16 @@
         image.classList.add('artwork-loading');
         onCreditChange(null);
 
-        loadCatalog(function (source) {
+        loadLatestIndex(function (source) {
             if (image._birdweatherPaintRequest !== requestId) {
                 return;
             }
-            var candidates = species ? birdImages(species, source || { birds: {}, aliases: {} }) :
-                source ? perchCredits(source) : [];
+            var speciesKey = species ? normalizeName(species.scientificName) : '';
+            var candidates = species ? latestBirdCredits(species, source) : [];
+            if (!candidates.length) {
+                candidates = latestPerchCredits(source, speciesKey);
+            }
             var candidateIndex = 0;
-            var perchFallbackStarted = false;
 
             function showNext() {
                 if (image._birdweatherPaintRequest !== requestId) {
@@ -278,13 +451,6 @@
                 var credit = candidates[candidateIndex];
                 candidateIndex += 1;
                 if (!credit) {
-                    if (species && source && !perchFallbackStarted) {
-                        perchFallbackStarted = true;
-                        candidates = perchCredits(source, normalizeName(species.scientificName));
-                        candidateIndex = 0;
-                        showNext();
-                        return;
-                    }
                     image.onload = image.onerror = null;
                     image.classList.remove('artwork-loading');
                     image.setAttribute('src', sprig);
@@ -293,7 +459,9 @@
                 }
                 if (image.getAttribute('src') === credit.image && image.complete && image.naturalWidth) {
                     image.classList.remove('artwork-loading');
-                    if (credit.kind === 'perch') {
+                    if (credit.kind === 'perch' && speciesKey) {
+                        selectedLatestSpeciesPerches[speciesKey] = credit.image.slice('assets/artwork/'.length);
+                    } else if (credit.kind === 'perch') {
                         selectedPerchPath = credit.image;
                     }
                     onCreditChange(credit);
@@ -305,7 +473,9 @@
                         return;
                     }
                     image.classList.remove('artwork-loading');
-                    if (credit.kind === 'perch') {
+                    if (credit.kind === 'perch' && speciesKey) {
+                        selectedLatestSpeciesPerches[speciesKey] = credit.image.slice('assets/artwork/'.length);
+                    } else if (credit.kind === 'perch') {
                         selectedPerchPath = credit.image;
                     }
                     onCreditChange(credit);
@@ -320,6 +490,10 @@
 
             showNext();
         });
+    }
+
+    function preloadLatestIndex() {
+        loadLatestIndex(function () {});
     }
 
     function collageImagePath(credit) {
@@ -423,6 +597,7 @@
 
     window.BirdWeatherArtwork = {
         paint: paint,
+        preloadLatestIndex: preloadLatestIndex,
         paintCollage: paintCollage,
         localCredits: function () {
             return localCredits();

@@ -15,6 +15,12 @@
     var expandedId = null;
     var requestGeneration = 0;
     var currentRequest = null;
+    var currentRequestLocale = '';
+    var currentRequestBackground = false;
+    var cachedSpecies = null;
+    var cachedLocale = '';
+    var cachedAt = 0;
+    var cacheLifetime = 120000;
 
     function message(key, fields) {
         return text.message(locale, key, fields);
@@ -138,37 +144,116 @@
         retryButton.hidden = !retry;
     }
 
-    function loadSpecies() {
+    function clearCache() {
+        cachedSpecies = null;
+        cachedLocale = '';
+        cachedAt = 0;
+    }
+
+    function cancelCurrentRequest() {
         requestGeneration += 1;
-        var generation = requestGeneration;
         if (currentRequest && typeof currentRequest.abort === 'function') {
             currentRequest.abort();
         }
+        currentRequest = null;
+        currentRequestLocale = '';
+        currentRequestBackground = false;
+    }
+
+    function startSpeciesLoad(background) {
+        var requestedLocale = locale;
+        if (!speciesLoader) {
+            if (!background) {
+                showStatus('speciesUnavailable', true);
+            }
+            return;
+        }
+        if (currentRequestLocale === requestedLocale) {
+            if (!background && cachedSpecies === null) {
+                showStatus('loadingSpecies', false);
+            }
+            return;
+        }
+
+        cancelCurrentRequest();
+        var generation = requestGeneration;
+        currentRequestLocale = requestedLocale;
+        currentRequestBackground = background;
+        if (!background) {
+            species = [];
+            expandedId = null;
+            list.textContent = '';
+            showStatus('loadingSpecies', false);
+        }
+
+        function finish(error, result) {
+            if (generation !== requestGeneration) {
+                return;
+            }
+            currentRequest = null;
+            currentRequestLocale = '';
+            currentRequestBackground = false;
+            var birds = result && (result.allSpecies || result.species);
+            if (error || !Array.isArray(birds)) {
+                if (!dialog.hidden && locale === requestedLocale &&
+                        !(cachedLocale === requestedLocale && cachedSpecies !== null)) {
+                    showStatus('speciesUnavailable', true);
+                }
+                return;
+            }
+            cachedSpecies = birds;
+            cachedLocale = requestedLocale;
+            cachedAt = Date.now();
+            if (!dialog.hidden && locale === requestedLocale) {
+                species = birds;
+                showStatus(species.length ? '' : 'noSpeciesToday', false);
+                renderSpecies();
+            }
+        }
+
+        try {
+            var request = speciesLoader(finish, requestedLocale);
+            if (generation === requestGeneration && currentRequestLocale === requestedLocale) {
+                currentRequest = request;
+            }
+        } catch (error) {
+            finish('unavailable');
+        }
+    }
+
+    function loadSpecies() {
+        if (cachedLocale === locale && cachedSpecies !== null) {
+            species = cachedSpecies;
+            showStatus(species.length ? '' : 'noSpeciesToday', false);
+            renderSpecies();
+            if (Date.now() - cachedAt >= cacheLifetime) {
+                startSpeciesLoad(true);
+            }
+            return;
+        }
+
         species = [];
         expandedId = null;
         list.textContent = '';
         showStatus('loadingSpecies', false);
-        if (!speciesLoader) {
-            showStatus('speciesUnavailable', true);
+        startSpeciesLoad(false);
+    }
+
+    function prefetch() {
+        if (cachedLocale === locale && cachedSpecies !== null && Date.now() - cachedAt < cacheLifetime) {
             return;
         }
-        currentRequest = speciesLoader(function (error, result) {
-            if (generation !== requestGeneration || dialog.hidden) {
-                return;
-            }
-            currentRequest = null;
-            if (error || !result || !Array.isArray(result.allSpecies || result.species)) {
-                showStatus('speciesUnavailable', true);
-                return;
-            }
-            species = result.allSpecies || result.species;
-            showStatus(species.length ? '' : 'noSpeciesToday', false);
-            renderSpecies();
-        }, locale);
+        startSpeciesLoad(true);
     }
 
     function setLocale(value) {
-        locale = value;
+        if (locale !== value) {
+            locale = value;
+            clearCache();
+            if (currentRequestLocale && currentRequestLocale !== locale) {
+                cancelCurrentRequest();
+            }
+        }
         var translated = dialog.querySelectorAll('[data-artwork-text]');
         for (var index = 0; index < translated.length; index += 1) {
             translated[index].textContent = message(translated[index].getAttribute('data-artwork-text'));
@@ -181,7 +266,12 @@
     }
 
     function setSpeciesLoader(loader) {
-        speciesLoader = typeof loader === 'function' ? loader : null;
+        var nextLoader = typeof loader === 'function' ? loader : null;
+        if (nextLoader !== speciesLoader) {
+            cancelCurrentRequest();
+            clearCache();
+        }
+        speciesLoader = nextLoader;
     }
 
     function open() {
@@ -197,11 +287,9 @@
         if (dialog.hidden) {
             return;
         }
-        requestGeneration += 1;
-        if (currentRequest && typeof currentRequest.abort === 'function') {
-            currentRequest.abort();
+        if (currentRequestLocale && !currentRequestBackground) {
+            cancelCurrentRequest();
         }
-        currentRequest = null;
         dialog.hidden = true;
         document.getElementById('painting').classList.remove('artwork-open');
         button.setAttribute('aria-expanded', 'false');
@@ -238,6 +326,7 @@
     window.BirdWeatherArtworkInfo = {
         setLocale: setLocale,
         setSpeciesLoader: setSpeciesLoader,
+        prefetch: prefetch,
         close: close
     };
 }(window, document));
