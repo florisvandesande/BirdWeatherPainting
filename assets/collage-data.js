@@ -4,9 +4,9 @@
     var api = window.BirdWeatherApi;
     var calendar = window.BirdWeatherCollageDay;
     var pageSize = 100;
-    var operation = 'query CollageDetections($stationIds: [ID!]!, $period: InputDuration!, $after: String) {' +
-        ' detections(first: 100, stationIds: $stationIds, period: $period, after: $after) {' +
-        ' nodes { id speciesId timestamp } pageInfo { hasNextPage endCursor } } }';
+    var operation = 'query CollageDetections($stationIds: [ID!]!, $period: InputDuration!, $after: String, $sortBy: String) {' +
+        ' detections(first: 100, stationIds: $stationIds, period: $period, after: $after, sortBy: $sortBy) {' +
+        ' speciesCount nodes { id speciesId timestamp } pageInfo { hasNextPage endCursor } } }';
 
     function byRecency(a, b) {
         return b.latest - a.latest || (a.id < b.id ? -1 : 1);
@@ -41,6 +41,10 @@
             var counts = Object.create(null);
             var seen = Object.create(null);
             var cursors = Object.create(null);
+            var previousHeard = null;
+            var descending = true;
+            var expectedSpeciesCount = null;
+            var pageCount = 0;
 
             function finish(error, result) {
                 if (!aborted) {
@@ -77,6 +81,10 @@
                     if (!isFinite(heard)) {
                         return false;
                     }
+                    if (previousHeard !== null && heard > previousHeard) {
+                        descending = false;
+                    }
+                    previousHeard = heard;
                     if (heard <= now && dateAt(heard) === date && !seen[id]) {
                         seen[id] = true;
                         var entry = counts[speciesId] || { id: speciesId, latest: heard, count: 0 };
@@ -87,7 +95,7 @@
                     return true;
                 }
 
-                function finalize() {
+                function finalize(totalSpecies) {
                     var ranked = Object.keys(counts).map(function (id) { return counts[id]; });
                     if (!ranked.length) {
                         finish(null, result);
@@ -96,7 +104,8 @@
                     ranked.sort(byRecency);
                     var allSpeciesIds = ranked.map(function (entry) { return entry.id; });
                     var requestedIds = includeAllSpecies ? allSpeciesIds : allSpeciesIds.slice(0, limit);
-                    result.omitted = Math.max(0, allSpeciesIds.length - limit);
+                    var speciesTotal = typeof totalSpecies === 'number' ? totalSpecies : allSpeciesIds.length;
+                    result.omitted = Math.max(0, speciesTotal - limit);
                     request = api.speciesForIds(requestedIds, function (error, species) {
                         if (!error) {
                             result.species = species.slice(0, limit);
@@ -107,7 +116,8 @@
                 }
 
                 function fetchPage(after) {
-                    request = api.query(operation, { stationIds: ids, period: period, after: after }, function (error, data) {
+                    request = api.query(operation, { stationIds: ids, period: period, after: after,
+                        sortBy: 'timestamp' }, function (error, data) {
                         if (aborted) {
                             return;
                         }
@@ -118,8 +128,23 @@
                             finish('unavailable');
                             return;
                         }
+                        pageCount += 1;
+                        var uniqueCount = Object.keys(counts).length;
+                        var totalSpecies = page.speciesCount;
+                        var validTotal = typeof totalSpecies === 'number' && isFinite(totalSpecies) &&
+                            Math.floor(totalSpecies) === totalSpecies && totalSpecies >= uniqueCount && totalSpecies <= 100000;
+                        if (pageCount === 1 && validTotal) {
+                            expectedSpeciesCount = totalSpecies;
+                        } else if (!validTotal || totalSpecies !== expectedSpeciesCount) {
+                            expectedSpeciesCount = null;
+                        }
                         if (!info.hasNextPage) {
-                            finalize();
+                            finalize(validTotal ? totalSpecies : null);
+                            return;
+                        }
+                        if (nearby && !includeAllSpecies && expectedSpeciesCount !== null && descending &&
+                                uniqueCount >= Math.min(limit, expectedSpeciesCount)) {
+                            finalize(expectedSpeciesCount);
                             return;
                         }
                         var cursor = info.endCursor;

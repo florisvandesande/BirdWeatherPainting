@@ -1,0 +1,145 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>BirdWeather collage data preview</title>
+    <style>
+        body { font: 16px/1.5 system-ui, sans-serif; margin: 1.5rem; }
+        #status { white-space: pre-wrap; }
+        .pass { color: #176b35; }
+        .fail { color: #a32620; }
+    </style>
+</head>
+<body>
+    <h1>Nearby collage data checks</h1>
+    <p id="status" role="status">Running checks…</p>
+    <script>
+        (function () {
+            'use strict';
+            var frozenNow = new Date(2026, 10, 14, 12, 0, 0).getTime();
+            var originalNow = Date.now;
+            var fixture = { frozenNow: frozenNow, originalNow: originalNow, scenario: 'fast',
+                calls: [], requestedSpecies: [] };
+            window.collageDataFixture = fixture;
+
+            Date.now = function () { return frozenNow; };
+
+            function nodesInOrder(descending) {
+                var nodes = [];
+                for (var index = 0; index < 100; index += 1) {
+                    var age = descending ? index + 1 : 100 - index;
+                    nodes.push({ id: String(10000 + index), speciesId: String(index % 17 + 1),
+                        timestamp: new Date(frozenNow - age * 1000).toISOString() });
+                }
+                return nodes;
+            }
+
+            window.BirdWeatherApi = {
+                validStationId: function (id) { return /^[1-9][0-9]*$/.test(id); },
+                nearbyStationIds: function (coordinates, radius, complete) {
+                    window.setTimeout(function () { complete(null, ['123']); }, 0);
+                    return { abort: function () {} };
+                },
+                query: function (operation, variables, complete) {
+                    fixture.calls.push({ operation: operation, variables: variables });
+                    var page;
+                    if (fixture.scenario === 'fast') {
+                        page = { speciesCount: 69, nodes: nodesInOrder(true),
+                            pageInfo: { hasNextPage: true, endCursor: 'next' } };
+                    } else if (!variables.after) {
+                        page = { speciesCount: 18, nodes: nodesInOrder(false),
+                            pageInfo: { hasNextPage: true, endCursor: 'next' } };
+                    } else {
+                        page = { speciesCount: 18, nodes: [{ id: '20000', speciesId: '18',
+                            timestamp: new Date(frozenNow - 500).toISOString() }],
+                            pageInfo: { hasNextPage: false, endCursor: null } };
+                    }
+                    window.setTimeout(function () { complete(null, { detections: page }); }, 0);
+                    return { abort: function () {} };
+                },
+                speciesForIds: function (ids, complete) {
+                    fixture.requestedSpecies = ids.slice();
+                    window.setTimeout(function () {
+                        complete(null, ids.map(function (id) {
+                            return { id: id, commonName: 'Fixture bird ' + id,
+                                scientificName: 'Fixture species ' + id };
+                        }));
+                    }, 0);
+                    return { abort: function () {} };
+                }
+            };
+        }());
+    </script>
+    <script src="../assets/collage-day.js"></script>
+    <script src="../assets/collage-data.js"></script>
+    <script>
+        (function () {
+            'use strict';
+            var status = document.getElementById('status');
+            var fixture = window.collageDataFixture;
+            var originalNow = fixture.originalNow;
+            var frozenNow = fixture.frozenNow;
+            var expectedStart = new Date(frozenNow);
+            expectedStart.setHours(0, 0, 0, 0);
+            var period = window.BirdWeatherCollageDay.nearbyPeriod(frozenNow);
+            var checks = [];
+
+            function check(condition, label) {
+                if (!condition) { throw new Error(label); }
+                checks.push('PASS: ' + label);
+            }
+
+            function fail(error) {
+                Date.now = originalNow;
+                status.className = 'fail';
+                status.textContent = 'FAIL: ' + error.message;
+            }
+
+            try {
+                check(period.from === expectedStart.toISOString(), 'nearby search starts at local midnight');
+                check(period.to === new Date(frozenNow).toISOString(), 'nearby search ends at the current time');
+            } catch (error) {
+                fail(error);
+                return;
+            }
+
+            window.BirdWeatherCollageData.create({ source: 'nearby',
+                coordinates: { lat: 52, lon: 5 }, radius: '2' }, 12).load(function (error, result) {
+                try {
+                    check(!error, 'first page returns successfully');
+                    check(result.species.length === 12, 'collage selects its display limit');
+                    check(result.omitted === 57, 'omitted count uses the API species total');
+                    check(fixture.calls.length === 1, 'fast path skips later detection pages');
+                    check(fixture.calls[0].operation.indexOf('speciesCount') >= 0, 'query requests the total species count');
+                    check(fixture.calls[0].variables.sortBy === 'timestamp', 'query explicitly sorts detections by timestamp');
+                    check(fixture.requestedSpecies.join(',') === '1,2,3,4,5,6,7,8,9,10,11,12',
+                        'first page chooses the twelve most recent unique species');
+                } catch (checkError) {
+                    fail(checkError);
+                    return;
+                }
+
+                fixture.scenario = 'ascending';
+                fixture.calls = [];
+                fixture.requestedSpecies = [];
+                window.BirdWeatherCollageData.create({ source: 'nearby',
+                    coordinates: { lat: 52, lon: 5 }, radius: '2' }, 12).load(function (fallbackError, fallbackResult) {
+                    try {
+                        check(!fallbackError, 'unordered pages fall back to a full scan');
+                        check(fixture.calls.length === 2, 'fallback reads all required pages');
+                        check(fallbackResult.species[0].id === '18', 'fallback preserves newest-first ranking');
+                        check(fallbackResult.omitted === 6, 'fallback preserves the complete omitted count');
+                    } catch (checkError) {
+                        fail(checkError);
+                        return;
+                    }
+                    Date.now = originalNow;
+                    status.className = 'pass';
+                    status.textContent = checks.join('\n');
+                }, 'en');
+            }, 'en');
+        }());
+    </script>
+</body>
+</html>

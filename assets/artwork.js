@@ -508,12 +508,18 @@
         image.classList.add('artwork-loading');
         onCreditChange(null, false);
 
-        loadCatalog(function (source) {
+        function paintRecords(source, useLatestIndex) {
             if (image._birdweatherPaintRequest !== requestId) {
                 return;
             }
-            var records = species ? birdImages(species, source || { birds: {}, aliases: {} }, true) :
-                source ? perchCredits(source) : [];
+            var speciesKey = species ? normalizeName(species.scientificName) : '';
+            var records = [];
+            if (species) {
+                records = useLatestIndex ? latestBirdCredits(species, source) :
+                    birdImages(species, source || { birds: {}, aliases: {} }, true);
+            } else if (source) {
+                records = useLatestIndex ? latestPerchCredits(source) : perchCredits(source);
+            }
             var candidateIndex = 0;
             var perchFallbackStarted = false;
 
@@ -526,7 +532,8 @@
                 if (!credit) {
                     if (species && source && !perchFallbackStarted) {
                         perchFallbackStarted = true;
-                        records = perchCredits(source, normalizeName(species.scientificName));
+                        records = useLatestIndex ? latestPerchCredits(source, speciesKey) :
+                            perchCredits(source, speciesKey);
                         candidateIndex = 0;
                         showNext();
                         return;
@@ -571,7 +578,17 @@
             }
 
             showNext();
-        }, true);
+        }
+
+        loadLatestIndex(function (source) {
+            if (source) {
+                paintRecords(source, true);
+            } else {
+                loadCatalog(function (catalogSource) {
+                    paintRecords(catalogSource, false);
+                }, true);
+            }
+        });
     }
 
     function localCredits() {

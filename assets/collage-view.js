@@ -100,6 +100,7 @@
             lastLocale = locale;
             if (!result.species.length) {
                 cancelPending();
+                painting.classList.remove('collage-preparing');
                 if (activeLayer) {
                     activeLayer.remove();
                     activeLayer = null;
@@ -121,7 +122,13 @@
             board.hidden = false;
             emptyArt.hidden = true;
             collage.hidden = false;
-            latest.hidden = true;
+            if (activeLayer) {
+                painting.classList.remove('collage-preparing');
+                latest.hidden = true;
+            } else {
+                painting.classList.add('collage-preparing');
+                latest.hidden = false;
+            }
             omitted.textContent = result.omitted ? text.message(locale,
                 result.omitted === 1 ? 'collageOneOmitted' : 'collageOmitted', { count: result.omitted }) : '';
             omitted.hidden = !result.omitted;
@@ -180,6 +187,8 @@
                         activeLayer = staging;
                         activePlates = plates;
                         contentKey = key;
+                        latest.hidden = true;
+                        painting.classList.remove('collage-preparing');
                         if (previous) {
                             previous.remove();
                         }
@@ -201,6 +210,7 @@
             contentKey = '';
             lastResult = null;
             lastLocale = null;
+            painting.classList.remove('collage-preparing');
             board.classList.remove('collage-packed');
             emptyState.hidden = true;
             board.hidden = false;
@@ -238,6 +248,7 @@
             lastResult = null;
             lastLocale = locale;
             collage.hidden = false;
+            painting.classList.remove('collage-preparing');
             latest.hidden = true;
             emptyState.hidden = false;
             emptyState.setAttribute('role', 'img');
