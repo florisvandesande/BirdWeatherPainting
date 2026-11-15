@@ -320,8 +320,41 @@
                         return document.querySelectorAll('.artwork-bird').length === 65 && firstImage &&
                             firstImage.complete && firstImage.naturalWidth > 0;
                     }, function () {
-                        fixtureStatus.textContent = 'PASS: 65 species, API batching, translations, links, perch fallback, accordion, empty and error states';
-                        fixtureStatus.style.color = '#176b36';
+                        info.close();
+                        document.getElementById('artwork-birds').textContent = '';
+                        var batchesBeforePrefetch = window.fixtureBatchSizes.length;
+                        var prefetchCalls = 0;
+                        info.setSpeciesLoader(function (complete, requestedLocale) {
+                            prefetchCalls += 1;
+                            return window.BirdWeatherApi.speciesForIds(ids, function (error, birds) {
+                                complete(error, { allSpecies: birds });
+                            }, requestedLocale);
+                        });
+                        info.prefetch();
+                        waitFor(function () {
+                            return window.fixtureBatchSizes.length === batchesBeforePrefetch + 3;
+                        }, function () {
+                            window.setTimeout(function () {
+                                try {
+                                    check(document.getElementById('artwork-info').hidden,
+                                        'background prefetch leaves the information panel closed');
+                                    check(document.querySelectorAll('.artwork-bird').length === 0,
+                                        'background prefetch stores data without creating rows or loading thumbnails');
+                                    check(prefetchCalls === 1, 'background prefetch starts one species request');
+                                    var batchesAfterPrefetch = window.fixtureBatchSizes.length;
+                                    document.getElementById('artwork-button').click();
+                                    check(document.querySelectorAll('.artwork-bird').length === 65,
+                                        'opening the information panel renders prefetched species immediately');
+                                    check(window.fixtureBatchSizes.length === batchesAfterPrefetch,
+                                        'opening the prefetched list does not repeat the API request');
+                                    fixtureStatus.textContent = 'PASS: 65 species, API batching, translations, links, perch fallback, accordion, empty and error states, background prefetch cache';
+                                    fixtureStatus.style.color = '#176b36';
+                                } catch (error) {
+                                    fixtureStatus.textContent = 'FAIL: ' + error.message;
+                                    fixtureStatus.style.color = '#a32620';
+                                }
+                            }, 20);
+                        }, 500);
                     }, 500);
                 } catch (error) {
                     fixtureStatus.textContent = 'FAIL: ' + error.message;

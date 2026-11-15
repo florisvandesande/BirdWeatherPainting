@@ -18,9 +18,10 @@
     var nearby = config && config.source === 'nearby';
     var schedule = preferences.readNight();
     var display = preferences.readDisplay();
-    var dailySpeciesSource = config && window.BirdWeatherCollageData.create(config, display.limit);
+    var dailySpeciesSource = config && window.BirdWeatherCollageData ?
+        window.BirdWeatherCollageData.create(config, display.limit) : null;
     var collageSource = display.view === 'today' ? dailySpeciesSource : null;
-    var collageView = collageSource && window.BirdWeatherCollageView.create();
+    var collageView = collageSource && window.BirdWeatherCollageView ? window.BirdWeatherCollageView.create() : null;
     var lastResult = null;
     var connectionState = null;
 
@@ -86,13 +87,57 @@
         return collageSource ? collageSource.load(complete, locale) : api.latestForSource(config, complete);
     }
 
-    artworkInfo.setSpeciesLoader(function (complete, requestedLocale) {
-        if (!sourceActive || !dailySpeciesSource) {
+    function loadArtworkSpecies(complete, requestedLocale) {
+        if (!sourceActive) {
             complete('unavailable');
             return null;
         }
-        return dailySpeciesSource.loadAll(complete, requestedLocale || locale);
-    });
+        var aborted = false;
+        var request = null;
+
+        function loadAll() {
+            if (aborted) {
+                return;
+            }
+            if (!dailySpeciesSource && window.BirdWeatherCollageData) {
+                dailySpeciesSource = window.BirdWeatherCollageData.create(config, display.limit);
+            }
+            if (!dailySpeciesSource) {
+                complete('unavailable');
+                return;
+            }
+            request = dailySpeciesSource.loadAll(function (error, result) {
+                if (!aborted) {
+                    complete(error, result);
+                }
+            }, requestedLocale || locale);
+        }
+
+        if (dailySpeciesSource) {
+            loadAll();
+        } else if (window.BirdWeatherBootstrap) {
+            window.BirdWeatherBootstrap.loadInfoModules(function (error) {
+                if (error) {
+                    complete('unavailable');
+                } else {
+                    loadAll();
+                }
+            });
+        } else {
+            complete('unavailable');
+        }
+
+        return {
+            abort: function () {
+                aborted = true;
+                if (request && typeof request.abort === 'function') {
+                    request.abort();
+                }
+            }
+        };
+    }
+
+    artworkInfo.setSpeciesLoader(loadArtworkSpecies);
 
     function showCollage(result) {
         collageView.show(result, locale);
@@ -108,11 +153,19 @@
     }
 
     function showLoading() {
+        if (!sourceActive) {
+            return;
+        }
         title.classList.add('is-loading');
         detail.className = '';
         setText(detail, '');
         setText(title, say('loading'));
-        artwork.paint(image, null, function () {});
+        if (collageView) {
+            artwork.paint(image, null, function () {});
+        } else {
+            image.setAttribute('src', 'assets/artwork/perches/birch-twig.png');
+            artwork.preloadLatestIndex();
+        }
     }
 
     function checkDay(now) {
@@ -155,7 +208,12 @@
                 }
             } else {
                 showLatest(result);
-                artwork.paint(image, result.observation && result.observation.species, function () {});
+                artwork.paint(image, result.observation && result.observation.species, function () {
+                    if (!collageView && lastResult && !image.classList.contains('artwork-loading') &&
+                            image.complete && image.naturalWidth > 0) {
+                        artworkInfo.prefetch();
+                    }
+                });
             }
         } else if (!lastResult) {
             showConnectionProblem(error);

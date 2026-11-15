@@ -252,7 +252,7 @@
             var createdAt = generation;
             artwork.paintCollage(emptyArt, null, function (credit, ready) {
                 if (ready && createdAt === generation) {
-                    complete();
+                    complete(credit);
                 }
             });
         }
