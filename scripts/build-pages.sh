@@ -42,9 +42,9 @@ if [[ ! -d "$artwork_root/birds" || ! -d "$artwork_root/perches" ]]; then
     echo "The Pages source must contain the bird and perch PNG directories." >&2
     exit 2
 fi
-widget_source="$source_root/.temporary/bird-widget/bird-widget.js"
+widget_source="$source_root/bird-widget/bird-widget.js"
 if [[ ! -f "$widget_source" ]]; then
-    echo "The standalone bird widget source is missing from .temporary/bird-widget/." >&2
+    echo "The standalone bird widget source is missing from bird-widget/." >&2
     exit 2
 fi
 cp "$widget_source" "$output_root/assets/bird-widget.js"
