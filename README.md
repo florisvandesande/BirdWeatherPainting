@@ -17,7 +17,7 @@
 </p>
 
 <p align="center">
-  <a href="#getting-started">Getting started</a> · <a href="#features">Features</a> · <a href="#settings-and-urls">Settings and URLs</a> · <a href="#install-on-an-ipad">Install on an iPad</a> · <a href="#artwork">Artwork</a> · <a href="#privacy-and-network-use">Privacy</a>
+  <a href="#getting-started">Getting started</a> · <a href="#features">Features</a> · <a href="#settings-and-urls">Settings and URLs</a> · <a href="#install-on-an-ipad">Install on an iPad</a> · <a href="#embed-a-bird-image-on-your-website">Bird widget</a> · <a href="#artwork">Artwork</a> · <a href="#privacy-and-network-use">Privacy</a>
 </p>
 
 ## Getting started
@@ -91,6 +91,20 @@ site artifact by compressing the artwork as indexed PNG while preserving
 transparency; this keeps compatibility with older iPads, including iPad 2. The
 original PNGs in the repository are left unchanged. In the repository's Pages
 settings, select **GitHub Actions** as the build and deployment source.
+
+## Embed a bird image on your website
+
+Add this where the image should appear. Replace `7368` with the numeric ID of
+your public BirdWeather station:
+
+```html
+<div id="bird"></div>
+<script src="https://florisvandesande.github.io/BirdWeatherPainting/bird-widget/bird-widget.js?station=7368" defer></script>
+```
+
+Omit `?station=7368` to use the default station, `8089`. The widget inserts
+only the bird image. Add the Fugleramme credit and CC BY-SA 4.0 link separately
+on your page.
 
 
 ## Set as macOS desktop background

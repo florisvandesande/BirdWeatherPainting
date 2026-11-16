@@ -1,11 +1,12 @@
 (function (window, document) {
     'use strict';
 
-    var stationId = '8089';
+    var defaultStationId = '8089';
     var endpoint = 'https://app.birdweather.com/graphql';
     var indexUrl = 'https://florisvandesande.github.io/BirdWeatherPainting/assets/artwork/widget-index.json';
     var artworkBaseUrl = 'https://florisvandesande.github.io/BirdWeatherPainting/assets/artwork/';
     var stationIdPattern = /^[1-9][0-9]{0,17}$/;
+    var stationId = readStationId(document, defaultStationId, stationIdPattern);
     var imagePathPattern = /^(?:birds|perches)\/[a-z0-9_-]+\.png$/;
     var licenseUrl = 'https://creativecommons.org/licenses/by-sa/4.0/';
     var attributionUrl = 'https://github.com/arnegiacomo/fugleramme/blob/main/assets/artwork/classic/ATTRIBUTION.md';
@@ -85,6 +86,42 @@
 
     function isObject(value) {
         return Object.prototype.toString.call(value) === '[object Object]';
+    }
+
+    function readStationId(doc, fallback, pattern) {
+        var script = doc.currentScript;
+        if (!script || !script.src) {
+            var scripts = doc.getElementsByTagName('script');
+            for (var index = scripts.length - 1; index >= 0; index -= 1) {
+                if (/(?:^|\/)bird-widget\.js(?:[?#]|$)/i.test(scripts[index].src || '')) {
+                    script = scripts[index];
+                    break;
+                }
+            }
+        }
+        if (!script || !script.src) {
+            return fallback;
+        }
+
+        var queryStart = script.src.indexOf('?');
+        if (queryStart === -1) {
+            return fallback;
+        }
+        var query = script.src.slice(queryStart + 1).split('#')[0];
+        var pairs = query.split('&');
+        var stationValues = [];
+        for (var pairIndex = 0; pairIndex < pairs.length; pairIndex += 1) {
+            var separator = pairs[pairIndex].indexOf('=');
+            var name = separator === -1 ? pairs[pairIndex] : pairs[pairIndex].slice(0, separator);
+            if (name === 'station') {
+                stationValues.push(separator === -1 ? '' : pairs[pairIndex].slice(separator + 1));
+            }
+        }
+
+        if (stationValues.length !== 1 || !pattern.test(stationValues[0])) {
+            return fallback;
+        }
+        return stationValues[0];
     }
 
     function addClass(element, className) {
@@ -201,7 +238,7 @@
         var image = document.createElement('img');
         image.className = 'bird-image';
         image.src = artworkBaseUrl + safePath;
-        image.alt = observation ? 'Vogelillustratie: ' + observation.scientificName : 'Vogel op een tak';
+        image.alt = observation ? observation.scientificName : 'Bird on a perch';
         image.onerror = function () {
             if (artworkIndex && safePath.indexOf('perches/') !== 0) {
                 render(observation, choosePerch(artworkIndex, observation && observation.id));
@@ -209,36 +246,5 @@
         };
         container.appendChild(image);
 
-        if (observation) {
-            var name = document.createElement('p');
-            name.className = 'bird-name';
-            name.setAttribute('lang', 'la');
-            name.textContent = observation.scientificName;
-            container.appendChild(name);
-        }
-
-        appendAttribution();
-    }
-
-    function appendAttribution() {
-        if (!artworkIndex) {
-            return;
-        }
-        var credit = document.createElement('p');
-        credit.className = 'bird-credit';
-        var creatorLink = document.createElement('a');
-        creatorLink.href = attributionUrl;
-        creatorLink.target = '_blank';
-        creatorLink.rel = 'noopener noreferrer';
-        creatorLink.textContent = 'Fugleramme';
-        var licenseLink = document.createElement('a');
-        licenseLink.href = licenseUrl;
-        licenseLink.target = '_blank';
-        licenseLink.rel = 'noopener noreferrer';
-        licenseLink.textContent = 'CC BY-SA 4.0';
-        credit.appendChild(creatorLink);
-        credit.appendChild(document.createTextNode(' · '));
-        credit.appendChild(licenseLink);
-        container.appendChild(credit);
     }
 }(window, document));
