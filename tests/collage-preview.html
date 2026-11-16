@@ -29,6 +29,7 @@
         <button id="landscape">Landscape</button>
         <button id="transition">Check replacement</button>
         <button id="branch">Check initial branch</button>
+        <button id="hidden">Check hidden redraw</button>
         <button id="empty">Empty day</button>
         <button id="missing">Missing bird image</button>
     </div>
@@ -49,8 +50,10 @@
         window.fixtureSpeciesByName = Object.create(null);
         window.fixturePerches = [];
         window.fixtureImageDelay = 0;
+        window.fixtureHoldImages = false;
         window.BirdWeatherArtwork = {
             paintCollage: function (image, bird, callback) {
+                if (window.fixtureHoldImages) return;
                 var record = bird ? window.fixtureSpeciesByName[bird.scientificName.toLowerCase()] :
                     window.fixturePerches[Math.floor(Math.random() * window.fixturePerches.length)];
                 var missingBird = !!bird && !record;
@@ -69,7 +72,7 @@
             message: function (locale, key) { return key; }
         };
     </script>
-    <script src="../assets/collage-view.js?empty-perch-credit=1"></script>
+    <script src="../assets/collage-view.js?empty-perch-credit=1&amp;hidden-board-guard=1"></script>
     <script>
     (function () {
         'use strict';
@@ -258,6 +261,24 @@
                     }
                     verifyFinished();
                 }, 150);
+            };
+            document.getElementById('hidden').onclick = function () {
+                var painting = document.getElementById('painting');
+                var hiddenSpecies = speciesList.slice(0, 25).map(function (bird) {
+                    return { id: bird.id, commonName: bird.commonName, scientificName: bird.scientificName };
+                });
+                collageView.clear();
+                window.fixtureHoldImages = true;
+                painting.hidden = true;
+                collageView.show({ species: hiddenSpecies, omitted: 0 }, 'nl');
+                var stagingCount = board.querySelectorAll('.collage-layer-staging').length;
+                var plateCount = board.querySelectorAll('.collage-layer-staging .collage-specimen').length;
+                collageView.clear();
+                painting.hidden = false;
+                window.fixtureHoldImages = false;
+                status.textContent = stagingCount === 0 && plateCount === 0 ?
+                    'PASS: hidden painting skips collage composition' :
+                    'FAIL: hidden painting created ' + plateCount + ' plates';
             };
             document.getElementById('empty').onclick = function () {
                 collageView.showEmpty('en');
