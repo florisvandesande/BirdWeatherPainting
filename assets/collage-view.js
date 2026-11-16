@@ -96,6 +96,10 @@
         }
 
         function show(result, locale) {
+            // A hidden board has no usable size, so rebuilding it can trigger every layout fallback.
+            if (painting.hidden) {
+                return;
+            }
             lastResult = result;
             lastLocale = locale;
             if (!result.species.length) {
@@ -260,6 +264,9 @@
         }
 
         function paintEmpty(complete) {
+            if (painting.hidden) {
+                return;
+            }
             var createdAt = generation;
             artwork.paintCollage(emptyArt, null, function (credit, ready) {
                 if (ready && createdAt === generation) {

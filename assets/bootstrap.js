@@ -9,7 +9,7 @@
         'assets/collage-day.js',
         'assets/collage-data.js',
         'assets/collage-layout.js',
-        'assets/collage-view.js'
+        'assets/collage-view.js?v=hidden-board-guard-1'
     ];
     var infoFiles = collageFiles.slice(0, 3);
     var infoFilesLoaded = false;
